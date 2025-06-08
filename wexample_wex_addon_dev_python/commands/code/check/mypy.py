@@ -41,4 +41,5 @@ def _code_check_mypy(kernel: "Kernel", file_path: str) -> bool:
                 symbol=False
             )
         kernel.io.log_indent_down()
+        return False
     return True
