@@ -51,12 +51,14 @@ def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
         # Display errors
         if errors:
             kernel.io.error(f"Pylint found errors in {file_path}:")
-            kernel.io.error("Errors:")
+            kernel.io.log_indent_up()
             for error in errors:
-                kernel.io.base(
-                    message=f"  Line {error.get('line')}: "
-                            f"{error.get('message')} ({error.get('symbol')})"
+                kernel.io.error(
+                    message=f"Line {error.get('line')}: "
+                            f"{error.get('message')} ({error.get('symbol')})",
+                    symbol=False
                 )
+            kernel.io.log_indent_down()
 
         # Display warnings with detailed logging
         if warnings:
