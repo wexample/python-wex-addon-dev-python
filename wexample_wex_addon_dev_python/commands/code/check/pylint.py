@@ -50,10 +50,16 @@ def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
         # Display warnings with detailed logging
         if warnings:
             kernel.io.warning(f"Pylint found warnings in {file_path}:")
-            for warning in warnings:
-                kernel.io.warning(f"Line {warning.get('line')}: {warning.get('message')} ({warning.get('symbol')})")
-                kernel.io.log(warning)
+            kernel.io.log_indent_up()
 
+            for warning in warnings:
+                kernel.io.warning(
+                    f"Line {warning.get('line')}: {warning.get('message')} ({warning.get('symbol')})",
+                    symbol=False
+                )
+                kernel.io.properties(warning)
+
+            kernel.io.log_indent_down()
         # Display conventions
         if conventions:
             kernel.io.info("Conventions:")

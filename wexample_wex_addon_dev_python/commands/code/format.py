@@ -1,0 +1,88 @@
+import os
+
+from wexample_wex_core.common.kernel import Kernel
+from wexample_wex_core.decorator.command import command
+from wexample_wex_core.decorator.option import option
+
+
+@option(
+    name="file_path",
+    type=str,
+    required=True
+)
+@option(
+    name="tool",
+    type=str,
+    required=False,
+    description="Specific tool to run (black, isort). If not specified, all tools will be run."
+)
+@option(
+    name="stop_on_failure",
+    type=bool,
+    required=False,
+    default=True,
+    description="Stop execution when a tool reports a failure"
+)
+@command()
+def python__code__format(
+        kernel: "Kernel",
+        file_path: str,
+        tool: str = None,
+        stop_on_failure: bool = True
+) -> bool:
+    """Format a Python file using various code formatting tools.
+
+    Args:
+        kernel: The application kernel
+        file_path: Path to the Python file to format
+        tool: Specific tool to run (black, isort). If not specified, all tools will be run.
+        stop_on_failure: Stop execution when a tool reports a failure
+
+    Returns:
+        bool: True if all formatting operations succeed, False otherwise
+    """
+    from wexample_wex_addon_dev_python.commands.code.format.black import _code_format_black
+    from wexample_wex_addon_dev_python.commands.code.format.isort import _code_format_isort
+
+    if not os.path.exists(file_path):
+        kernel.io.error(f"Error: File {file_path} does not exist")
+        return False
+
+    # Map tool names to their format functions
+    tool_map = {
+        "black": _code_format_black,
+        "isort": _code_format_isort,
+    }
+
+    # Determine which tools to run
+    if tool and tool.lower() in tool_map:
+        # Run only the specified tool
+        format_functions = [tool_map[tool.lower()]]
+    else:
+        # Run all tools if no specific tool is specified or if the specified tool is invalid
+        if tool and tool.lower() not in tool_map:
+            kernel.io.warning(f"Unknown tool '{tool}'. Running all available tools.")
+
+        # Run isort first, then black (recommended order)
+        format_functions = [
+            _code_format_isort,
+            _code_format_black,
+        ]
+
+    # Track overall success
+    all_formats_passed = True
+
+    # Run each format function
+    for format_function in format_functions:
+        kernel.io.title(format_function.__name__)
+        format_result = format_function(kernel, file_path)
+
+        # Update overall success status
+        all_formats_passed = all_formats_passed and format_result
+
+        # Stop if a format fails and stop_on_failure is True
+        if not format_result and stop_on_failure:
+            kernel.io.warning("Stopping due to failure (stop_on_failure=True)")
+            return False
+
+    return all_formats_passed
