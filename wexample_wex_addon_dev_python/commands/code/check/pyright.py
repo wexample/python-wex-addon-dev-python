@@ -95,7 +95,4 @@ def _code_check_pyright(kernel: "Kernel", file_path: str) -> bool:
         # Only consider errors as failures
         if errors:
             return False
-        else:
-            return True
-    else:
-        return True
+    return True

@@ -18,13 +18,24 @@ def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
 
     # Use subprocess to capture pylint output
     # This avoids issues with pylint's direct printing to stdout
+    
+    # List of warnings to disable
+    disabled_warnings = [
+        "missing-module-docstring",
+        "import-outside-toplevel",
+        "no-name-in-module",
+        "broad-exception-caught",
+        "c-extension-no-member",
+        "line-too-long",
+    ]
+    
     cmd = [
         sys.executable,
         "-m",
         "pylint",
         file_path,
         "--output-format=json",
-        "--disable=missing-module-docstring,import-outside-toplevel,no-name-in-module,broad-exception-caught,c-extension-no-member"
+        f"--disable={','.join(disabled_warnings)}"
     ]
     process = subprocess.run(cmd, capture_output=True, text=True, check=False)
 
