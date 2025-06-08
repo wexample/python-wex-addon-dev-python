@@ -17,8 +17,8 @@ def _code_format_isort(kernel: "Kernel", file_path: str) -> bool:
     # Use subprocess to run isort
     # --profile=black ensures compatibility with Black formatter
     cmd = [sys.executable, "-m", "isort", "--profile=black", file_path]
-    process = subprocess.run(cmd, capture_output=True, text=True)
-    
+    process = subprocess.run(cmd, capture_output=True, text=True, check=False)
+
     # Check if the command was successful
     if process.returncode == 0:
         if "Skipped" in process.stdout:
@@ -28,8 +28,18 @@ def _code_format_isort(kernel: "Kernel", file_path: str) -> bool:
         return True
     else:
         kernel.io.error(f"isort failed to format imports in {file_path}")
+        kernel.io.log_indent_up()
+
         if process.stderr:
-            kernel.io.error(f"Error: {process.stderr}")
+            kernel.io.error(f"Error: {process.stderr}", symbol=False)
         if process.stdout:
-            kernel.io.error(f"Output: {process.stdout}")
+            kernel.io.error(f"Output: {process.stdout}", symbol=False)
+
+        # Add detailed error properties
+        kernel.io.properties({
+            "returncode": process.returncode,
+            "command": cmd
+        })
+
+        kernel.io.log_indent_down()
         return False

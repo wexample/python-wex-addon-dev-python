@@ -51,33 +51,47 @@ def _code_check_pyright(kernel: "Kernel", file_path: str) -> bool:
             # Display errors
             if errors:
                 kernel.io.error(f"Pyright found errors in {file_path}:")
+                kernel.io.log_indent_up()
+                
                 for error in errors:
                     line = error.get("range", {}).get("start", {}).get("line", 0) + 1
                     message = error.get("message", "Unknown error")
                     rule = error.get("rule", "")
                     rule_text = f" ({rule})" if rule else ""
-                    kernel.io.base(message=f"  Line {line}: {message}{rule_text}")
+                    kernel.io.error(f"Line {line}: {message}{rule_text}", symbol=False)
+                    kernel.io.properties(error)
+                
+                kernel.io.log_indent_down()
             
             # Display warnings
             if warnings:
                 kernel.io.warning(f"Pyright found warnings in {file_path}:")
+                kernel.io.log_indent_up()
+                
                 for warning in warnings:
                     line = warning.get("range", {}).get("start", {}).get("line", 0) + 1
                     message = warning.get("message", "Unknown warning")
                     rule = warning.get("rule", "")
                     rule_text = f" ({rule})" if rule else ""
-                    kernel.io.warning(f"Line {line}: {message}{rule_text}")
-                    kernel.io.log(warning)
+                    kernel.io.warning(f"Line {line}: {message}{rule_text}", symbol=False)
+                    kernel.io.properties(warning)
+                
+                kernel.io.log_indent_down()
             
             # Display information
             if info:
-                kernel.io.info("Information:")
+                kernel.io.info(f"Pyright found information in {file_path}:")
+                kernel.io.log_indent_up()
+                
                 for item in info:
                     line = item.get("range", {}).get("start", {}).get("line", 0) + 1
                     message = item.get("message", "Unknown info")
                     rule = item.get("rule", "")
                     rule_text = f" ({rule})" if rule else ""
-                    kernel.io.base(message=f"  Line {line}: {message}{rule_text}")
+                    kernel.io.info(f"Line {line}: {message}{rule_text}", symbol=False)
+                    kernel.io.properties(item)
+                
+                kernel.io.log_indent_down()
             
             # Only consider errors as failures
             if errors:
