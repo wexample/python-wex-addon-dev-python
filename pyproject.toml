@@ -6,8 +6,8 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "wexample-wex-addon-app"
-version = "0.0.32"
+name = "wexample-wex-addon-dev-python"
+version = "0.0.1"
 description = "Python dev addon for wex"
 authors = [
     { name = "weeger", email = "contact@wexample.com" },
