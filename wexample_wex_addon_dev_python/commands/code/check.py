@@ -14,6 +14,7 @@ def python__code__check(
 ) -> bool:
     from wexample_wex_addon_dev_python.commands.code.check.mypy import _code_check_mypy
     from wexample_wex_addon_dev_python.commands.code.check.pylint import _code_check_pylint
+    from wexample_wex_addon_dev_python.commands.code.check.pyright import _code_check_pyright
 
     """Check a Python file using various code quality tools.
 
@@ -31,6 +32,7 @@ def python__code__check(
     CODE_CHECKS: List[Callable[["Kernel", str], bool]] = [
         _code_check_mypy,
         _code_check_pylint,
+        _code_check_pyright,
     ]
 
     for check_function in CODE_CHECKS:
