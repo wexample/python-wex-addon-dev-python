@@ -18,7 +18,14 @@ def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
 
     # Use subprocess to capture pylint output
     # This avoids issues with pylint's direct printing to stdout
-    cmd = [sys.executable, "-m", "pylint", file_path, "--output-format=json"]
+    cmd = [
+        sys.executable,
+        "-m",
+        "pylint",
+        file_path,
+        "--output-format=json",
+        "--disable=missing-module-docstring,import-outside-toplevel"
+    ]
     process = subprocess.run(cmd, capture_output=True, text=True, check=False)
 
     # Get the output from stdout
@@ -77,7 +84,5 @@ def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
         # Only consider errors as failures
         if errors:
             return False
-        else:
-            return True
-    else:
         return True
+    return True
