@@ -26,18 +26,16 @@ def python__code__check(
         kernel.io.error(f"Error: File {file_path} does not exist")
         return False
 
-    all_checks_passed = True
-
     CODE_CHECKS: List[Callable[["Kernel", str], bool]] = [
         _code_check_mypy,
     ]
 
     for check_function in CODE_CHECKS:
         kernel.io.title(check_function.__name__)
-        check_result = check_function(kernel, file_path)
-        all_checks_passed = all_checks_passed and check_result
+        if not check_function(kernel, file_path):
+            return False
 
-    return all_checks_passed
+    return True
 
 
 def _code_check_mypy(kernel: "Kernel", file_path: str) -> bool:
