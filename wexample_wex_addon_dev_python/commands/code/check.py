@@ -1,16 +1,33 @@
 import os
-from typing import List, Callable
 
 from wexample_wex_core.common.kernel import Kernel
 from wexample_wex_core.decorator.command import command
 from wexample_wex_core.decorator.option import option
 
 
-@option(name="file_path", type=str, required=True)
+@option(
+    name="file_path",
+    type=str,
+    required=True
+)
+@option(
+    name="tool",
+    type=str, required=False,
+    description="Specific tool to run (mypy, pylint, pyright). If not specified, all tools will be run."
+)
+@option(
+    name="stop_on_failure",
+    type=bool,
+    required=False,
+    default=True,
+    description="Stop execution when a tool reports a failure"
+)
 @command()
 def python__code__check(
         kernel: "Kernel",
-        file_path: str
+        file_path: str,
+        tool: str = None,
+        stop_on_failure: bool = True
 ) -> bool:
     from wexample_wex_addon_dev_python.commands.code.check.mypy import _code_check_mypy
     from wexample_wex_addon_dev_python.commands.code.check.pylint import _code_check_pylint
@@ -29,15 +46,42 @@ def python__code__check(
         kernel.io.error(f"Error: File {file_path} does not exist")
         return False
 
-    CODE_CHECKS: List[Callable[["Kernel", str], bool]] = [
-        _code_check_mypy,
-        _code_check_pylint,
-        _code_check_pyright,
-    ]
+    # Map tool names to their check functions
+    tool_map = {
+        "mypy": _code_check_mypy,
+        "pylint": _code_check_pylint,
+        "pyright": _code_check_pyright,
+    }
 
-    for check_function in CODE_CHECKS:
+    # Determine which tools to run
+    if tool and tool.lower() in tool_map:
+        # Run only the specified tool
+        check_functions = [tool_map[tool.lower()]]
+    else:
+        # Run all tools if no specific tool is specified or if the specified tool is invalid
+        if tool and tool.lower() not in tool_map:
+            kernel.io.warning(f"Unknown tool '{tool}'. Running all available tools.")
+
+        check_functions = [
+            _code_check_mypy,
+            _code_check_pylint,
+            _code_check_pyright,
+        ]
+
+    # Track overall success
+    all_checks_passed = True
+
+    # Run each check function
+    for check_function in check_functions:
         kernel.io.title(check_function.__name__)
-        if not check_function(kernel, file_path):
+        check_result = check_function(kernel, file_path)
+
+        # Update overall success status
+        all_checks_passed = all_checks_passed and check_result
+
+        # Stop if a check fails and stop_on_failure is True
+        if not check_result and stop_on_failure:
+            kernel.io.warning("Stopping due to failure (stop_on_failure=True)")
             return False
 
-    return True
+    return all_checks_passed
