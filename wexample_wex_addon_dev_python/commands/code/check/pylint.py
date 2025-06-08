@@ -1,3 +1,4 @@
+from wexample_helpers.helpers.cli import cli_make_clickable_path
 from wexample_wex_core.common.kernel import Kernel
 
 
@@ -33,9 +34,11 @@ def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
     results = json.loads(json_output)
 
     # Filter messages by type
-    errors = [msg for msg in results if msg.get('type') in ('error', 'fatal')]
-    warnings = [msg for msg in results if msg.get('type') == 'warning']
-    conventions = [msg for msg in results if msg.get('type') in ('convention', 'refactor', 'info')]
+    errors = [msg for msg in results if msg.get("type") in ("error", "fatal")]
+    warnings = [msg for msg in results if msg.get("type") == "warning"]
+    conventions = [
+        msg for msg in results if msg.get("type") in ("convention", "refactor", "info")
+    ]
 
     # Display results if any issues found
     if errors or warnings or conventions:
@@ -45,7 +48,8 @@ def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
             kernel.io.error("Errors:")
             for error in errors:
                 kernel.io.base(
-                    message=f"  Line {error.get('line')}: {error.get('message')} ({error.get('symbol')})")
+                    message=f"  Line {error.get('line')}: {error.get('message')} ({error.get('symbol')})"
+                )
 
         # Display warnings with detailed logging
         if warnings:
@@ -55,7 +59,7 @@ def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
             for warning in warnings:
                 kernel.io.warning(
                     f"Line {warning.get('line')}: {warning.get('message')} ({warning.get('symbol')})",
-                    symbol=False
+                    symbol=False,
                 )
                 kernel.io.properties(warning)
 
@@ -65,7 +69,8 @@ def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
             kernel.io.info("Conventions:")
             for convention in conventions:
                 kernel.io.base(
-                    message=f"  Line {convention.get('line')}: {convention.get('message')} ({convention.get('symbol')})")
+                    message=f"  Line {convention.get('line')}: {convention.get('message')} ({convention.get('symbol')})"
+                )
 
         # Only consider errors as failures
         if errors:
