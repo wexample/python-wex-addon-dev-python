@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 
 from wexample_wex_core.common.kernel import Kernel
 from wexample_wex_core.decorator.command import command
@@ -27,7 +28,7 @@ from wexample_wex_core.decorator.option import option
 def python__code__format(
         kernel: "Kernel",
         file_path: str,
-        tool: str = None,
+        tool: Optional[str] = None,
         stop_on_failure: bool = True
 ) -> bool:
     """Format a Python file using various code formatting tools.
