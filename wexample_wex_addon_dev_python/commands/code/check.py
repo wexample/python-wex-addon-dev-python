@@ -71,10 +71,13 @@ def python__code__check(
     # Run each check function
     for check_function in check_functions:
         kernel.io.title(check_function.__name__)
+        kernel.io.log_indent_up()
+
         check_result = check_function(kernel, file_path)
 
         # Update overall success status
         all_checks_passed = all_checks_passed and check_result
+        kernel.io.log_indent_down()
 
         # Stop if a check fails and stop_on_failure is True
         if not check_result and stop_on_failure:
