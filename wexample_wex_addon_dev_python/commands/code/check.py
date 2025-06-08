@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 
 from wexample_wex_core.common.kernel import Kernel
 from wexample_wex_core.decorator.command import command
@@ -12,7 +13,8 @@ from wexample_wex_core.decorator.option import option
 )
 @option(
     name="tool",
-    type=str, required=False,
+    type=str,
+    required=False,
     description="Specific tool to run (mypy, pylint, pyright). If not specified, all tools will be run."
 )
 @option(
@@ -26,7 +28,7 @@ from wexample_wex_core.decorator.option import option
 def python__code__check(
         kernel: "Kernel",
         file_path: str,
-        tool: str = None,
+        tool: Optional[str] = None,
         stop_on_failure: bool = True
 ) -> bool:
     from wexample_wex_addon_dev_python.commands.code.check.mypy import _code_check_mypy
