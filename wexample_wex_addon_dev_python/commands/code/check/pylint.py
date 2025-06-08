@@ -1,4 +1,3 @@
-from wexample_helpers.helpers.cli import cli_make_clickable_path
 from wexample_wex_core.common.kernel import Kernel
 
 
@@ -20,7 +19,7 @@ def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
     # Use subprocess to capture pylint output
     # This avoids issues with pylint's direct printing to stdout
     cmd = [sys.executable, "-m", "pylint", file_path, "--output-format=json"]
-    process = subprocess.run(cmd, capture_output=True, text=True)
+    process = subprocess.run(cmd, capture_output=True, text=True, check=False)
 
     # Get the output from stdout
     json_output = process.stdout.strip()
@@ -48,7 +47,8 @@ def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
             kernel.io.error("Errors:")
             for error in errors:
                 kernel.io.base(
-                    message=f"  Line {error.get('line')}: {error.get('message')} ({error.get('symbol')})"
+                    message=f"  Line {error.get('line')}: "
+                            f"{error.get('message')} ({error.get('symbol')})"
                 )
 
         # Display warnings with detailed logging
@@ -58,7 +58,8 @@ def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
 
             for warning in warnings:
                 kernel.io.warning(
-                    f"Line {warning.get('line')}: {warning.get('message')} ({warning.get('symbol')})",
+                    f"Line {warning.get('line')}: "
+                    f"{warning.get('message')} ({warning.get('symbol')})",
                     symbol=False,
                 )
                 kernel.io.properties(warning)
@@ -69,7 +70,8 @@ def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
             kernel.io.info("Conventions:")
             for convention in conventions:
                 kernel.io.base(
-                    message=f"  Line {convention.get('line')}: {convention.get('message')} ({convention.get('symbol')})"
+                    message=f"  Line {convention.get('line')}: "
+                            f"{convention.get('message')} ({convention.get('symbol')})"
                 )
 
         # Only consider errors as failures
