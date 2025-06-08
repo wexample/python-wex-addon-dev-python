@@ -61,7 +61,7 @@ def python__code__format(
     else:
         # Run all tools if no specific tool is specified or if the specified tool is invalid
         if tool and tool.lower() not in tool_map:
-            kernel.io.warning(f"Unknown tool '{tool}'. Running all available tools.")
+            kernel.io.warning(f"Unknown tool '{tool}', running all available tools")
 
         # Run isort first, then black (recommended order)
         format_functions = [
@@ -82,7 +82,7 @@ def python__code__format(
 
         # Stop if a format fails and stop_on_failure is True
         if not format_result and stop_on_failure:
-            kernel.io.warning("Stopping due to failure (stop_on_failure=True)")
+            kernel.io.warning("One formatting failed")
             return False
 
     return all_formats_passed

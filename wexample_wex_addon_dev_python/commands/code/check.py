@@ -84,7 +84,7 @@ def python__code__check(
 
         # Stop if a check fails and stop_on_failure is True
         if not check_result and stop_on_failure:
-            kernel.io.warning("Stopping due to failure (stop_on_failure=True)")
+            kernel.io.error("One check failed")
             return False
 
     return all_checks_passed
