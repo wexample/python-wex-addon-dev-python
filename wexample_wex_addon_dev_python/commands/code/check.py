@@ -1,5 +1,6 @@
 import os
 import sys
+from typing import List, Callable
 
 from wexample_wex_core.common.kernel import Kernel
 from wexample_wex_core.decorator.command import command
@@ -12,16 +13,43 @@ def python__code__check(
         kernel: "Kernel",
         file_path: str
 ) -> bool:
-    """Check a Python file using mypy for static type checking.
+    """Check a Python file using various code quality tools.
     
     Args:
         kernel: The application kernel
         file_path: Path to the Python file to check
+        
+    Returns:
+        bool: True if all checks pass, False otherwise
     """
     if not os.path.exists(file_path):
         kernel.io.error(f"Error: File {file_path} does not exist")
         return False
 
+    all_checks_passed = True
+
+    CODE_CHECKS: List[Callable[["Kernel", str], bool]] = [
+        _code_check_mypy,
+    ]
+
+    for check_function in CODE_CHECKS:
+        kernel.io.title(check_function.__name__)
+        check_result = check_function(kernel, file_path)
+        all_checks_passed = all_checks_passed and check_result
+
+    return all_checks_passed
+
+
+def _code_check_mypy(kernel: "Kernel", file_path: str) -> bool:
+    """Check a Python file using mypy for static type checking.
+
+    Args:
+        kernel: The application kernel
+        file_path: Path to the Python file to check
+
+    Returns:
+        bool: True if check passes, False otherwise
+    """
     try:
         # Import mypy modules
         from mypy import build
@@ -44,6 +72,7 @@ def python__code__check(
                 kernel.io.error(f"Type checking failed for {file_path}:")
                 for error in result.errors:
                     kernel.io.base(message=f"  {error}")
+                return False
             else:
                 kernel.io.success(f"Type checking passed for {file_path}")
                 return True
@@ -53,6 +82,8 @@ def python__code__check(
             kernel.io.error(f"Unexpected error during type checking: {e}")
             import traceback
             traceback.print_exc()
+    except ImportError:
+        kernel.io.error("mypy is not installed. Please install it with 'pip install mypy'")
     except Exception as e:
         kernel.io.error(exception=e)
 
