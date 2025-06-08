@@ -102,25 +102,25 @@ def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
     Returns:
         bool: True if check passes, False otherwise
     """
-    try:
-        # Import pylint modules
-        from pylint.lint import Run
-        from pylint.reporters.json_reporter import JSONReporter
-        import io
-        import json
+    # Import pylint modules
+    from pylint.lint import Run
+    from pylint.reporters.json_reporter import JSONReporter
+    import io
+    import json
 
-        # Préparer le reporter pour capturer la sortie
-        output = io.StringIO()
-        reporter = JSONReporter(output)
+    # Préparer le reporter pour capturer la sortie
+    output = io.StringIO()
+    reporter = JSONReporter(output)
 
-        # Options de pylint
-        options = [
-            file_path,
-            "--output-format=json",
-        ]
+    # Options de pylint
+    options = [
+        file_path,
+        "--output-format=json",
+    ]
 
         try:
             Run(options, reporter=reporter, exit=False)
+    Run(options, reporter=reporter, exit=False)
 
             results = json.loads(output.getvalue())
 
@@ -128,43 +128,39 @@ def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
             warnings = [msg for msg in results if msg.get('type') == 'warning']
             conventions = [msg for msg in results if msg.get('type') in ('convention', 'refactor', 'info')]
 
-            if errors or warnings:
-                kernel.io.error(f"Pylint found issues in {file_path}:")
+    results = json.loads(output.getvalue())
+    errors = [msg for msg in results if msg.get('type') in ('error', 'fatal')]
+    warnings = [msg for msg in results if msg.get('type') == 'warning']
+    conventions = [msg for msg in results if msg.get('type') in ('convention', 'refactor', 'info')]
 
-                if errors:
-                    kernel.io.error("Errors:")
-                    for error in errors:
-                        kernel.io.base(
-                            message=f"  Line {error.get('line')}: {error.get('message')} ({error.get('symbol')})")
+    if errors or warnings or conventions:
+        if errors:
+            kernel.io.error(f"Pylint found errors in {file_path}:")
+            kernel.io.error("Errors:")
+            for error in errors:
+                kernel.io.base(
+                    message=f"  Line {error.get('line')}: {error.get('message')} ({error.get('symbol')})")
 
-                if warnings:
-                    kernel.io.warning("Warnings:")
-                    for warning in warnings:
-                        kernel.io.base(
-                            message=f"  Line {warning.get('line')}: {warning.get('message')} ({warning.get('symbol')})")
+        if warnings:
+            kernel.io.warning(f"Pylint found warnings in {file_path}:")
+            for warning in warnings:
+                kernel.io.warning(f"Line {warning.get('line')}: {warning.get('message')} ({warning.get('symbol')})")
+                kernel.io.log(warning)
 
-                if conventions:
-                    kernel.io.info("Conventions:")
-                    for convention in conventions:
-                        kernel.io.base(
-                            message=f"  Line {convention.get('line')}: {convention.get('message')} ({convention.get('symbol')})")
+        if conventions:
+            kernel.io.info("Conventions:")
+            for convention in conventions:
+                kernel.io.base(
+                    message=f"  Line {convention.get('line')}: {convention.get('message')} ({convention.get('symbol')})")
 
-                if errors:
-                    return False
-                else:
-                    kernel.io.success("No critical pylint errors found")
-                    return True
+        if errors:
+            return False
+        else:
+            if warnings:
+                kernel.io.success("Pylint warnings found but no critical errors")
             else:
-                kernel.io.success(f"Pylint check passed for {file_path}")
-                return True
-
-        except Exception as e:
-            kernel.io.error(f"Error during pylint execution: {e}")
-    except ImportError:
-        kernel.io.error("pylint is not installed. Please install it with 'pip install pylint'")
-    except Exception as e:
-        kernel.io.error(f"Unexpected error with pylint: {e}")
-        import traceback
-        traceback.print_exc()
-
-    return False
+                kernel.io.success("No pylint issues found")
+            return True
+    else:
+        kernel.io.success(f"Pylint check passed for {file_path}")
+        return True
