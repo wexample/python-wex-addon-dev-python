@@ -59,9 +59,6 @@ def python__code__check(
         check_functions = [tool_map[tool.lower()]]
     else:
         # Run all tools if no specific tool is specified or if the specified tool is invalid
-        if tool and tool.lower() not in tool_map:
-            kernel.io.warning(f"Unknown tool '{tool}'. Running all available tools.")
-
         check_functions = [
             _code_check_mypy,
             _code_check_pylint,
