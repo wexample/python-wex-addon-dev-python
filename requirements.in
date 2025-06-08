@@ -1,0 +1,4 @@
+pip-tools
+pydantic
+pytest
+wexample-wex-core==6.0.33
