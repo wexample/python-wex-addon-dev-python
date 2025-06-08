@@ -61,6 +61,9 @@ def _code_check_mypy(kernel: "Kernel", file_path: str) -> bool:
         options.show_traceback = True
         options.disallow_untyped_defs = True
         options.disallow_incomplete_defs = True
+        
+        # Ignore import as file might be placed anywhere, we have no more context.
+        options.ignore_missing_imports = True
 
         # Build and check the file
         try:
