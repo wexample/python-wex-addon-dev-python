@@ -27,6 +27,7 @@ def python__code__check(
         from mypy import build
         from mypy.options import Options
         from mypy.errors import CompileError
+        from mypy.modulefinder import BuildSource
 
         # Configure mypy options
         options = Options()
@@ -37,16 +38,21 @@ def python__code__check(
 
         # Build and check the file
         try:
-            result = build.build(sources=[file_path], options=options, alt_lib_path=None)
+            source = BuildSource(path=file_path, module=None, text=None)
+            result = build.build(sources=[source], options=options, alt_lib_path=None)
             if result.errors:
                 kernel.io.error(f"Type checking failed for {file_path}:")
                 for error in result.errors:
-                    kernel.io.error(f"  {error}")
+                    kernel.io.base(message=f"  {error}")
             else:
                 kernel.io.success(f"Type checking passed for {file_path}")
                 return True
         except CompileError as e:
             kernel.io.error(f"Error during type checking: {e}")
+        except Exception as e:
+            kernel.io.error(f"Unexpected error during type checking: {e}")
+            import traceback
+            traceback.print_exc()
     except Exception as e:
         kernel.io.error(exception=e)
 
