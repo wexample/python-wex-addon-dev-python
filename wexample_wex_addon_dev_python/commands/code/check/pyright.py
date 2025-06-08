@@ -17,7 +17,7 @@ def _code_check_pyright(kernel: "Kernel", file_path: str) -> bool:
 
     # Use subprocess to run pyright
     cmd = [sys.executable, "-m", "pyright", file_path, "--outputjson"]
-    process = subprocess.run(cmd, capture_output=True, text=True)
+    process = subprocess.run(cmd, capture_output=True, text=True, check=False)
     
     # Get the output from stdout
     json_output = process.stdout.strip()
