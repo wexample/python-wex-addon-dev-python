@@ -34,9 +34,15 @@ def _code_check_mypy(kernel: "Kernel", file_path: str) -> bool:
         source = BuildSource(path=file_path, module=None, text=None)
         result = build.build(sources=[source], options=options, alt_lib_path=None)
         if result.errors:
-            kernel.io.error(f"Type checking failed for {file_path}:")
+            kernel.io.error(f"Mypy found errors in {file_path}:")
+            kernel.io.log_indent_up()
+
             for error in result.errors:
-                kernel.io.base(message=f"  {error}")
+                kernel.io.error(
+                    message=error,
+                    symbol=False
+                )
+            kernel.io.log_indent_down()
             return False
         else:
             return True
