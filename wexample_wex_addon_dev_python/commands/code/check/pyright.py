@@ -83,13 +83,8 @@ def _code_check_pyright(kernel: "Kernel", file_path: str) -> bool:
             if errors:
                 return False
             else:
-                if warnings:
-                    kernel.io.success("Pyright warnings found but no critical errors")
-                else:
-                    kernel.io.success("No pyright issues found")
                 return True
         else:
-            kernel.io.success(f"Pyright check passed for {file_path}")
             return True
             
     except json.JSONDecodeError:

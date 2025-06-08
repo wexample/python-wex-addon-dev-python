@@ -39,7 +39,6 @@ def _code_check_mypy(kernel: "Kernel", file_path: str) -> bool:
                 kernel.io.base(message=f"  {error}")
             return False
         else:
-            kernel.io.success(f"Type checking passed for {file_path}")
             return True
     except CompileError as e:
         kernel.io.error(f"Error during type checking: {e}")

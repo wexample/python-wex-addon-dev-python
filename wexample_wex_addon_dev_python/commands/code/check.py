@@ -75,6 +75,9 @@ def python__code__check(
 
         check_result = check_function(kernel, file_path)
 
+        if check_result:
+            kernel.io.success(f"No critical issue found for {check_function.__name__}")
+
         # Update overall success status
         all_checks_passed = all_checks_passed and check_result
         kernel.io.log_indent_down()

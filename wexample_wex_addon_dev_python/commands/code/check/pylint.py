@@ -71,11 +71,6 @@ def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
         if errors:
             return False
         else:
-            if warnings:
-                kernel.io.success("Pylint warnings found but no critical errors")
-            else:
-                kernel.io.success("No pylint issues found")
             return True
     else:
-        kernel.io.success(f"Pylint check passed for {file_path}")
         return True
