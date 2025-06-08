@@ -16,7 +16,6 @@ def _code_check_mypy(kernel: "Kernel", file_path: str) -> bool:
     # Import mypy modules
     from mypy import build
     from mypy.options import Options
-    from mypy.errors import CompileError
     from mypy.modulefinder import BuildSource
 
     # Configure mypy options
@@ -30,27 +29,16 @@ def _code_check_mypy(kernel: "Kernel", file_path: str) -> bool:
     options.ignore_missing_imports = True
 
     # Build and check the file
-    try:
-        source = BuildSource(path=file_path, module=None, text=None)
-        result = build.build(sources=[source], options=options, alt_lib_path=None)
-        if result.errors:
-            kernel.io.error(f"Mypy found errors in {file_path}:")
-            kernel.io.log_indent_up()
+    source = BuildSource(path=file_path, module=None, text=None)
+    result = build.build(sources=[source], options=options, alt_lib_path=None)
+    if result.errors:
+        kernel.io.error(f"Mypy found errors in {file_path}:")
+        kernel.io.log_indent_up()
 
-            for error in result.errors:
-                kernel.io.error(
-                    message=error,
-                    symbol=False
-                )
-            kernel.io.log_indent_down()
-            return False
-        else:
-            return True
-    except CompileError as e:
-        kernel.io.error(f"Error during type checking: {e}")
-    except Exception as e:
-        kernel.io.error(f"Unexpected error during type checking: {e}")
-        import traceback
-        traceback.print_exc()
-
-    return False
+        for error in result.errors:
+            kernel.io.error(
+                message=error,
+                symbol=False
+            )
+        kernel.io.log_indent_down()
+    return True
