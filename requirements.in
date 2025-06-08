@@ -1,2 +1,4 @@
 mypy
+pylint
+pyright
 wexample-wex-core

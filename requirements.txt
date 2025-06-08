@@ -6,6 +6,8 @@
 #
 annotated-types==0.7.0
     # via pydantic
+astroid==3.3.10
+    # via pylint
 build==1.2.2.post1
     # via pip-tools
 click==8.1.8
@@ -14,16 +16,24 @@ click==8.1.8
     #   wexample-wex-core
 colorama==0.4.6
     # via wexample-prompt
+dill==0.4.0
+    # via pylint
 dotenv==0.9.9
     # via wexample-app
 iniconfig==2.0.0
     # via pytest
 inquirerpy==0.3.4
     # via wexample-prompt
+isort==6.0.1
+    # via pylint
+mccabe==0.7.0
+    # via pylint
 mypy==1.16.0
     # via -r requirements.in
 mypy-extensions==1.1.0
     # via mypy
+nodeenv==1.9.1
+    # via pyright
 packaging==24.2
     # via
     #   build
@@ -41,6 +51,8 @@ pip-tools==7.4.1
     #   wexample-helpers-yaml
     #   wexample-prompt
     #   wexample-wex-core
+platformdirs==4.3.8
+    # via pylint
 pluggy==1.5.0
     # via pytest
 prompt-toolkit==3.0.50
@@ -56,10 +68,14 @@ pydantic==2.10.4
     #   wexample-wex-core
 pydantic-core==2.27.2
     # via pydantic
+pylint==3.3.7
+    # via -r requirements.in
 pyproject-hooks==1.2.0
     # via
     #   build
     #   pip-tools
+pyright==1.1.401
+    # via -r requirements.in
 pytest==8.3.4
     # via
     #   wexample-app
@@ -75,11 +91,14 @@ python-dotenv==1.0.1
     #   wexample-app
 pyyaml==6.0.2
     # via wexample-helpers-yaml
+tomlkit==0.13.3
+    # via pylint
 typing-extensions==4.12.2
     # via
     #   mypy
     #   pydantic
     #   pydantic-core
+    #   pyright
 wcwidth==0.2.13
     # via prompt-toolkit
 wexample-app==0.0.39

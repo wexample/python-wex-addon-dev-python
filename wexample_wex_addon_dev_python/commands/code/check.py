@@ -28,6 +28,7 @@ def python__code__check(
 
     CODE_CHECKS: List[Callable[["Kernel", str], bool]] = [
         _code_check_mypy,
+        _code_check_pylint,
     ]
 
     for check_function in CODE_CHECKS:
@@ -61,7 +62,7 @@ def _code_check_mypy(kernel: "Kernel", file_path: str) -> bool:
         options.show_traceback = True
         options.disallow_untyped_defs = True
         options.disallow_incomplete_defs = True
-        
+
         # Ignore import as file might be placed anywhere, we have no more context.
         options.ignore_missing_imports = True
 
@@ -87,5 +88,83 @@ def _code_check_mypy(kernel: "Kernel", file_path: str) -> bool:
         kernel.io.error("mypy is not installed. Please install it with 'pip install mypy'")
     except Exception as e:
         kernel.io.error(exception=e)
+
+    return False
+
+
+def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
+    """Check a Python file using pylint for code quality.
+
+    Args:
+        kernel: The application kernel
+        file_path: Path to the Python file to check
+
+    Returns:
+        bool: True if check passes, False otherwise
+    """
+    try:
+        # Import pylint modules
+        from pylint.lint import Run
+        from pylint.reporters.json_reporter import JSONReporter
+        import io
+        import json
+
+        # Préparer le reporter pour capturer la sortie
+        output = io.StringIO()
+        reporter = JSONReporter(output)
+
+        # Options de pylint
+        options = [
+            file_path,
+            "--output-format=json",
+        ]
+
+        try:
+            Run(options, reporter=reporter, exit=False)
+
+            results = json.loads(output.getvalue())
+
+            errors = [msg for msg in results if msg.get('type') in ('error', 'fatal')]
+            warnings = [msg for msg in results if msg.get('type') == 'warning']
+            conventions = [msg for msg in results if msg.get('type') in ('convention', 'refactor', 'info')]
+
+            if errors or warnings:
+                kernel.io.error(f"Pylint found issues in {file_path}:")
+
+                if errors:
+                    kernel.io.error("Errors:")
+                    for error in errors:
+                        kernel.io.base(
+                            message=f"  Line {error.get('line')}: {error.get('message')} ({error.get('symbol')})")
+
+                if warnings:
+                    kernel.io.warning("Warnings:")
+                    for warning in warnings:
+                        kernel.io.base(
+                            message=f"  Line {warning.get('line')}: {warning.get('message')} ({warning.get('symbol')})")
+
+                if conventions:
+                    kernel.io.info("Conventions:")
+                    for convention in conventions:
+                        kernel.io.base(
+                            message=f"  Line {convention.get('line')}: {convention.get('message')} ({convention.get('symbol')})")
+
+                if errors:
+                    return False
+                else:
+                    kernel.io.success("No critical pylint errors found")
+                    return True
+            else:
+                kernel.io.success(f"Pylint check passed for {file_path}")
+                return True
+
+        except Exception as e:
+            kernel.io.error(f"Error during pylint execution: {e}")
+    except ImportError:
+        kernel.io.error("pylint is not installed. Please install it with 'pip install pylint'")
+    except Exception as e:
+        kernel.io.error(f"Unexpected error with pylint: {e}")
+        import traceback
+        traceback.print_exc()
 
     return False
