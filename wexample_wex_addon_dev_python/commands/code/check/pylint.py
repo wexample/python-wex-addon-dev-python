@@ -24,7 +24,7 @@ def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
         "pylint",
         file_path,
         "--output-format=json",
-        "--disable=missing-module-docstring,import-outside-toplevel,no-name-in-module,broad-exception-caught"
+        "--disable=missing-module-docstring,import-outside-toplevel,no-name-in-module,broad-exception-caught,c-extension-no-member"
     ]
     process = subprocess.run(cmd, capture_output=True, text=True, check=False)
 
