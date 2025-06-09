@@ -1,16 +1,11 @@
-import os
 from typing import Optional
 
 from wexample_wex_core.common.kernel import Kernel
 from wexample_wex_core.decorator.command import command
+from wexample_wex_core.decorator.middleware import middleware
 from wexample_wex_core.decorator.option import option
 
 
-@option(
-    name="file_path",
-    type=str,
-    required=True
-)
 @option(
     name="tool",
     type=str,
@@ -24,10 +19,15 @@ from wexample_wex_core.decorator.option import option
     default=True,
     description="Stop execution when a tool reports a failure"
 )
+@middleware(
+    name="each_file",
+    should_exist=True,
+    expand_glob=True
+)
 @command()
 def python__code__format(
         kernel: "Kernel",
-        file_path: str,
+        file: str,
         tool: Optional[str] = None,
         stop_on_failure: bool = True
 ) -> bool:
@@ -35,7 +35,7 @@ def python__code__format(
 
     Args:
         kernel: The application kernel
-        file_path: Path to the Python file to format
+        file: Path to the Python file to format
         tool: Specific tool to run (black, isort). If not specified, all tools will be run.
         stop_on_failure: Stop execution when a tool reports a failure
 
@@ -44,10 +44,6 @@ def python__code__format(
     """
     from wexample_wex_addon_dev_python.commands.code.format.black import _code_format_black
     from wexample_wex_addon_dev_python.commands.code.format.isort import _code_format_isort
-
-    if not os.path.exists(file_path):
-        kernel.io.error(f"Error: File {file_path} does not exist")
-        return False
 
     # Map tool names to their format functions
     tool_map = {
@@ -76,7 +72,7 @@ def python__code__format(
     # Run each format function
     for format_function in format_functions:
         kernel.io.title(format_function.__name__)
-        format_result = format_function(kernel, file_path)
+        format_result = format_function(kernel, file)
 
         # Update overall success status
         all_formats_passed = all_formats_passed and format_result

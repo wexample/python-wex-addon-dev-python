@@ -1,4 +1,3 @@
-import os
 from typing import Optional
 
 from wexample_wex_core.common.kernel import Kernel
@@ -44,11 +43,6 @@ def python__code__check(
     from wexample_wex_addon_dev_python.commands.code.check.mypy import _code_check_mypy
     from wexample_wex_addon_dev_python.commands.code.check.pylint import _code_check_pylint
     from wexample_wex_addon_dev_python.commands.code.check.pyright import _code_check_pyright
-
-    # TODO remove
-    if not os.path.exists(file):
-        kernel.io.error(f"Error: File {file} does not exist")
-        return False
 
     # Map tool names to their check functions
     tool_map = {
