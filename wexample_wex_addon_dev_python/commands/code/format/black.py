@@ -28,17 +28,14 @@ def _code_format_black(kernel: "Kernel", file_path: str) -> bool:
     else:
         kernel.io.error(f"Black failed to format {file_path}")
         kernel.io.log_indent_up()
-        
+
         if process.stderr:
             kernel.io.error(f"Error: {process.stderr}", symbol=False)
         if process.stdout:
             kernel.io.error(f"Output: {process.stdout}", symbol=False)
-        
+
         # Add detailed error properties
-        kernel.io.properties({
-            "returncode": process.returncode,
-            "command": cmd
-        })
-        
+        kernel.io.properties({"returncode": process.returncode, "command": cmd})
+
         kernel.io.log_indent_down()
         return False

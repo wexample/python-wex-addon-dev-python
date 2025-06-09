@@ -18,7 +18,6 @@ def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
 
     # Use subprocess to capture pylint output
     # This avoids issues with pylint's direct printing to stdout
-
     # List of warnings to disable
     disabled_warnings = [
         "missing-module-docstring",

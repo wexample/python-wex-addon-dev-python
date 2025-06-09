@@ -36,10 +36,7 @@ def _code_format_isort(kernel: "Kernel", file_path: str) -> bool:
             kernel.io.error(f"Output: {process.stdout}", symbol=False)
 
         # Add detailed error properties
-        kernel.io.properties({
-            "returncode": process.returncode,
-            "command": cmd
-        })
+        kernel.io.properties({"returncode": process.returncode, "command": cmd})
 
         kernel.io.log_indent_down()
         return False

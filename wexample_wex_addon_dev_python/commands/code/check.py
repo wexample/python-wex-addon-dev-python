@@ -10,40 +10,32 @@ from wexample_wex_core.decorator.option import option
     name="tool",
     type=str,
     required=False,
-    description="Specific tool to run (mypy, pylint, pyright). If not specified, all tools will be run."
+    description="Specific tool to run (mypy, pylint, pyright). If not specified, all tools will be run.",
 )
 @option(
     name="stop_on_failure",
     type=bool,
     required=False,
     default=True,
-    description="Stop execution when a tool reports a failure"
+    description="Stop execution when a tool reports a failure",
 )
-@middleware(
-    name="each_file",
-    should_exist=True,
-    expand_glob=True,
-    recursive=True
-)
+@middleware(name="each_file", should_exist=True, expand_glob=True, recursive=True)
 @command()
 def python__code__check(
-        kernel: "Kernel",
-        file: str,
-        tool: Optional[str] = None,
-        stop_on_failure: bool = True
+    kernel: "Kernel",
+    file: str,
+    tool: Optional[str] = None,
+    stop_on_failure: bool = True,
 ) -> bool:
     """Check a Python file using various code quality tools.
-
-    Args:
-        kernel: The application kernel
-        file: Path to the Python file to check
-
-    Returns:
-        bool: True if all checks pass, False otherwise
     """
     from wexample_wex_addon_dev_python.commands.code.check.mypy import _code_check_mypy
-    from wexample_wex_addon_dev_python.commands.code.check.pylint import _code_check_pylint
-    from wexample_wex_addon_dev_python.commands.code.check.pyright import _code_check_pyright
+    from wexample_wex_addon_dev_python.commands.code.check.pylint import (
+        _code_check_pylint,
+    )
+    from wexample_wex_addon_dev_python.commands.code.check.pyright import (
+        _code_check_pyright,
+    )
 
     # Map tool names to their check functions
     tool_map = {
