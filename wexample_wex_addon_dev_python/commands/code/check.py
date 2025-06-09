@@ -8,11 +8,6 @@ from wexample_wex_core.decorator.option import option
 
 
 @option(
-    name="file_path",
-    type=str,
-    required=True
-)
-@option(
     name="tool",
     type=str,
     required=False,
@@ -27,18 +22,11 @@ from wexample_wex_core.decorator.option import option
 )
 @middleware(
     name="each_file",
-    option_name="file_path",
-    recursive=True,
-    continue_on_error=False,
-    aggregation_mode='list',
-    parallel=True,
-    limit=False,
-    show_progres=True
 )
 @command()
 def python__code__check(
         kernel: "Kernel",
-        file_path: str,
+        file: str,
         tool: Optional[str] = None,
         stop_on_failure: bool = True
 ) -> bool:
@@ -46,7 +34,7 @@ def python__code__check(
 
     Args:
         kernel: The application kernel
-        file_path: Path to the Python file to check
+        file: Path to the Python file to check
 
     Returns:
         bool: True if all checks pass, False otherwise
@@ -55,8 +43,8 @@ def python__code__check(
     from wexample_wex_addon_dev_python.commands.code.check.pylint import _code_check_pylint
     from wexample_wex_addon_dev_python.commands.code.check.pyright import _code_check_pyright
 
-    if not os.path.exists(file_path):
-        kernel.io.error(f"Error: File {file_path} does not exist")
+    if not os.path.exists(file):
+        kernel.io.error(f"Error: File {file} does not exist")
         return False
 
     # Map tool names to their check functions
@@ -86,7 +74,7 @@ def python__code__check(
         kernel.io.title(check_function.__name__)
         kernel.io.log_indent_up()
 
-        check_result = check_function(kernel, file_path)
+        check_result = check_function(kernel, file)
 
         if check_result:
             kernel.io.success(f"No critical issue found for {check_function.__name__}")
