@@ -3,6 +3,7 @@ from typing import Optional
 
 from wexample_wex_core.common.kernel import Kernel
 from wexample_wex_core.decorator.command import command
+from wexample_wex_core.decorator.middleware import middleware
 from wexample_wex_core.decorator.option import option
 
 
@@ -23,6 +24,16 @@ from wexample_wex_core.decorator.option import option
     required=False,
     default=True,
     description="Stop execution when a tool reports a failure"
+)
+@middleware(
+    name="each_file_in_directory",
+    option_name="file_path",
+    recursive=True,
+    continue_on_error=False,
+    aggregation_mode='list',
+    parallel=True,
+    limit=False,
+    show_progres=True
 )
 @command()
 def python__code__check(
