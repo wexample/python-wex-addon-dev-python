@@ -26,7 +26,7 @@ from wexample_wex_core.decorator.option import option
     description="Stop execution when a tool reports a failure"
 )
 @middleware(
-    name="each_file_in_directory",
+    name="each_file",
     option_name="file_path",
     recursive=True,
     continue_on_error=False,
