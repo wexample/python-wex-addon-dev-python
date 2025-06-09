@@ -15,8 +15,8 @@ def _code_check_mypy(kernel: "Kernel", file_path: str) -> bool:
 
     # Import mypy modules
     from mypy import build
-    from mypy.options import Options
     from mypy.modulefinder import BuildSource
+    from mypy.options import Options
 
     # Configure mypy options
     options = Options()
@@ -36,10 +36,7 @@ def _code_check_mypy(kernel: "Kernel", file_path: str) -> bool:
         kernel.io.log_indent_up()
 
         for error in result.errors:
-            kernel.io.error(
-                message=error,
-                symbol=False
-            )
+            kernel.io.error(message=error, symbol=False)
         kernel.io.log_indent_down()
         return False
     return True

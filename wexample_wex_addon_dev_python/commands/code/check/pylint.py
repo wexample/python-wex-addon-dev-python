@@ -18,7 +18,7 @@ def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
 
     # Use subprocess to capture pylint output
     # This avoids issues with pylint's direct printing to stdout
-    
+
     # List of warnings to disable
     disabled_warnings = [
         "missing-module-docstring",
@@ -28,14 +28,14 @@ def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
         "c-extension-no-member",
         "line-too-long",
     ]
-    
+
     cmd = [
         sys.executable,
         "-m",
         "pylint",
         file_path,
         "--output-format=json",
-        f"--disable={','.join(disabled_warnings)}"
+        f"--disable={','.join(disabled_warnings)}",
     ]
     process = subprocess.run(cmd, capture_output=True, text=True, check=False)
 
@@ -66,8 +66,8 @@ def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
             for error in errors:
                 kernel.io.error(
                     message=f"Line {error.get('line')}: "
-                            f"{error.get('message')} ({error.get('symbol')})",
-                    symbol=False
+                    f"{error.get('message')} ({error.get('symbol')})",
+                    symbol=False,
                 )
             kernel.io.log_indent_down()
 
@@ -91,7 +91,7 @@ def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
             for convention in conventions:
                 kernel.io.base(
                     message=f"  Line {convention.get('line')}: "
-                            f"{convention.get('message')} ({convention.get('symbol')})"
+                    f"{convention.get('message')} ({convention.get('symbol')})"
                 )
 
         # Only consider errors as failures
