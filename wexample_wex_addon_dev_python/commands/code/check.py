@@ -4,6 +4,7 @@ from wexample_wex_core.common.kernel import Kernel
 from wexample_wex_core.decorator.command import command
 from wexample_wex_core.decorator.middleware import middleware
 from wexample_wex_core.decorator.option import option
+from wexample_wex_core.decorator.option_stop_on_failure import option_stop_on_failure
 
 
 @option(
@@ -12,13 +13,7 @@ from wexample_wex_core.decorator.option import option
     required=False,
     description="Specific tool to run (mypy, pylint, pyright). If not specified, all tools will be run.",
 )
-@option(
-    name="stop_on_failure",
-    type=bool,
-    required=False,
-    default=True,
-    description="Stop execution when a tool reports a failure",
-)
+@option_stop_on_failure()
 @middleware(
     name="each_python_file",
     should_exist=True,
@@ -80,6 +75,7 @@ def python__code__check(
         # Stop if a check fails and stop_on_failure is True
         if not check_result and stop_on_failure:
             kernel.io.error("One check failed")
-            return False
+            from wexample_app.response.failure_response import FailureResponse
+            return FailureResponse(message="One check failed", kernel=kernel)
 
     return all_checks_passed

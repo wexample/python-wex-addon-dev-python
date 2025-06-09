@@ -1,7 +1,10 @@
 import os.path
-from typing import List, Set
+from typing import Set, TYPE_CHECKING
 
 from wexample_wex_core.middleware.each_file_middleware import EachFileMiddleware
+
+if TYPE_CHECKING:
+    from wexample_wex_core.common.command_request import CommandRequest
 
 
 class EachPythonFileMiddleware(EachFileMiddleware):
@@ -12,7 +15,7 @@ class EachPythonFileMiddleware(EachFileMiddleware):
     """
     # Default extension to filter
     python_extension_only: bool = True
-    
+
     # Default list of directories to ignore during recursion
     ignored_directories: Set[str] = {
         "__pycache__",
@@ -26,18 +29,18 @@ class EachPythonFileMiddleware(EachFileMiddleware):
         ".mypy_cache",
         ".ruff_cache",
     }
-    
+
     def __init__(self, **kwargs):
         # Allow overriding the default settings
         if "python_extension_only" in kwargs:
             self.python_extension_only = kwargs.pop("python_extension_only")
-            
+
         if "ignored_directories" in kwargs:
             self.ignored_directories = set(kwargs.pop("ignored_directories"))
-            
+
         super().__init__(**kwargs)
-    
-    def _should_process_item(self, item_path: str) -> bool:
+
+    def _should_process_item(self, request: "CommandRequest", item_path: str) -> bool:
         """
         Only process Python files based on extension.
         
@@ -50,15 +53,15 @@ class EachPythonFileMiddleware(EachFileMiddleware):
         # First check if it's a file (parent class behavior)
         if not os.path.isfile(item_path):
             return False
-                
+
         # If python_extension_only is enabled, check file extension
         if self.python_extension_only:
             return item_path.endswith(".py")
-            
+
         # Otherwise, accept all files
         return True
-        
-    def _should_explore_directory(self, directory_name: str) -> bool:
+
+    def _should_explore_directory(self, request: "CommandRequest", directory_name: str) -> bool:
         """
         Skip directories that are in the ignored_directories list.
         
