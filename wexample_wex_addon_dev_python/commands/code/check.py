@@ -22,6 +22,7 @@ from wexample_wex_core.decorator.option import option
 )
 @middleware(
     name="each_file",
+    should_exist=True
 )
 @command()
 def python__code__check(
