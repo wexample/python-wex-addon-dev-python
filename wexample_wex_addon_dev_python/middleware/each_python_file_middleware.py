@@ -58,47 +58,14 @@ class EachPythonFileMiddleware(EachFileMiddleware):
         # Otherwise, accept all files
         return True
         
-    def _process_directory_recursively(self, directory_path: str, option_name: str, current_depth: int = 0) -> List[dict]:
+    def _should_explore_directory(self, directory_name: str) -> bool:
         """
-        Override the recursive processing to skip ignored directories.
+        Skip directories that are in the ignored_directories list.
         
         Args:
-            directory_path: Path to the directory to process
-            option_name: Name of the option to set in function kwargs
-            current_depth: Current recursion depth
+            directory_name: Name of the directory to check
             
         Returns:
-            List of function kwargs dictionaries for each matching path
+            False if the directory is in the ignored list, True otherwise
         """
-        if current_depth > self.recursion_limit:
-            return []  # Stop recursion if max depth is reached
-            
-        result = []
-        
-        try:
-            # Iterate through all directory items
-            for item in os.listdir(directory_path):
-                # Skip ignored directories during glob expansion
-                if self.recursive and item in self.ignored_directories:
-                    continue
-                    
-                item_path = os.path.join(directory_path, item)
-                
-                # Process items that match the subclass criteria
-                if self._should_process_item(item_path):
-                    # Create a copy of arguments for each matching item
-                    result.append({option_name: item_path})
-                
-                # If recursive is enabled and item is a directory, process it recursively
-                if self.recursive and os.path.isdir(item_path):
-                    subdirectory_results = self._process_directory_recursively(
-                        directory_path=item_path,
-                        option_name=option_name,
-                        current_depth=current_depth + 1
-                    )
-                    result.extend(subdirectory_results)
-        except (PermissionError, FileNotFoundError):
-            # Skip directories we can't access
-            pass
-            
-        return result
+        return directory_name not in self.ignored_directories

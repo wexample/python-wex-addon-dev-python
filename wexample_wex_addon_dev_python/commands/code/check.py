@@ -19,7 +19,11 @@ from wexample_wex_core.decorator.option import option
     default=True,
     description="Stop execution when a tool reports a failure",
 )
-@middleware(name="each_file", should_exist=True, expand_glob=True, recursive=True)
+@middleware(
+    name="each_python_file",
+    should_exist=True,
+    expand_glob=True,
+    recursive=True)
 @command()
 def python__code__check(
     kernel: "Kernel",
