@@ -27,8 +27,7 @@ def python__code__check(
     tool: Optional[str] = None,
     stop_on_failure: bool = True,
 ) -> bool:
-    """Check a Python file using various code quality tools.
-    """
+    """Check a Python file using various code quality tools."""
     from wexample_wex_addon_dev_python.commands.code.check.mypy import _code_check_mypy
     from wexample_wex_addon_dev_python.commands.code.check.pylint import (
         _code_check_pylint,

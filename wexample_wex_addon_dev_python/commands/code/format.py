@@ -27,8 +27,7 @@ def python__code__format(
     tool: Optional[str] = None,
     stop_on_failure: bool = True,
 ) -> bool:
-    """Format a Python file using various code formatting tools.
-    """
+    """Format a Python file using various code formatting tools."""
     from wexample_wex_addon_dev_python.commands.code.format.black import (
         _code_format_black,
     )
