@@ -44,6 +44,7 @@ def python__code__check(
     from wexample_wex_addon_dev_python.commands.code.check.pylint import _code_check_pylint
     from wexample_wex_addon_dev_python.commands.code.check.pyright import _code_check_pyright
 
+    # TODO remove
     if not os.path.exists(file):
         kernel.io.error(f"Error: File {file} does not exist")
         return False
@@ -74,6 +75,7 @@ def python__code__check(
     for check_function in check_functions:
         kernel.io.title(check_function.__name__)
         kernel.io.log_indent_up()
+        kernel.io.log(file)
 
         check_result = check_function(kernel, file)
 
