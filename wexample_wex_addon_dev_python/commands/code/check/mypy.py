@@ -32,11 +32,12 @@ def _code_check_mypy(kernel: "Kernel", file_path: str) -> bool:
     source = BuildSource(path=file_path, module=None, text=None)
     result = build.build(sources=[source], options=options, alt_lib_path=None)
     if result.errors:
+        kernel.io.log_indent_up()
         kernel.io.error(f"Mypy errors:")
         kernel.io.log_indent_up()
 
         for error in result.errors:
             kernel.io.error(message=error, symbol=False)
-        kernel.io.log_indent_down()
+            kernel.io.log_indent_down(number=2)
         return False
     return True

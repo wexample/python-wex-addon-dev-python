@@ -64,18 +64,22 @@ def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
     if errors or warnings or conventions:
         # Display errors
         if errors:
+            kernel.io.log_indent_up()
             kernel.io.error(f"Pylint errors:")
             kernel.io.log_indent_up()
+
             for error in errors:
                 kernel.io.error(
                     message=f"Line {error.get('line')}: "
                     f"{error.get('message')} ({error.get('symbol')})",
                     symbol=False,
                 )
-            kernel.io.log_indent_down()
+
+            kernel.io.log_indent_down(number=2)
 
         # Display warnings with detailed logging
         if warnings:
+            kernel.io.log_indent_up()
             kernel.io.warning(f"Pylint warnings:")
             kernel.io.log_indent_up()
 
@@ -87,7 +91,7 @@ def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
                 )
                 kernel.io.properties(warning)
 
-            kernel.io.log_indent_down()
+            kernel.io.log_indent_down(number=2)
         # Display conventions
         if conventions:
             kernel.io.info("Conventions:")

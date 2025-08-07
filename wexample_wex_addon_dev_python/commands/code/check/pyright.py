@@ -49,8 +49,8 @@ def _code_check_pyright(kernel: "Kernel", file_path: str) -> bool:
     if errors or warnings or info:
         # Display errors
         if errors:
-            kernel.io.error(f"Pyright errors:")
             kernel.io.log_indent_up()
+            kernel.io.error(f"Pyright errors:")
 
             for error in errors:
                 line = error.get("range", {}).get("start", {}).get("line", 0) + 1
@@ -60,12 +60,12 @@ def _code_check_pyright(kernel: "Kernel", file_path: str) -> bool:
                 kernel.io.error(f"Line {line}: {message}{rule_text}", symbol=False)
                 kernel.io.properties(error)
 
-            kernel.io.log_indent_down()
+            kernel.io.log_indent_down(number=2)
 
         # Display warnings
         if warnings:
-            kernel.io.warning(f"Pyright warnings:")
             kernel.io.log_indent_up()
+            kernel.io.warning(f"Pyright warnings:")
 
             for warning in warnings:
                 line = warning.get("range", {}).get("start", {}).get("line", 0) + 1
@@ -75,10 +75,11 @@ def _code_check_pyright(kernel: "Kernel", file_path: str) -> bool:
                 kernel.io.warning(f"Line {line}: {message}{rule_text}", symbol=False)
                 kernel.io.properties(warning)
 
-            kernel.io.log_indent_down()
+            kernel.io.log_indent_down(number=2)
 
         # Display information
         if info:
+            kernel.io.log_indent_up()
             kernel.io.info(f"Pyright information:")
             kernel.io.log_indent_up()
 
@@ -90,7 +91,7 @@ def _code_check_pyright(kernel: "Kernel", file_path: str) -> bool:
                 kernel.io.info(f"Line {line}: {message}{rule_text}", symbol=False)
                 kernel.io.properties(item)
 
-            kernel.io.log_indent_down()
+            kernel.io.log_indent_down(number=2)
 
         # Only consider errors as failures
         if errors:
