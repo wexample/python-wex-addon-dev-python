@@ -21,7 +21,6 @@ if TYPE_CHECKING:
     should_exist=True,
     expand_glob=True,
     stop_on_failure=True,
-    recursive=True)
     recursive=True,
     parallel=True
 )
@@ -80,12 +79,15 @@ def python__code__check(
 
         # Update overall success status
         all_checks_passed = all_checks_passed and check_result
-        context.io.log_indent_down()
 
         # Stop if a check fails and stop_on_failure is True
         if not check_result and stop_on_failure:
             context.io.error("One check failed")
+
             from wexample_app.response.failure_response import FailureResponse
+            context.io.log_indent_down()
+
             return FailureResponse(message="One check failed", kernel=context.kernel)
 
+        context.io.log_indent_down()
     return all_checks_passed

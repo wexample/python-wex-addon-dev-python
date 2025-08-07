@@ -38,6 +38,7 @@ def _code_check_mypy(kernel: "Kernel", file_path: str) -> bool:
 
         for error in result.errors:
             kernel.io.error(message=error, symbol=False)
-            kernel.io.log_indent_down(number=2)
+
+        kernel.io.log_indent_down(number=2)
         return False
     return True
