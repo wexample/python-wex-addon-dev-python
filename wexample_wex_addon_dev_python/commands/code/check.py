@@ -1,5 +1,6 @@
 from typing import Optional, TYPE_CHECKING
 
+from wexample_wex_core.const.middleware import MIDDLEWARE_OPTION_VALUE_OPTIONAL
 from wexample_wex_core.decorator.command import command
 from wexample_wex_core.decorator.middleware import middleware
 from wexample_wex_core.decorator.option import option
@@ -20,9 +21,9 @@ if TYPE_CHECKING:
     name="each_python_file",
     should_exist=True,
     expand_glob=True,
-    stop_on_failure=True,
+    stop_on_failure=MIDDLEWARE_OPTION_VALUE_OPTIONAL,
     recursive=True,
-    parallel=True
+    parallel=MIDDLEWARE_OPTION_VALUE_OPTIONAL
 )
 @command()
 def python__code__check(
@@ -30,6 +31,7 @@ def python__code__check(
         file: str,
         tool: Optional[str] = None,
         stop_on_failure: bool = True,
+        parallel: bool = True,
 ) -> bool:
     """Check a Python file using various code quality tools."""
     from wexample_wex_addon_dev_python.commands.code.check.mypy import _code_check_mypy
