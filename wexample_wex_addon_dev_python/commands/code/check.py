@@ -18,16 +18,18 @@ from wexample_wex_core.decorator.option_stop_on_failure import option_stop_on_fa
     name="each_python_file",
     should_exist=True,
     expand_glob=True,
+    stop_on_failure=True,
     recursive=True)
 @command()
 def python__code__check(
-    kernel: "Kernel",
-    file: str,
-    tool: Optional[str] = None,
-    stop_on_failure: bool = True,
+        kernel: "Kernel",
+        file: str,
+        tool: Optional[str] = None,
+        stop_on_failure: bool = True,
 ) -> bool:
     """Check a Python file using various code quality tools."""
     from wexample_wex_addon_dev_python.commands.code.check.mypy import _code_check_mypy
+    from wexample_helpers.helpers.cli import cli_make_clickable_path
     from wexample_wex_addon_dev_python.commands.code.check.pylint import (
         _code_check_pylint,
     )
@@ -61,7 +63,10 @@ def python__code__check(
     for check_function in check_functions:
         kernel.io.title(check_function.__name__)
         kernel.io.log_indent_up()
-        kernel.io.log(file)
+
+        kernel.io.log(
+            f'🐍 Python: {cli_make_clickable_path(kernel.host_workdir.get_resolved_target(file))}'
+        )
 
         check_result = check_function(kernel, file)
 

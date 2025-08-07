@@ -49,7 +49,7 @@ def _code_check_pyright(kernel: "Kernel", file_path: str) -> bool:
     if errors or warnings or info:
         # Display errors
         if errors:
-            kernel.io.error(f"Pyright found errors in {file_path}:")
+            kernel.io.error(f"Pyright errors:")
             kernel.io.log_indent_up()
 
             for error in errors:
@@ -64,7 +64,7 @@ def _code_check_pyright(kernel: "Kernel", file_path: str) -> bool:
 
         # Display warnings
         if warnings:
-            kernel.io.warning(f"Pyright found warnings in {file_path}:")
+            kernel.io.warning(f"Pyright warnings:")
             kernel.io.log_indent_up()
 
             for warning in warnings:
@@ -79,7 +79,7 @@ def _code_check_pyright(kernel: "Kernel", file_path: str) -> bool:
 
         # Display information
         if info:
-            kernel.io.info(f"Pyright found information in {file_path}:")
+            kernel.io.info(f"Pyright information:")
             kernel.io.log_indent_up()
 
             for item in info:

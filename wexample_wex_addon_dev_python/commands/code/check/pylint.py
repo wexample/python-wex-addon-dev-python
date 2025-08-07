@@ -1,3 +1,5 @@
+import os
+
 from wexample_wex_core.common.kernel import Kernel
 
 
@@ -11,7 +13,7 @@ def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
     Returns:
         bool: True if check passes, False otherwise
     """
-    # Import pylint modules
+    from wexample_helpers.helpers.cli import cli_make_clickable_path
     import json
     import subprocess
     import sys
@@ -56,11 +58,13 @@ def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
         msg for msg in results if msg.get("type") in ("convention", "refactor", "info")
     ]
 
+    file_path_clickable = cli_make_clickable_path(kernel.host_workdir.get_resolved_target(file_path))
+
     # Display results if any issues found
     if errors or warnings or conventions:
         # Display errors
         if errors:
-            kernel.io.error(f"Pylint found errors in {file_path}:")
+            kernel.io.error(f"Pylint errors:")
             kernel.io.log_indent_up()
             for error in errors:
                 kernel.io.error(
@@ -72,7 +76,7 @@ def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
 
         # Display warnings with detailed logging
         if warnings:
-            kernel.io.warning(f"Pylint found warnings in {file_path}:")
+            kernel.io.warning(f"Pylint warnings:")
             kernel.io.log_indent_up()
 
             for warning in warnings:
