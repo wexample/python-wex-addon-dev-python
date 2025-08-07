@@ -1,10 +1,12 @@
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
-from wexample_wex_core.common.kernel import Kernel
 from wexample_wex_core.decorator.command import command
 from wexample_wex_core.decorator.middleware import middleware
 from wexample_wex_core.decorator.option import option
 from wexample_wex_core.decorator.option_stop_on_failure import option_stop_on_failure
+
+if TYPE_CHECKING:
+    from wexample_wex_core.common.execution_context import ExecutionContext
 
 
 @option(
@@ -20,9 +22,12 @@ from wexample_wex_core.decorator.option_stop_on_failure import option_stop_on_fa
     expand_glob=True,
     stop_on_failure=True,
     recursive=True)
+    recursive=True,
+    parallel=True
+)
 @command()
 def python__code__check(
-        kernel: "Kernel",
+        context: "ExecutionContext",
         file: str,
         tool: Optional[str] = None,
         stop_on_failure: bool = True,
@@ -61,26 +66,26 @@ def python__code__check(
 
     # Run each check function
     for check_function in check_functions:
-        kernel.io.title(check_function.__name__)
-        kernel.io.log_indent_up()
+        context.io.title(check_function.__name__)
+        context.io.log_indent_up()
 
-        kernel.io.log(
-            f'🐍 Python: {cli_make_clickable_path(kernel.host_workdir.get_resolved_target(file))}'
+        context.io.log(
+            f'🐍 Python: {cli_make_clickable_path(context.kernel.host_workdir.get_resolved_target(file))}'
         )
 
-        check_result = check_function(kernel, file)
+        check_result = check_function(context, file)
 
         if check_result:
-            kernel.io.success(f"No critical issue found for {check_function.__name__}")
+            context.io.success(f"No critical issue found for {check_function.__name__}")
 
         # Update overall success status
         all_checks_passed = all_checks_passed and check_result
-        kernel.io.log_indent_down()
+        context.io.log_indent_down()
 
         # Stop if a check fails and stop_on_failure is True
         if not check_result and stop_on_failure:
-            kernel.io.error("One check failed")
+            context.io.error("One check failed")
             from wexample_app.response.failure_response import FailureResponse
-            return FailureResponse(message="One check failed", kernel=kernel)
+            return FailureResponse(message="One check failed", kernel=context.kernel)
 
     return all_checks_passed

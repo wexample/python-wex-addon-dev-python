@@ -1,9 +1,10 @@
-import os
+from typing import TYPE_CHECKING
 
-from wexample_wex_core.common.kernel import Kernel
+if TYPE_CHECKING:
+    from wexample_wex_core.common.execution_context import ExecutionContext
 
 
-def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
+def _code_check_pylint(context: "ExecutionContext", file_path: str) -> bool:
     """Check a Python file using pylint for code quality.
 
     Args:
@@ -13,7 +14,6 @@ def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
     Returns:
         bool: True if check passes, False otherwise
     """
-    from wexample_helpers.helpers.cli import cli_make_clickable_path
     import json
     import subprocess
     import sys
@@ -45,7 +45,7 @@ def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
 
     # If no output or invalid JSON, return empty list
     if not json_output:
-        kernel.io.success(f"No pylint issues found in {file_path}")
+        context.io.success(f"No pylint issues found in {file_path}")
         return True
 
     # Parse the JSON output
@@ -58,47 +58,45 @@ def _code_check_pylint(kernel: "Kernel", file_path: str) -> bool:
         msg for msg in results if msg.get("type") in ("convention", "refactor", "info")
     ]
 
-    file_path_clickable = cli_make_clickable_path(kernel.host_workdir.get_resolved_target(file_path))
-
     # Display results if any issues found
     if errors or warnings or conventions:
         # Display errors
         if errors:
-            kernel.io.log_indent_up()
-            kernel.io.error(f"Pylint errors:")
-            kernel.io.log_indent_up()
+            context.io.log_indent_up()
+            context.io.error(f"Pylint errors:")
+            context.io.log_indent_up()
 
             for error in errors:
-                kernel.io.error(
+                context.io.error(
                     message=f"Line {error.get('line')}: "
-                    f"{error.get('message')} ({error.get('symbol')})",
+                            f"{error.get('message')} ({error.get('symbol')})",
                     symbol=False,
                 )
 
-            kernel.io.log_indent_down(number=2)
+            context.io.log_indent_down(number=2)
 
         # Display warnings with detailed logging
         if warnings:
-            kernel.io.log_indent_up()
-            kernel.io.warning(f"Pylint warnings:")
-            kernel.io.log_indent_up()
+            context.io.log_indent_up()
+            context.io.warning(f"Pylint warnings:")
+            context.io.log_indent_up()
 
             for warning in warnings:
-                kernel.io.warning(
+                context.io.warning(
                     f"Line {warning.get('line')}: "
                     f"{warning.get('message')} ({warning.get('symbol')})",
                     symbol=False,
                 )
-                kernel.io.properties(warning)
+                context.io.properties(warning)
 
-            kernel.io.log_indent_down(number=2)
+            context.io.log_indent_down(number=2)
         # Display conventions
         if conventions:
-            kernel.io.info("Conventions:")
+            context.io.info("Conventions:")
             for convention in conventions:
-                kernel.io.base(
+                context.io.base(
                     message=f"  Line {convention.get('line')}: "
-                    f"{convention.get('message')} ({convention.get('symbol')})"
+                            f"{convention.get('message')} ({convention.get('symbol')})"
                 )
 
         # Only consider errors as failures
