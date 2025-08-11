@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "wexample-wex-addon-dev-python"
-version = "0.0.38"
+version = "0.0.39"
 description = "Python dev addon for wex"
 authors = [
     { name = "weeger", email = "contact@wexample.com" },
@@ -19,6 +19,7 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
+    "wexample-wex-core",
 ]
 
 [project.readme]
