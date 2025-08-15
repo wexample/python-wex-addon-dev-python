@@ -26,7 +26,10 @@ if TYPE_CHECKING:
     parallel=MIDDLEWARE_OPTION_VALUE_OPTIONAL,
     show_progress=MIDDLEWARE_OPTION_VALUE_ALLWAYS
 )
-@command()
+@command(
+    description="Check python code on every file: "
+                "bash cli/wex python::code/check --file ../../pip/wex-core/wexample_wex_core/ -sof"
+)
 def python__code__check(
         context: "ExecutionContext",
         file: str,
