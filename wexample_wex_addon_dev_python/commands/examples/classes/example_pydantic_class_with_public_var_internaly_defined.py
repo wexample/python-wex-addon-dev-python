@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, PrivateAttr
 
@@ -13,11 +13,8 @@ if TYPE_CHECKING:
 class ExamplePydanticClassWithPublicVarInternallyDefined(BaseModel):
     _internal_var: "SomeExampleType" = PrivateAttr()
 
-    def __init__(self, **kwargs):
-        # Parent init, in cas of multiple inheritance, use:
-        # BaseModel.__init__(self, **kwargs)
-        super().__init__(**kwargs)
-
+    def model_post_init(self, __context: Any) -> None:
+        # Lazy import to avoid circular imports; runs after validation
         from wexample_wex_addon_dev_python.commands.examples.utils.some_example_type import SomeExampleType
         self._internal_var = SomeExampleType(property="Yes")
 
@@ -34,3 +31,4 @@ class ExamplePydanticClassWithPublicVarInternallyDefined(BaseModel):
         if not isinstance(value, SomeExampleType):
             raise TypeError(f"internal_var must be SomeExampleType, got {type(value)!r}")
         self._internal_var = value
+
