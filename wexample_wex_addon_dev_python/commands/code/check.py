@@ -7,7 +7,7 @@ from wexample_wex_core.decorator.option import option
 from wexample_wex_core.decorator.option_stop_on_failure import option_stop_on_failure
 
 if TYPE_CHECKING:
-    from wexample_wex_core.common.execution_context import ExecutionContext
+    from wexample_wex_core.context.execution_context import ExecutionContext
 
 
 @option(
