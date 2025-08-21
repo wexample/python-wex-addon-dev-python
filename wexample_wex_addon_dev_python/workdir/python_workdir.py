@@ -2,9 +2,8 @@ from typing import Optional, List, Type, TYPE_CHECKING
 
 from wexample_config.const.types import DictConfig
 from wexample_config.options_provider.abstract_options_provider import AbstractOptionsProvider
-from wexample_filestate.config_option.children_filter_config_option import ChildrenFilterConfigOption
-from wexample_wex_addon_app.workdir.framework_package_workdir import FrameworkPackageWorkdir
 from wexample_helpers.helpers.string import string_to_snake_case
+from wexample_wex_addon_app.workdir.framework_package_workdir import FrameworkPackageWorkdir
 
 if TYPE_CHECKING:
     from wexample_filestate.operations_provider.abstract_operations_provider import AbstractOperationsProvider
@@ -36,12 +35,17 @@ class PythonWorkdir(FrameworkPackageWorkdir):
         return "wexample_" + string_to_snake_case(
             os.path.basename(os.path.realpath(option.get_parent_item().get_path())))
 
-    def prepare_value(self, config: Optional[DictConfig] = None) -> DictConfig:
+    def prepare_value(self, raw_value: Optional[DictConfig] = None) -> DictConfig:
+        from wexample_filestate.config_option.children_filter_config_option import ChildrenFilterConfigOption
         from wexample_filestate.const.disk import DiskItemType
 
-        config = super().prepare_value(config)
+        raw_value = super().prepare_value(
+            raw_value=raw_value
+        )
 
-        config['children'] += [
+        children = raw_value["children"]
+
+        children.append([
             {
                 'name': '.gitignore',
                 'type': DiskItemType.FILE,
@@ -79,6 +83,6 @@ class PythonWorkdir(FrameworkPackageWorkdir):
                 'type': DiskItemType.DIRECTORY,
                 'should_exist': False,
             }),
-        ]
+        ])
 
-        return config
+        return raw_value
