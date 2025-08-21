@@ -45,7 +45,7 @@ class PythonWorkdir(FrameworkPackageWorkdir):
 
         children = raw_value["children"]
 
-        children.append([
+        children.extend([
             {
                 'name': '.gitignore',
                 'type': DiskItemType.FILE,
