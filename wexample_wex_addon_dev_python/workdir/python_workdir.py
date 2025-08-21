@@ -136,7 +136,6 @@ class PythonWorkdir(FrameworkPackageWorkdir):
                 "python": [
                     PythonConfigOption.OPTION_NAME_MODERNIZE_TYPING,
                     PythonConfigOption.OPTION_NAME_FSTRINGIFY,
-                    PythonConfigOption.OPTION_NAME_CLEANUP_PY2_COMPAT,
                     PythonConfigOption.OPTION_NAME_ADD_RETURN_TYPES,
                     PythonConfigOption.OPTION_NAME_SORT_IMPORTS,
                     PythonConfigOption.OPTION_NAME_FORMAT,
