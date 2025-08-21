@@ -134,9 +134,9 @@ class PythonWorkdir(FrameworkPackageWorkdir):
                 "name_pattern": r"^.*\.py$",
                 "type": DiskItemType.FILE,
                 "python": [
-                    PythonConfigOption.OPTION_NAME_FORMAT,
-                    PythonConfigOption.OPTION_NAME_SORT_IMPORTS,
                     PythonConfigOption.OPTION_NAME_ADD_RETURN_TYPES,
+                    PythonConfigOption.OPTION_NAME_SORT_IMPORTS,
+                    PythonConfigOption.OPTION_NAME_FORMAT,
                 ],
             },
             recursive=True,
