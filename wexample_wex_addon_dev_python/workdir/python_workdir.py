@@ -15,19 +15,23 @@ class PythonWorkdir(FrameworkPackageWorkdir):
     def get_options_providers(self) -> List[Type["AbstractOptionsProvider"]]:
         from wexample_filestate.options_provider.default_options_provider import DefaultOptionsProvider
         from wexample_filestate_git.options_provider.git_options_provider import GitOptionsProvider
+        from wexample_filestate_python.options_provider.python_options_provider import PythonOptionsProvider
 
         return [
             DefaultOptionsProvider,
-            GitOptionsProvider
+            GitOptionsProvider,
+            PythonOptionsProvider
         ]
 
     def get_operations_providers(self) -> List[Type["AbstractOperationsProvider"]]:
         from wexample_filestate.operations_provider.default_operations_provider import DefaultOperationsProvider
         from wexample_filestate_git.operations_provider.git_operations_provider import GitOperationsProvider
+        from wexample_filestate_python.operations_provider.python_operations_provider import PythonOperationsProvider
 
         return [
             DefaultOperationsProvider,
-            GitOperationsProvider
+            GitOperationsProvider,
+            PythonOperationsProvider
         ]
 
     @staticmethod
@@ -67,7 +71,14 @@ class PythonWorkdir(FrameworkPackageWorkdir):
                 'type': DiskItemType.DIRECTORY,
                 'should_exist': True,
                 "children": [
-                    self._create_init_children_factory()
+                    self._create_init_children_factory(),
+                    ChildrenFilterConfigOption(pattern={
+                        'name_pattern': r'^.*\.py$',
+                        'type': DiskItemType.FILE,
+                        "python": [
+                            "format"
+                        ]
+                    }, recursive=True),
                 ]
             },
             # Remove unwanted files
