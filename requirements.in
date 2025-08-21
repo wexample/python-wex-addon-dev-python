@@ -4,3 +4,4 @@ mypy
 pylint
 pyright
 wexample-wex-core
+wexample-filestate-python

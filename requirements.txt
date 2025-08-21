@@ -12,6 +12,10 @@ black==25.1.0
     # via -r requirements.in
 build==1.3.0
     # via pip-tools
+certifi==2025.8.3
+    # via requests
+charset-normalizer==3.4.3
+    # via requests
 click==8.2.1
     # via
     #   black
@@ -23,6 +27,12 @@ dill==0.4.0
     # via pylint
 dotenv==0.9.9
     # via wexample-app
+gitdb==4.0.12
+    # via gitpython
+gitpython==3.1.45
+    # via wexample-helpers-git
+idna==3.10
+    # via requests
 iniconfig==2.1.0
     # via pytest
 inquirerpy==0.3.4
@@ -58,7 +68,11 @@ pip-tools==7.5.0
     #   wexample-config
     #   wexample-file
     #   wexample-filestate
+    #   wexample-filestate-dev
+    #   wexample-filestate-git
+    #   wexample-filestate-python
     #   wexample-helpers
+    #   wexample-helpers-git
     #   wexample-helpers-yaml
     #   wexample-prompt
     #   wexample-wex-core
@@ -76,7 +90,11 @@ pydantic==2.11.7
     #   wexample-config
     #   wexample-file
     #   wexample-filestate
+    #   wexample-filestate-dev
+    #   wexample-filestate-git
+    #   wexample-filestate-python
     #   wexample-helpers
+    #   wexample-helpers-git
     #   wexample-helpers-yaml
     #   wexample-prompt
     #   wexample-wex-core
@@ -98,7 +116,11 @@ pytest==8.4.1
     #   wexample-config
     #   wexample-file
     #   wexample-filestate
+    #   wexample-filestate-dev
+    #   wexample-filestate-git
+    #   wexample-filestate-python
     #   wexample-helpers
+    #   wexample-helpers-git
     #   wexample-helpers-yaml
     #   wexample-prompt
     #   wexample-wex-core
@@ -106,8 +128,13 @@ python-dotenv==1.1.1
     # via
     #   dotenv
     #   wexample-app
+    #   wexample-filestate-python
 pyyaml==6.0.2
     # via wexample-helpers-yaml
+requests==2.32.5
+    # via wexample-filestate-git
+smmap==5.0.2
+    # via gitdb
 tomlkit==0.13.3
     # via pylint
 typing-extensions==4.14.1
@@ -119,6 +146,8 @@ typing-extensions==4.14.1
     #   typing-inspection
 typing-inspection==0.4.1
     # via pydantic
+urllib3==2.5.0
+    # via requests
 wcwidth==0.2.13
     # via prompt-toolkit
 wexample-app==0.0.46
@@ -130,12 +159,22 @@ wexample-file==0.0.3
 wexample-filestate==0.0.46
     # via
     #   wexample-app
+    #   wexample-filestate-dev
+    #   wexample-filestate-git
     #   wexample-wex-core
+wexample-filestate-dev==0.0.34
+    # via wexample-filestate-python
+wexample-filestate-git==0.0.35
+    # via wexample-filestate-python
+wexample-filestate-python==0.0.36
+    # via -r requirements.in
 wexample-helpers==0.0.63
     # via
     #   wexample-config
     #   wexample-file
     #   wexample-helpers-yaml
+wexample-helpers-git==0.0.45
+    # via wexample-filestate-git
 wexample-helpers-yaml==0.0.64
     # via wexample-app
 wexample-prompt==0.0.43
