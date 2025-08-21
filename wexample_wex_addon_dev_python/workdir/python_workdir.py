@@ -134,7 +134,7 @@ class PythonWorkdir(FrameworkPackageWorkdir):
                 "name_pattern": r"^.*\.py$",
                 "type": DiskItemType.FILE,
                 "python": [
-                    PythonConfigOption.OPTION_NAME_MODERNIZE_TYPING,
+                    # PythonConfigOption.OPTION_NAME_MODERNIZE_TYPING, # Creates errors in type validation
                     PythonConfigOption.OPTION_NAME_FSTRINGIFY,
                     PythonConfigOption.OPTION_NAME_ADD_RETURN_TYPES,
                     PythonConfigOption.OPTION_NAME_SORT_IMPORTS,
