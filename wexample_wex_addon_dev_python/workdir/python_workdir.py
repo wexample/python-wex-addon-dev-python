@@ -8,6 +8,7 @@ from wexample_wex_addon_app.workdir.framework_package_workdir import FrameworkPa
 if TYPE_CHECKING:
     from wexample_filestate.operations_provider.abstract_operations_provider import AbstractOperationsProvider
     from wexample_filestate.config_option.mixin.item_config_option_mixin import ItemTreeConfigOptionMixin
+    from wexample_filestate.config_option.children_file_factory_config_option import ChildrenFileFactoryConfigOption
 
 
 class PythonWorkdir(FrameworkPackageWorkdir):
@@ -65,6 +66,9 @@ class PythonWorkdir(FrameworkPackageWorkdir):
                 'name': 'tests',
                 'type': DiskItemType.DIRECTORY,
                 'should_exist': True,
+                "children": [
+                    self._create_init_children_factory()
+                ]
             },
             # Remove unwanted files
             # Should only be created during deployment
@@ -86,3 +90,16 @@ class PythonWorkdir(FrameworkPackageWorkdir):
         ])
 
         return raw_value
+
+    def _create_init_children_factory(self) -> "ChildrenFileFactoryConfigOption":
+        from wexample_filestate.config_option.children_file_factory_config_option import ChildrenFileFactoryConfigOption
+        from wexample_filestate_python.const.name_pattern import NAME_PATTERN_PYTHON_NOT_PYCACHE
+        from wexample_filestate.const.globals import NAME_PATTERN_NO_LEADING_DOT
+        from wexample_filestate.const.disk import DiskItemType
+
+        return ChildrenFileFactoryConfigOption(pattern={
+            "name": "__init__.py",
+            "type": DiskItemType.FILE,
+            "recursive": True,
+            "name_pattern": [NAME_PATTERN_PYTHON_NOT_PYCACHE, NAME_PATTERN_NO_LEADING_DOT],
+        })

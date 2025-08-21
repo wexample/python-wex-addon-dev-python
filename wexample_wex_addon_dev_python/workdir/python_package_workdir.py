@@ -1,8 +1,8 @@
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 from wexample_config.const.types import DictConfig
-from wexample_wex_addon_dev_python.workdir.python_workdir import PythonWorkdir
 from wexample_helpers.helpers.array import array_dict_get_by
+from wexample_wex_addon_dev_python.workdir.python_workdir import PythonWorkdir
 
 
 class PythonPackageWorkdir(PythonWorkdir):
@@ -35,9 +35,6 @@ class PythonPackageWorkdir(PythonWorkdir):
 
     def prepare_value(self, config: Optional[DictConfig] = None) -> DictConfig:
         from wexample_filestate.const.disk import DiskItemType
-        from wexample_filestate_python.const.name_pattern import NAME_PATTERN_PYTHON_NOT_PYCACHE
-        from wexample_filestate.config_option.children_file_factory_config_option import ChildrenFileFactoryConfigOption
-        from wexample_filestate.const.globals import NAME_PATTERN_NO_LEADING_DOT
         from wexample_config.config_value.callback_render_config_value import CallbackRenderConfigValue
 
         config = super().prepare_value(config)
@@ -104,12 +101,7 @@ class PythonPackageWorkdir(PythonWorkdir):
                 'type': DiskItemType.DIRECTORY,
                 'should_exist': True,
                 "children": [
-                    ChildrenFileFactoryConfigOption(pattern={
-                        "name": "__init__.py",
-                        "type": DiskItemType.FILE,
-                        "recursive": True,
-                        "name_pattern": [NAME_PATTERN_PYTHON_NOT_PYCACHE, NAME_PATTERN_NO_LEADING_DOT],
-                    })
+                    self._create_init_children_factory()
                 ]
             }
         )
