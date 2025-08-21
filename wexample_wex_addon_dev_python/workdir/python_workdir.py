@@ -4,6 +4,7 @@ from wexample_config.const.types import DictConfig
 from wexample_config.options_provider.abstract_options_provider import AbstractOptionsProvider
 from wexample_helpers.helpers.string import string_to_snake_case
 from wexample_wex_addon_app.workdir.framework_package_workdir import FrameworkPackageWorkdir
+from wexample_filestate_python.config_option.python_config_option import PythonConfigOption
 
 if TYPE_CHECKING:
     from wexample_filestate.operations_provider.abstract_operations_provider import AbstractOperationsProvider
@@ -72,13 +73,7 @@ class PythonWorkdir(FrameworkPackageWorkdir):
                 'should_exist': True,
                 "children": [
                     self._create_init_children_factory(),
-                    ChildrenFilterConfigOption(pattern={
-                        'name_pattern': r'^.*\.py$',
-                        'type': DiskItemType.FILE,
-                        "python": [
-                            "format"
-                        ]
-                    }, recursive=True),
+                    self._create_python_file_children_filter(),
                 ]
             },
             # Remove unwanted files
@@ -101,6 +96,18 @@ class PythonWorkdir(FrameworkPackageWorkdir):
         ])
 
         return raw_value
+
+    def _create_python_file_children_filter(self) -> "ChildrenFileFactoryConfigOption":
+        from wexample_filestate.config_option.children_filter_config_option import ChildrenFilterConfigOption
+        from wexample_filestate.const.disk import DiskItemType
+
+        return ChildrenFilterConfigOption(pattern={
+            'name_pattern': r'^.*\.py$',
+            'type': DiskItemType.FILE,
+            "python": [
+                PythonConfigOption.OPTION_NAME_FORMAT
+            ]
+        }, recursive=True)
 
     def _create_init_children_factory(self) -> "ChildrenFileFactoryConfigOption":
         from wexample_filestate.config_option.children_file_factory_config_option import ChildrenFileFactoryConfigOption

@@ -101,7 +101,8 @@ class PythonPackageWorkdir(PythonWorkdir):
                 'type': DiskItemType.DIRECTORY,
                 'should_exist': True,
                 "children": [
-                    self._create_init_children_factory()
+                    self._create_init_children_factory(),
+                    self._create_python_file_children_filter(),
                 ]
             }
         )
