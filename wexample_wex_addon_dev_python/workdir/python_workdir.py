@@ -1,41 +1,53 @@
 from typing import TYPE_CHECKING, List, Optional, Type
 
 from wexample_config.const.types import DictConfig
-from wexample_config.options_provider.abstract_options_provider import \
-    AbstractOptionsProvider
-from wexample_filestate_python.config_option.python_config_option import \
-    PythonConfigOption
+from wexample_config.options_provider.abstract_options_provider import (
+    AbstractOptionsProvider,
+)
+from wexample_filestate_python.config_option.python_config_option import (
+    PythonConfigOption,
+)
 from wexample_helpers.helpers.string import string_to_snake_case
-from wexample_wex_addon_app.workdir.framework_package_workdir import \
-    FrameworkPackageWorkdir
+from wexample_wex_addon_app.workdir.framework_package_workdir import (
+    FrameworkPackageWorkdir,
+)
 
 if TYPE_CHECKING:
-    from wexample_filestate.config_option.children_file_factory_config_option import \
-        ChildrenFileFactoryConfigOption
-    from wexample_filestate.config_option.mixin.item_config_option_mixin import \
-        ItemTreeConfigOptionMixin
-    from wexample_filestate.operations_provider.abstract_operations_provider import \
-        AbstractOperationsProvider
+    from wexample_filestate.config_option.children_file_factory_config_option import (
+        ChildrenFileFactoryConfigOption,
+    )
+    from wexample_filestate.config_option.mixin.item_config_option_mixin import (
+        ItemTreeConfigOptionMixin,
+    )
+    from wexample_filestate.operations_provider.abstract_operations_provider import (
+        AbstractOperationsProvider,
+    )
 
 
 class PythonWorkdir(FrameworkPackageWorkdir):
     def get_options_providers(self) -> List[Type["AbstractOptionsProvider"]]:
-        from wexample_filestate.options_provider.default_options_provider import \
-            DefaultOptionsProvider
-        from wexample_filestate_git.options_provider.git_options_provider import \
-            GitOptionsProvider
-        from wexample_filestate_python.options_provider.python_options_provider import \
-            PythonOptionsProvider
+        from wexample_filestate.options_provider.default_options_provider import (
+            DefaultOptionsProvider,
+        )
+        from wexample_filestate_git.options_provider.git_options_provider import (
+            GitOptionsProvider,
+        )
+        from wexample_filestate_python.options_provider.python_options_provider import (
+            PythonOptionsProvider,
+        )
 
         return [DefaultOptionsProvider, GitOptionsProvider, PythonOptionsProvider]
 
     def get_operations_providers(self) -> List[Type["AbstractOperationsProvider"]]:
-        from wexample_filestate.operations_provider.default_operations_provider import \
-            DefaultOperationsProvider
-        from wexample_filestate_git.operations_provider.git_operations_provider import \
-            GitOperationsProvider
-        from wexample_filestate_python.operations_provider.python_operations_provider import \
-            PythonOperationsProvider
+        from wexample_filestate.operations_provider.default_operations_provider import (
+            DefaultOperationsProvider,
+        )
+        from wexample_filestate_git.operations_provider.git_operations_provider import (
+            GitOperationsProvider,
+        )
+        from wexample_filestate_python.operations_provider.python_operations_provider import (
+            PythonOperationsProvider,
+        )
 
         return [
             DefaultOperationsProvider,
@@ -52,8 +64,9 @@ class PythonWorkdir(FrameworkPackageWorkdir):
         )
 
     def prepare_value(self, raw_value: Optional[DictConfig] = None) -> DictConfig:
-        from wexample_filestate.config_option.children_filter_config_option import \
-            ChildrenFilterConfigOption
+        from wexample_filestate.config_option.children_filter_config_option import (
+            ChildrenFilterConfigOption,
+        )
         from wexample_filestate.const.disk import DiskItemType
 
         raw_value = super().prepare_value(raw_value=raw_value)
@@ -111,8 +124,9 @@ class PythonWorkdir(FrameworkPackageWorkdir):
         return raw_value
 
     def _create_python_file_children_filter(self) -> "ChildrenFileFactoryConfigOption":
-        from wexample_filestate.config_option.children_filter_config_option import \
-            ChildrenFilterConfigOption
+        from wexample_filestate.config_option.children_filter_config_option import (
+            ChildrenFilterConfigOption,
+        )
         from wexample_filestate.const.disk import DiskItemType
 
         return ChildrenFilterConfigOption(
@@ -129,13 +143,14 @@ class PythonWorkdir(FrameworkPackageWorkdir):
         )
 
     def _create_init_children_factory(self) -> "ChildrenFileFactoryConfigOption":
-        from wexample_filestate.config_option.children_file_factory_config_option import \
-            ChildrenFileFactoryConfigOption
+        from wexample_filestate.config_option.children_file_factory_config_option import (
+            ChildrenFileFactoryConfigOption,
+        )
         from wexample_filestate.const.disk import DiskItemType
-        from wexample_filestate.const.globals import \
-            NAME_PATTERN_NO_LEADING_DOT
-        from wexample_filestate_python.const.name_pattern import \
-            NAME_PATTERN_PYTHON_NOT_PYCACHE
+        from wexample_filestate.const.globals import NAME_PATTERN_NO_LEADING_DOT
+        from wexample_filestate_python.const.name_pattern import (
+            NAME_PATTERN_PYTHON_NOT_PYCACHE,
+        )
 
         return ChildrenFileFactoryConfigOption(
             pattern={

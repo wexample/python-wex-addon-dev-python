@@ -1,12 +1,13 @@
 from typing import TYPE_CHECKING, Optional
 
 from wexample_wex_core.const.middleware import (
-    MIDDLEWARE_OPTION_VALUE_ALLWAYS, MIDDLEWARE_OPTION_VALUE_OPTIONAL)
+    MIDDLEWARE_OPTION_VALUE_ALLWAYS,
+    MIDDLEWARE_OPTION_VALUE_OPTIONAL,
+)
 from wexample_wex_core.decorator.command import command
 from wexample_wex_core.decorator.middleware import middleware
 from wexample_wex_core.decorator.option import option
-from wexample_wex_core.decorator.option_stop_on_failure import \
-    option_stop_on_failure
+from wexample_wex_core.decorator.option_stop_on_failure import option_stop_on_failure
 
 if TYPE_CHECKING:
     from wexample_wex_core.context.execution_context import ExecutionContext
@@ -41,12 +42,13 @@ def python__code__check(
 ) -> bool:
     """Check a Python file using various code quality tools."""
     from wexample_helpers.helpers.cli import cli_make_clickable_path
-    from wexample_wex_addon_dev_python.commands.code.check.mypy import \
-        _code_check_mypy
-    from wexample_wex_addon_dev_python.commands.code.check.pylint import \
-        _code_check_pylint
-    from wexample_wex_addon_dev_python.commands.code.check.pyright import \
-        _code_check_pyright
+    from wexample_wex_addon_dev_python.commands.code.check.mypy import _code_check_mypy
+    from wexample_wex_addon_dev_python.commands.code.check.pylint import (
+        _code_check_pylint,
+    )
+    from wexample_wex_addon_dev_python.commands.code.check.pyright import (
+        _code_check_pyright,
+    )
 
     # Map tool names to their check functions
     tool_map = {

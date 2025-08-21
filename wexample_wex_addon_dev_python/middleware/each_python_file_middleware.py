@@ -1,8 +1,7 @@
 import os.path
 from typing import TYPE_CHECKING, Set
 
-from wexample_wex_core.middleware.each_file_middleware import \
-    EachFileMiddleware
+from wexample_wex_core.middleware.each_file_middleware import EachFileMiddleware
 
 if TYPE_CHECKING:
     from wexample_wex_core.common.command_request import CommandRequest
@@ -32,7 +31,7 @@ class EachPythonFileMiddleware(EachFileMiddleware):
         ".ruff_cache",
     }
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         # Allow overriding the default settings
         if "python_extension_only" in kwargs:
             self.python_extension_only = kwargs.pop("python_extension_only")
