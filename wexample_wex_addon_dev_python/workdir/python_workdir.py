@@ -122,6 +122,7 @@ class PythonWorkdir(FrameworkPackageWorkdir):
                 "python": [
                     PythonConfigOption.OPTION_NAME_FORMAT,
                     PythonConfigOption.OPTION_NAME_SORT_IMPORTS,
+                    PythonConfigOption.OPTION_NAME_ADD_RETURN_TYPES,
                 ],
             },
             recursive=True,
