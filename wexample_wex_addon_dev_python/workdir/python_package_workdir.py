@@ -1,4 +1,4 @@
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from wexample_config.const.types import DictConfig
 from wexample_helpers.helpers.array import array_dict_get_by
@@ -16,8 +16,8 @@ class PythonPackageWorkdir(PythonWorkdir):
         if not force and self._project_info_cache is not None:
             return self._project_info_cache
 
-        from wexample_helpers.helpers.file import file_read
         import tomli
+        from wexample_helpers.helpers.file import file_read
 
         project_path = self.get_resolved()
         pyproject_file = f"{project_path}pyproject.toml"
@@ -34,10 +34,9 @@ class PythonPackageWorkdir(PythonWorkdir):
         return pyproject_data
 
     def prepare_value(self, config: Optional[DictConfig] = None) -> DictConfig:
+        from wexample_config.config_value.callback_render_config_value import \
+            CallbackRenderConfigValue
         from wexample_filestate.const.disk import DiskItemType
-        from wexample_config.config_value.callback_render_config_value import (
-            CallbackRenderConfigValue,
-        )
 
         config = super().prepare_value(config)
 

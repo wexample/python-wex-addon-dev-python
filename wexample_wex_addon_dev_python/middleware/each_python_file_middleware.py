@@ -1,7 +1,8 @@
 import os.path
-from typing import Set, TYPE_CHECKING
+from typing import TYPE_CHECKING, Set
 
-from wexample_wex_core.middleware.each_file_middleware import EachFileMiddleware
+from wexample_wex_core.middleware.each_file_middleware import \
+    EachFileMiddleware
 
 if TYPE_CHECKING:
     from wexample_wex_core.common.command_request import CommandRequest

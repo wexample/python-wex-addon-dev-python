@@ -10,9 +10,8 @@ if TYPE_CHECKING:
 def python__examples__validate(
     context: "ExecutionContext",
 ) -> None:
-    from wexample_wex_addon_dev_python.commands.examples.classes.example_pydantic_class_with_public_var_internaly_defined import (
-        ExamplePydanticClassWithPublicVarInternallyDefined,
-    )
+    from wexample_wex_addon_dev_python.commands.examples.classes.example_pydantic_class_with_public_var_internaly_defined import \
+        ExamplePydanticClassWithPublicVarInternallyDefined
 
     example_class = ExamplePydanticClassWithPublicVarInternallyDefined()
     context.kernel.log(example_class)
