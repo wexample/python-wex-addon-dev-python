@@ -19,13 +19,15 @@ from wexample_wex_core.decorator.option import option
     default=True,
     description="Stop execution when a tool reports a failure",
 )
-@middleware(name="each_python_file", should_exist=True, expand_glob=True, recursive=True)
+@middleware(
+    name="each_python_file", should_exist=True, expand_glob=True, recursive=True
+)
 @command()
 def python__code__format(
-        kernel: "Kernel",
-        file: str,
-        tool: Optional[str] = None,
-        stop_on_failure: bool = True,
+    kernel: "Kernel",
+    file: str,
+    tool: Optional[str] = None,
+    stop_on_failure: bool = True,
 ) -> bool:
     """Format a Python file using various code formatting tools."""
     from wexample_wex_addon_dev_python.commands.code.format.black import (

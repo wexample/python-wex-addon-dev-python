@@ -6,7 +6,9 @@ from wexample_wex_core.middleware.abstract_middleware import AbstractMiddleware
 
 class PythonAddonManager(AbstractAddonManager):
     def get_middlewares_classes(self) -> List[Type["AbstractMiddleware"]]:
-        from wexample_wex_addon_dev_python.middleware.each_python_file_middleware import EachPythonFileMiddleware
+        from wexample_wex_addon_dev_python.middleware.each_python_file_middleware import (
+            EachPythonFileMiddleware,
+        )
 
         return [
             EachPythonFileMiddleware,

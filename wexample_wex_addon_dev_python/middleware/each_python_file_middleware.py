@@ -13,6 +13,7 @@ class EachPythonFileMiddleware(EachFileMiddleware):
     - Filters files by .py extension by default
     - Ignores special directories like __pycache__ during recursion
     """
+
     # Default extension to filter
     python_extension_only: bool = True
 
@@ -43,10 +44,10 @@ class EachPythonFileMiddleware(EachFileMiddleware):
     def _should_process_item(self, request: "CommandRequest", item_path: str) -> bool:
         """
         Only process Python files based on extension.
-        
+
         Args:
             item_path: Path to the item to check
-            
+
         Returns:
             True if the item should be processed, False otherwise
         """
@@ -61,13 +62,15 @@ class EachPythonFileMiddleware(EachFileMiddleware):
         # Otherwise, accept all files
         return True
 
-    def _should_explore_directory(self, request: "CommandRequest", directory_name: str) -> bool:
+    def _should_explore_directory(
+        self, request: "CommandRequest", directory_name: str
+    ) -> bool:
         """
         Skip directories that are in the ignored_directories list.
-        
+
         Args:
             directory_name: Name of the directory to check
-            
+
         Returns:
             False if the directory is in the ignored list, True otherwise
         """

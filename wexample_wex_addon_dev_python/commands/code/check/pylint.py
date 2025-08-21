@@ -69,7 +69,7 @@ def _code_check_pylint(context: "ExecutionContext", file_path: str) -> bool:
             for error in errors:
                 context.io.error(
                     message=f"Line {error.get('line')}: "
-                            f"{error.get('message')} ({error.get('symbol')})",
+                    f"{error.get('message')} ({error.get('symbol')})",
                     symbol=False,
                 )
 
@@ -96,7 +96,7 @@ def _code_check_pylint(context: "ExecutionContext", file_path: str) -> bool:
             for convention in conventions:
                 context.io.base(
                     message=f"  Line {convention.get('line')}: "
-                            f"{convention.get('message')} ({convention.get('symbol')})"
+                    f"{convention.get('message')} ({convention.get('symbol')})"
                 )
 
         # Only consider errors as failures

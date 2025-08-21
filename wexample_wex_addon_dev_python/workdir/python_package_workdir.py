@@ -35,12 +35,14 @@ class PythonPackageWorkdir(PythonWorkdir):
 
     def prepare_value(self, config: Optional[DictConfig] = None) -> DictConfig:
         from wexample_filestate.const.disk import DiskItemType
-        from wexample_config.config_value.callback_render_config_value import CallbackRenderConfigValue
+        from wexample_config.config_value.callback_render_config_value import (
+            CallbackRenderConfigValue,
+        )
 
         config = super().prepare_value(config)
 
         # Retrieve the '.gitignore' configuration or create it if it doesn't exist
-        config_gitignore = array_dict_get_by('name', '.gitignore', config["children"])
+        config_gitignore = array_dict_get_by("name", ".gitignore", config["children"])
         if config_gitignore is not None:
             generic_gitignore_rules = {
                 "Python artifacts": [
@@ -74,7 +76,9 @@ class PythonPackageWorkdir(PythonWorkdir):
                 ],
             }
 
-            should_contain_lines = config_gitignore.setdefault("should_contain_lines", [])
+            should_contain_lines = config_gitignore.setdefault(
+                "should_contain_lines", []
+            )
             if not isinstance(should_contain_lines, list):
                 raise ValueError("'should_contain_lines' must be a list")
 
@@ -89,21 +93,21 @@ class PythonPackageWorkdir(PythonWorkdir):
 
         config["children"].append(
             {
-                'name': 'pyproject.toml',
-                'type': DiskItemType.FILE,
-                'should_exist': True,
+                "name": "pyproject.toml",
+                "type": DiskItemType.FILE,
+                "should_exist": True,
             }
         )
 
         config["children"].append(
             {
-                'name': CallbackRenderConfigValue(raw=self._create_package_name_snake),
-                'type': DiskItemType.DIRECTORY,
-                'should_exist': True,
+                "name": CallbackRenderConfigValue(raw=self._create_package_name_snake),
+                "type": DiskItemType.DIRECTORY,
+                "should_exist": True,
                 "children": [
                     self._create_init_children_factory(),
                     self._create_python_file_children_filter(),
-                ]
+                ],
             }
         )
 

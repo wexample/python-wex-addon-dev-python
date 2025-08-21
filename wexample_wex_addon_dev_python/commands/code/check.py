@@ -1,6 +1,9 @@
 from typing import Optional, TYPE_CHECKING
 
-from wexample_wex_core.const.middleware import MIDDLEWARE_OPTION_VALUE_OPTIONAL, MIDDLEWARE_OPTION_VALUE_ALLWAYS
+from wexample_wex_core.const.middleware import (
+    MIDDLEWARE_OPTION_VALUE_OPTIONAL,
+    MIDDLEWARE_OPTION_VALUE_ALLWAYS,
+)
 from wexample_wex_core.decorator.command import command
 from wexample_wex_core.decorator.middleware import middleware
 from wexample_wex_core.decorator.option import option
@@ -24,18 +27,18 @@ if TYPE_CHECKING:
     stop_on_failure=MIDDLEWARE_OPTION_VALUE_OPTIONAL,
     recursive=True,
     parallel=MIDDLEWARE_OPTION_VALUE_OPTIONAL,
-    show_progress=MIDDLEWARE_OPTION_VALUE_ALLWAYS
+    show_progress=MIDDLEWARE_OPTION_VALUE_ALLWAYS,
 )
 @command(
     description="Check python code on every file: "
-                "bash cli/wex python::code/check --file ../../pip/wex-core/wexample_wex_core/ -sof"
+    "bash cli/wex python::code/check --file ../../pip/wex-core/wexample_wex_core/ -sof"
 )
 def python__code__check(
-        context: "ExecutionContext",
-        file: str,
-        tool: Optional[str] = None,
-        stop_on_failure: bool = True,
-        parallel: bool = True,
+    context: "ExecutionContext",
+    file: str,
+    tool: Optional[str] = None,
+    stop_on_failure: bool = True,
+    parallel: bool = True,
 ) -> bool:
     """Check a Python file using various code quality tools."""
     from wexample_wex_addon_dev_python.commands.code.check.mypy import _code_check_mypy
@@ -75,7 +78,7 @@ def python__code__check(
         context.io.log_indent_up()
 
         context.io.log(
-            f'🐍 Python: {cli_make_clickable_path(context.kernel.host_workdir.get_resolved_target(file))}'
+            f"🐍 Python: {cli_make_clickable_path(context.kernel.host_workdir.get_resolved_target(file))}"
         )
 
         check_result = check_function(context, file)
@@ -91,6 +94,7 @@ def python__code__check(
             context.io.error("One check failed")
 
             from wexample_app.response.failure_response import FailureResponse
+
             context.io.log_indent_down()
 
             return FailureResponse(message="One check failed", kernel=context.kernel)
