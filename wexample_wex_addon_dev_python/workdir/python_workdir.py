@@ -138,10 +138,11 @@ class PythonWorkdir(FrameworkPackageWorkdir):
                     # No mor future as it is native.
                     PythonConfigOption.OPTION_NAME_REMOVE_FUTURE_IMPORTS,
                     PythonConfigOption.OPTION_NAME_REMOVE_UNUSED_IMPORTS,
+                    PythonConfigOption.OPTION_NAME_SORT_IMPORTS,
                     PythonConfigOption.OPTION_NAME_MODERNIZE_TYPING,
                     PythonConfigOption.OPTION_NAME_FSTRINGIFY,
                     PythonConfigOption.OPTION_NAME_ADD_RETURN_TYPES,
-                    PythonConfigOption.OPTION_NAME_SORT_IMPORTS,
+                    PythonConfigOption.OPTION_NAME_QUOTE_ANNOTATIONS,
                     PythonConfigOption.OPTION_NAME_FORMAT,
                 ],
             },
