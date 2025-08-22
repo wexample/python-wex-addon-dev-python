@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from wexample_config.const.types import DictConfig
@@ -136,7 +138,7 @@ class PythonWorkdir(FrameworkPackageWorkdir):
                 "python": [
                     # Configured for python >= 3.12
                     # No mor future as it is native.
-                    PythonConfigOption.OPTION_NAME_REMOVE_FUTURE_IMPORTS,
+                    PythonConfigOption.OPTION_NAME_ADD_FUTURE_ANNOTATIONS,
                     PythonConfigOption.OPTION_NAME_REMOVE_UNUSED_IMPORTS,
                     PythonConfigOption.OPTION_NAME_SORT_IMPORTS,
                     PythonConfigOption.OPTION_NAME_MODERNIZE_TYPING,

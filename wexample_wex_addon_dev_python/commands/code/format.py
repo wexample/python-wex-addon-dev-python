@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from wexample_wex_core.common.kernel import Kernel
 from wexample_wex_core.decorator.command import command
 from wexample_wex_core.decorator.middleware import middleware
