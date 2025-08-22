@@ -3,5 +3,5 @@ isort
 mypy
 pylint
 pyright
-wexample-wex-core
 wexample-filestate-python
+wexample-wex-core

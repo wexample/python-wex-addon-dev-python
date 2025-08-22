@@ -90,7 +90,8 @@ class PythonWorkdir(FrameworkPackageWorkdir):
                     "type": DiskItemType.FILE,
                     "should_exist": True,
                     "content_options": [
-                        ContentOptionsConfigOption.OPTION_NAME_LINES_SORT
+                        ContentOptionsConfigOption.OPTION_NAME_LINES_SORT,
+                        ContentOptionsConfigOption.OPTION_NAME_LINES_UNIQUE,
                     ],
                 },
                 {
