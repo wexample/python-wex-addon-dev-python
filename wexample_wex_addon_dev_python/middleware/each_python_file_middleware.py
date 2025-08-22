@@ -1,5 +1,5 @@
 import os.path
-from typing import TYPE_CHECKING, Set
+from typing import TYPE_CHECKING
 
 from wexample_wex_core.middleware.each_file_middleware import EachFileMiddleware
 

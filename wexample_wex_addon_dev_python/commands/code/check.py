@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from wexample_wex_core.const.middleware import (
     MIDDLEWARE_OPTION_VALUE_ALLWAYS,

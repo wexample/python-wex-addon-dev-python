@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List, Optional, Type
+from typing import TYPE_CHECKING
 
 from wexample_config.const.types import DictConfig
 from wexample_config.options_provider.abstract_options_provider import (
