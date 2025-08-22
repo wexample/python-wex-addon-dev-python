@@ -3,7 +3,7 @@ from __future__ import annotations
 from wexample_wex_core.common.kernel import Kernel
 
 
-def _code_check_pyright(kernel: "Kernel", file_path: str) -> bool:
+def _code_check_pyright(kernel: Kernel, file_path: str) -> bool:
     """Check a Python file using pyright for static type checking.
 
     Args:

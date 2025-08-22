@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 @command(description="Check python code on every file: ")
 def python__examples__validate(
-    context: "ExecutionContext",
+    context: ExecutionContext,
 ) -> None:
     from wexample_wex_addon_dev_python.commands.examples.classes.example_pydantic_class_with_public_var_internaly_defined import (
         ExamplePydanticClassWithPublicVarInternallyDefined,

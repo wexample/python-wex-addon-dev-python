@@ -36,7 +36,7 @@ if TYPE_CHECKING:
     "bash cli/wex python::code/check --file ../../pip/wex-core/wexample_wex_core/ -sof"
 )
 def python__code__check(
-    context: "ExecutionContext",
+    context: ExecutionContext,
     file: str,
     tool: str | None = None,
     stop_on_failure: bool = True,

@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from wexample_wex_core.context.execution_context import ExecutionContext
 
 
-def _code_check_pylint(context: "ExecutionContext", file_path: str) -> bool:
+def _code_check_pylint(context: ExecutionContext, file_path: str) -> bool:
     """Check a Python file using pylint for code quality.
 
     Args:

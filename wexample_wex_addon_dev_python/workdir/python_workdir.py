@@ -58,7 +58,7 @@ class PythonWorkdir(FrameworkPackageWorkdir):
         ]
 
     @staticmethod
-    def _create_package_name_snake(option: "ItemTreeConfigOptionMixin") -> str:
+    def _create_package_name_snake(option: ItemTreeConfigOptionMixin) -> str:
         import os
 
         return "wexample_" + string_to_snake_case(
@@ -125,7 +125,7 @@ class PythonWorkdir(FrameworkPackageWorkdir):
 
         return raw_value
 
-    def _create_python_file_children_filter(self) -> "ChildrenFileFactoryConfigOption":
+    def _create_python_file_children_filter(self) -> ChildrenFileFactoryConfigOption:
         from wexample_filestate.config_option.children_filter_config_option import (
             ChildrenFilterConfigOption,
         )
@@ -151,7 +151,7 @@ class PythonWorkdir(FrameworkPackageWorkdir):
             recursive=True,
         )
 
-    def _create_init_children_factory(self) -> "ChildrenFileFactoryConfigOption":
+    def _create_init_children_factory(self) -> ChildrenFileFactoryConfigOption:
         from wexample_filestate.config_option.children_file_factory_config_option import (
             ChildrenFileFactoryConfigOption,
         )

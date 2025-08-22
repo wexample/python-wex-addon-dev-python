@@ -3,7 +3,7 @@ from __future__ import annotations
 from wexample_wex_core.common.kernel import Kernel
 
 
-def _code_check_mypy(kernel: "Kernel", file_path: str) -> bool:
+def _code_check_mypy(kernel: Kernel, file_path: str) -> bool:
     """Check a Python file using mypy for static type checking.
 
     Args:

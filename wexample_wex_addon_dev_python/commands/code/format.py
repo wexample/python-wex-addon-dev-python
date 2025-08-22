@@ -24,7 +24,7 @@ from wexample_wex_core.decorator.option import option
 )
 @command()
 def python__code__format(
-    kernel: "Kernel",
+    kernel: Kernel,
     file: str,
     tool: str | None = None,
     stop_on_failure: bool = True,

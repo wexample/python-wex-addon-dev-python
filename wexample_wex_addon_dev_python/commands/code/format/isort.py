@@ -3,7 +3,7 @@ from __future__ import annotations
 from wexample_wex_core.common.kernel import Kernel
 
 
-def _code_format_isort(kernel: "Kernel", file_path: str) -> bool:
+def _code_format_isort(kernel: Kernel, file_path: str) -> bool:
     """Format imports in a Python file using isort.
 
     Args:
