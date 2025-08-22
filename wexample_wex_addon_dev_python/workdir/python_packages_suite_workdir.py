@@ -23,16 +23,21 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
         children = raw_value["children"]
 
         # By default, consider each sub folder as a pip package
-        children.extend(
-            [
-                ChildrenFilterConfigOption(
-                    filter=self._has_pyproject,
-                    pattern={
-                        "class": PythonPackageWorkdir,
-                        "type": DiskItemType.DIRECTORY,
-                    },
-                )
-            ]
+        children.append(
+            {
+                "name": "pip",
+                "type": DiskItemType.DIRECTORY,
+                "children":
+                    [
+                        ChildrenFilterConfigOption(
+                            filter=self._has_pyproject,
+                            pattern={
+                                "class": PythonPackageWorkdir,
+                                "type": DiskItemType.DIRECTORY,
+                            },
+                        )
+                    ]
+            }
         )
 
         return raw_value
