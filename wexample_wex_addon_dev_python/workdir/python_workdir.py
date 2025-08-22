@@ -139,7 +139,7 @@ class PythonWorkdir(FrameworkPackageWorkdir):
                     # Configured for python >= 3.12
                     # No mor future as it is native.
                     PythonConfigOption.OPTION_NAME_ADD_FUTURE_ANNOTATIONS,
-                    PythonConfigOption.OPTION_NAME_REMOVE_UNUSED_IMPORTS,
+                    PythonConfigOption.OPTION_NAME_REMOVE_UNUSED,
                     PythonConfigOption.OPTION_NAME_SORT_IMPORTS,
                     PythonConfigOption.OPTION_NAME_MODERNIZE_TYPING,
                     PythonConfigOption.OPTION_NAME_FSTRINGIFY,
