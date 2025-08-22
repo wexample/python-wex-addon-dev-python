@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 
 
 class PythonWorkdir(FrameworkPackageWorkdir):
-    def get_options_providers(self) -> List[Type["AbstractOptionsProvider"]]:
+    def get_options_providers(self) -> list[type["AbstractOptionsProvider"]]:
         from wexample_filestate.options_provider.default_options_provider import (
             DefaultOptionsProvider,
         )
@@ -38,7 +38,7 @@ class PythonWorkdir(FrameworkPackageWorkdir):
 
         return [DefaultOptionsProvider, GitOptionsProvider, PythonOptionsProvider]
 
-    def get_operations_providers(self) -> List[Type["AbstractOperationsProvider"]]:
+    def get_operations_providers(self) -> list[type["AbstractOperationsProvider"]]:
         from wexample_filestate.operations_provider.default_operations_provider import (
             DefaultOperationsProvider,
         )
@@ -63,7 +63,7 @@ class PythonWorkdir(FrameworkPackageWorkdir):
             os.path.basename(os.path.realpath(option.get_parent_item().get_path()))
         )
 
-    def prepare_value(self, raw_value: Optional[DictConfig] = None) -> DictConfig:
+    def prepare_value(self, raw_value: DictConfig | None = None) -> DictConfig:
         from wexample_filestate.config_option.children_filter_config_option import (
             ChildrenFilterConfigOption,
         )
@@ -134,7 +134,7 @@ class PythonWorkdir(FrameworkPackageWorkdir):
                 "name_pattern": r"^.*\.py$",
                 "type": DiskItemType.FILE,
                 "python": [
-                    # PythonConfigOption.OPTION_NAME_MODERNIZE_TYPING, # Creates errors in type validation
+                    PythonConfigOption.OPTION_NAME_MODERNIZE_TYPING,
                     PythonConfigOption.OPTION_NAME_FSTRINGIFY,
                     PythonConfigOption.OPTION_NAME_ADD_RETURN_TYPES,
                     PythonConfigOption.OPTION_NAME_SORT_IMPORTS,

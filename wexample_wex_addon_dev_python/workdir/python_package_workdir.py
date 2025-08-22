@@ -33,7 +33,7 @@ class PythonPackageWorkdir(PythonWorkdir):
 
         return pyproject_data
 
-    def prepare_value(self, config: Optional[DictConfig] = None) -> DictConfig:
+    def prepare_value(self, config: DictConfig | None = None) -> DictConfig:
         from wexample_config.config_value.callback_render_config_value import (
             CallbackRenderConfigValue,
         )

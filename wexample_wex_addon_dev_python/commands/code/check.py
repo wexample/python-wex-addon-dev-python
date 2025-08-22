@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 def python__code__check(
     context: "ExecutionContext",
     file: str,
-    tool: Optional[str] = None,
+    tool: str | None = None,
     stop_on_failure: bool = True,
     parallel: bool = True,
 ) -> bool:

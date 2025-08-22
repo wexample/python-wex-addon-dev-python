@@ -18,7 +18,7 @@ class EachPythonFileMiddleware(EachFileMiddleware):
     python_extension_only: bool = True
 
     # Default list of directories to ignore during recursion
-    ignored_directories: Set[str] = {
+    ignored_directories: set[str] = {
         "__pycache__",
         ".git",
         ".idea",

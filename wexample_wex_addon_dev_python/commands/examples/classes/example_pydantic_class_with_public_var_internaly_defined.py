@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 class ExamplePydanticClassWithPublicVarInternallyDefined(BaseModel):
-    _internal_var: "SomeExampleType" = PrivateAttr()
+    _internal_var: SomeExampleType = PrivateAttr()
 
     # model_post_init runs AFTER Pydantic has validated/coerced model fields.
     # Use it to initialize PrivateAttr that may rely on validated state.
@@ -26,11 +26,11 @@ class ExamplePydanticClassWithPublicVarInternallyDefined(BaseModel):
         self._internal_var = SomeExampleType(property="Yes")
 
     @property
-    def public_var(self) -> "SomeExampleType":
+    def public_var(self) -> SomeExampleType:
         return self._internal_var
 
     @public_var.setter
-    def public_var(self, value: "SomeExampleType") -> None:
+    def public_var(self, value: SomeExampleType) -> None:
         from wexample_wex_addon_dev_python.commands.examples.utils.some_example_type import (
             SomeExampleType,
         )

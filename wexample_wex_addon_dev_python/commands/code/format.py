@@ -26,7 +26,7 @@ from wexample_wex_core.decorator.option import option
 def python__code__format(
     kernel: "Kernel",
     file: str,
-    tool: Optional[str] = None,
+    tool: str | None = None,
     stop_on_failure: bool = True,
 ) -> bool:
     """Format a Python file using various code formatting tools."""
