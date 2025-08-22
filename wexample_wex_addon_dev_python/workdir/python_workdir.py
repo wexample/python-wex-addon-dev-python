@@ -89,9 +89,7 @@ class PythonWorkdir(FrameworkPackageWorkdir):
                     "name": "requirements.in",
                     "type": DiskItemType.FILE,
                     "should_exist": True,
-                    "should_not_contain_lines": [
-                        "pytest"
-                    ],
+                    "should_not_contain_lines": ["pytest"],
                     "content_options": [
                         ContentOptionsConfigOption.OPTION_NAME_LINES_SORT,
                         ContentOptionsConfigOption.OPTION_NAME_LINES_UNIQUE,
@@ -106,9 +104,7 @@ class PythonWorkdir(FrameworkPackageWorkdir):
                     "name": "requirements-dev.in",
                     "type": DiskItemType.FILE,
                     "should_exist": True,
-                    "should_contain_lines": [
-                        "pytest"
-                    ],
+                    "should_contain_lines": ["pytest"],
                     "content_options": [
                         ContentOptionsConfigOption.OPTION_NAME_LINES_SORT,
                         ContentOptionsConfigOption.OPTION_NAME_LINES_UNIQUE,
