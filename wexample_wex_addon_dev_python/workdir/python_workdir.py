@@ -134,6 +134,9 @@ class PythonWorkdir(FrameworkPackageWorkdir):
                 "name_pattern": r"^.*\.py$",
                 "type": DiskItemType.FILE,
                 "python": [
+                    # Configured for python >= 3.12
+                    # No mor future as it is native.
+                    PythonConfigOption.OPTION_NAME_REMOVE_FUTURE_IMPORTS,
                     PythonConfigOption.OPTION_NAME_REMOVE_UNUSED_IMPORTS,
                     PythonConfigOption.OPTION_NAME_MODERNIZE_TYPING,
                     PythonConfigOption.OPTION_NAME_FSTRINGIFY,
