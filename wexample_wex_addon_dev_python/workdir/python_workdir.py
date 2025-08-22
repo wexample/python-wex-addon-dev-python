@@ -134,6 +134,7 @@ class PythonWorkdir(FrameworkPackageWorkdir):
                 "name_pattern": r"^.*\.py$",
                 "type": DiskItemType.FILE,
                 "python": [
+                    PythonConfigOption.OPTION_NAME_REMOVE_UNUSED_IMPORTS,
                     PythonConfigOption.OPTION_NAME_MODERNIZE_TYPING,
                     PythonConfigOption.OPTION_NAME_FSTRINGIFY,
                     PythonConfigOption.OPTION_NAME_ADD_RETURN_TYPES,
