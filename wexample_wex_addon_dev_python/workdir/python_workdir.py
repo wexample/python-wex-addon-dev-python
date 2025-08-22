@@ -66,9 +66,11 @@ class PythonWorkdir(FrameworkPackageWorkdir):
         )
 
     def prepare_value(self, raw_value: DictConfig | None = None) -> DictConfig:
-        from wexample_filestate.config_option.content_options_config_option import ContentOptionsConfigOption
         from wexample_filestate.config_option.children_filter_config_option import (
             ChildrenFilterConfigOption,
+        )
+        from wexample_filestate.config_option.content_options_config_option import (
+            ContentOptionsConfigOption,
         )
         from wexample_filestate.const.disk import DiskItemType
 
@@ -89,7 +91,7 @@ class PythonWorkdir(FrameworkPackageWorkdir):
                     "should_exist": True,
                     "content_options": [
                         ContentOptionsConfigOption.OPTION_NAME_LINES_SORT
-                    ]
+                    ],
                 },
                 {
                     "name": "requirements.txt",
