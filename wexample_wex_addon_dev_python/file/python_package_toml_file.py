@@ -63,7 +63,7 @@ class PythonPackageTomlFile(TomlFile):
         return True
 
     @classmethod
-    def format_toml_doc(cls, target: PythonPackageTomlFile, doc) -> bool:
+    def format_toml_doc(cls, target: "PythonPackageTomlFile", doc) -> bool:
         """Apply formatting/rules to a parsed tomlkit doc. Returns True if changed."""
         changed = False
 
@@ -97,7 +97,19 @@ class PythonPackageTomlFile(TomlFile):
                 for _group, arr in opt_deps.items():
                     changed |= cls._sort_array_of_strings(arr)
 
-            # Remove pytest from runtime deps
+            # Helper: detect inline protection marker on a String item
+            from tomlkit.items import String as _TKString  # local alias
+
+            def _is_protected(item: object) -> bool:
+                if isinstance(item, _TKString):
+                    trivia = getattr(item, "trivia", None)
+                    comment = getattr(trivia, "comment", None)
+                    if comment:
+                        c = str(comment).lower()
+                        return "filestate:" in c and ("keep" in c or "ignore" in c)
+                return False
+
+            # Remove pytest from runtime deps (unless explicitly protected by comment)
             if deps is not None:
                 from tomlkit.items import String
 
@@ -107,7 +119,11 @@ class PythonPackageTomlFile(TomlFile):
                         return v == "pytest"
                     return False
 
-                to_remove = [idx for idx, it in enumerate(list(deps)) if _is_pytest_string(it)]
+                to_remove = [
+                    idx
+                    for idx, it in enumerate(list(deps))
+                    if _is_pytest_string(it) and not _is_protected(it)
+                ]
                 for idx in reversed(to_remove):
                     deps.pop(idx)
                 if to_remove:
@@ -132,10 +148,16 @@ class PythonPackageTomlFile(TomlFile):
 
             from tomlkit.items import String
             values = [it.value if isinstance(it, String) else str(it) for it in list(dev_arr)]
-            if not any(
-                v == "pytest"
-                for v in values
-            ):
+
+            # Also avoid adding to dev if pytest already present in runtime deps
+            has_runtime_pytest = False
+            if deps is not None:
+                has_runtime_pytest = any(
+                    (it.value.strip() == "pytest") if isinstance(it, String) else str(it).strip() == "pytest"
+                    for it in list(deps)
+                )
+
+            if not any(v == "pytest" for v in values) and not has_runtime_pytest:
                 dev_arr.append("pytest")
                 changed = True
                 changed |= cls._sort_array_of_strings(dev_arr)
