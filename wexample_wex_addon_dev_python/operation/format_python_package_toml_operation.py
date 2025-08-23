@@ -63,8 +63,3 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
     def description(self) -> str:
         return "Format the pyproject.toml file of a Python package using tomlkit."
 
-    def apply(self) -> None:
-        src = self.target.get_local_file().read()
-        updated = self.preview_source_change(self.target)
-        if updated is not None and updated != src:
-            self._target_file_write(content=updated)
