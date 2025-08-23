@@ -69,12 +69,11 @@ class PythonWorkdir(FrameworkPackageWorkdir):
             AddonDevPythonOperationsProvider,
         ]
 
-    @staticmethod
-    def _create_package_name_snake(option: ItemTreeConfigOptionMixin) -> str:
+    def _create_package_name_snake(self, option: ItemTreeConfigOptionMixin) -> str:
         import os
 
         return "wexample_" + string_to_snake_case(
-            os.path.basename(os.path.realpath(option.get_parent_item().get_path()))
+            os.path.basename(os.path.dirname(os.path.realpath(option.get_parent_item().get_path())))
         )
 
     def prepare_value(self, raw_value: DictConfig | None = None) -> DictConfig:

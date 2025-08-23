@@ -107,7 +107,6 @@ class PythonPackageWorkdir(PythonWorkdir):
 
         prepare_value["children"].append(
             {
-                "class": PythonPackageTomlFile,
                 "name": "src",
                 "type": DiskItemType.DIRECTORY,
                 "should_exist": True,
