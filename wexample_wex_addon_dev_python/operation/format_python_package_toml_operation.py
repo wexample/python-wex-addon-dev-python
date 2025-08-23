@@ -2,10 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from wexample_filestate.enum.scopes import Scope
-from wexample_filestate.operation.abstract_operation import AbstractOperation
-from wexample_filestate.operation.mixin.file_manipulation_operation_mixin import (
-    FileManipulationOperationMixin,
+from wexample_filestate.operation.abstract_existing_file_operation import (
+    AbstractExistingFileOperation,
 )
 
 if TYPE_CHECKING:
@@ -15,17 +13,11 @@ if TYPE_CHECKING:
     from wexample_filestate.const.types_state_items import TargetFileOrDirectoryType
 
 
-class FormatPythonPackageTomlOperation(
-    FileManipulationOperationMixin, AbstractOperation
-):
+class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
     """Format a Python package's pyproject.toml using tomlkit.
 
     Triggered by: { "format_python_package_toml": true }
     """
-
-    @classmethod
-    def get_scope(cls) -> Scope:
-        return Scope.CONTENT
 
     @classmethod
     def get_option_name(cls) -> str:
@@ -46,7 +38,7 @@ class FormatPythonPackageTomlOperation(
 
     @classmethod
     def applicable_option(
-            cls, target: TargetFileOrDirectoryType, option: AbstractConfigOption
+        cls, target: TargetFileOrDirectoryType, option: AbstractConfigOption
     ) -> bool:
         from wexample_wex_addon_dev_python.config_option.format_python_package_toml_option import (
             FormatPythonPackageTomlOption,
@@ -55,8 +47,7 @@ class FormatPythonPackageTomlOperation(
         if not isinstance(option, FormatPythonPackageTomlOption):
             return False
 
-        local = target.get_local_file()
-        if not (target.is_file() and local.path.exists()):
+        if not cls._is_existing_file(target):
             return False
 
         src = target.get_local_file().read()
