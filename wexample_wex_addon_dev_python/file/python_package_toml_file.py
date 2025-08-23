@@ -64,6 +64,8 @@ class PythonPackageTomlFile(TomlFile):
 
     @classmethod
     def format_toml_doc(cls, target: PythonPackageTomlFile, doc) -> bool:
+        from wexample_filestate.helpers.comment import comment_indicates_protected
+
         """Apply formatting/rules to a parsed tomlkit doc. Returns True if changed."""
         changed = False
 
@@ -104,15 +106,14 @@ class PythonPackageTomlFile(TomlFile):
                 if isinstance(item, _TKString):
                     trivia = getattr(item, "trivia", None)
                     comment = getattr(trivia, "comment", None)
-                    if comment:
-                        c = str(comment).lower()
-                        return "filestate:" in c and ("keep" in c)
+                    return comment_indicates_protected(comment)
                 return False
 
             # Remove unwanted dev/build tools from runtime deps (unless explicitly protected)
             if deps is not None:
-                from tomlkit.items import String
                 import re as _re
+
+                from tomlkit.items import String
 
                 _REMOVE_NAMES = {
                     "pytest",
