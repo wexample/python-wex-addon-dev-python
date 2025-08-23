@@ -32,3 +32,6 @@ text = "MIT"
 
 [project.urls]
 homepage = "https://github.com/wexample/python-wex-dev-python"
+
+[project.optional-dependencies]
+dev = ["pytest"]
