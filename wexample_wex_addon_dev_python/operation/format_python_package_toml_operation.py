@@ -82,6 +82,12 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
         # Handle [project].dependencies
         project_tbl = doc.get("project") if isinstance(doc, dict) else None
         if project_tbl and isinstance(project_tbl, dict):
+            # Enforce minimum Python version
+            target_requires = ">=3.12"
+            current_requires = project_tbl.get("requires-python")
+            if current_requires != target_requires:
+                project_tbl["requires-python"] = target_requires
+                changed = True
             deps = project_tbl.get("dependencies")
             if deps is not None:
                 changed |= cls._sort_array_of_strings(deps)
