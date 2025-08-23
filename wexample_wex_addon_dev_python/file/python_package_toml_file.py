@@ -38,7 +38,11 @@ class PythonPackageTomlFile(TomlFile):
     def format_toml_doc(self, doc) -> bool:
         from wexample_filestate.helpers.comment import comment_indicates_protected
         from wexample_helpers.helpers.string import string_to_snake_case
-        from wexample_filestate_python.helpers.toml import toml_sort_string_array
+        from wexample_filestate_python.helpers.toml import (
+            toml_sort_string_array,
+            toml_ensure_table,
+            toml_ensure_array,
+        )
 
         """Apply formatting/rules to a parsed tomlkit doc. Returns True if changed."""
         changed = False
@@ -78,25 +82,11 @@ class PythonPackageTomlFile(TomlFile):
             changed = True
 
         # Ensure [tool.pdm.build] includes py.typed (and package itself if include list is used)
-        tool_tbl = doc.get("tool") if isinstance(doc, dict) else None
-        if not tool_tbl or not isinstance(tool_tbl, dict):
-            tool_tbl = table()
-            doc["tool"] = tool_tbl
-            changed = True
-        pdm_tbl = tool_tbl.get("pdm")
-        if not pdm_tbl or not isinstance(pdm_tbl, dict):
-            pdm_tbl = table()
-            tool_tbl["pdm"] = pdm_tbl
-            changed = True
-        build_pdm_tbl = pdm_tbl.get("build")
-        if not build_pdm_tbl or not isinstance(build_pdm_tbl, dict):
-            build_pdm_tbl = table()
-            pdm_tbl["build"] = build_pdm_tbl
-            changed = True
-        includes_arr = build_pdm_tbl.get("includes")
-        if includes_arr is None:
-            includes_arr = array()
-            build_pdm_tbl["includes"] = includes_arr
+        tool_tbl, ch1 = toml_ensure_table(doc, ["tool"])
+        pdm_tbl, ch2 = toml_ensure_table(tool_tbl, ["pdm"])
+        build_pdm_tbl, ch3 = toml_ensure_table(pdm_tbl, ["build"])
+        includes_arr, ch4 = toml_ensure_array(build_pdm_tbl, "includes")
+        if ch1 or ch2 or ch3 or ch4:
             changed = True
         # Ensure py.typed is included for typing completeness
         if import_name:
