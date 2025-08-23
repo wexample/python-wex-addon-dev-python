@@ -28,6 +28,39 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
         return FormatPythonPackageTomlOption.OPTION_NAME
 
     @classmethod
+    def _sort_array_of_strings(cls, arr) -> bool:
+        """Sort a tomlkit Array of strings in place.
+
+        Assumes the array exists and contains only string items.
+        Returns True if a re-ordering was applied, False otherwise.
+        """
+        from tomlkit import array, string
+        from tomlkit.items import Array, String
+
+        if not isinstance(arr, Array):
+            return False
+
+        items = list(arr)
+        if not items or not all(isinstance(i, String) for i in items):
+            return False
+
+        values = [i.value for i in items]
+        sorted_values = sorted(values, key=lambda s: s.lower())
+        if values == sorted_values:
+            return False
+
+        # rebuild preserving multiline style
+        new_arr = array([string(v) for v in sorted_values])
+        new_arr.multiline(arr.multiline)
+
+        while len(arr):
+            arr.pop()
+        for item in new_arr:
+            arr.append(item)
+
+        return True
+
+    @classmethod
     def preview_source_change(cls, target: TargetFileOrDirectoryType) -> str | None:
         import tomlkit
 
@@ -37,7 +70,27 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
             return None
 
         doc = tomlkit.parse(src)
-        # Round-trip dump; tomlkit preserves comments/formatting while normalizing structure
+
+        changed = False
+
+        # Handle [project].dependencies
+        project_tbl = doc.get("project") if isinstance(doc, dict) else None
+        if project_tbl and isinstance(project_tbl, dict):
+            deps = project_tbl.get("dependencies")
+            if deps is not None:
+                changed |= cls._sort_array_of_strings(deps)
+
+            # Also handle [project.optional-dependencies]
+            opt_deps = project_tbl.get("optional-dependencies")
+            if opt_deps and isinstance(opt_deps, dict):
+                for _group, arr in opt_deps.items():
+                    changed |= cls._sort_array_of_strings(arr)
+
+        # If no change occurred, signal no-op to avoid churn
+        if not changed:
+            return None
+
+        # Dump back; tomlkit preserves formatting/comments
         updated = tomlkit.dumps(doc)
         return updated
 
