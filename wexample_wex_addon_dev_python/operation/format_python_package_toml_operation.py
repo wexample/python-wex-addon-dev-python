@@ -38,7 +38,7 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
 
     @classmethod
     def applicable_option(
-        cls, target: TargetFileOrDirectoryType, option: AbstractConfigOption
+            cls, target: TargetFileOrDirectoryType, option: AbstractConfigOption
     ) -> bool:
         from wexample_wex_addon_dev_python.config_option.format_python_package_toml_option import (
             FormatPythonPackageTomlOption,
@@ -47,15 +47,7 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
         if not isinstance(option, FormatPythonPackageTomlOption):
             return False
 
-        if not cls._is_existing_file(target):
-            return False
-
-        src = target.get_local_file().read()
-        if src.strip() == "":
-            return False
-
-        updated = cls.preview_source_change(src)
-        return updated != src
+        return cls.source_need_change(target)
 
     def describe_before(self) -> str:
         return "The pyproject.toml file is not normalized/formatted."
