@@ -88,9 +88,41 @@ class PythonPackageTomlFile(TomlFile):
         includes_arr, ch4 = toml_ensure_array(build_pdm_tbl, "includes")
         if ch1 or ch2 or ch3 or ch4:
             changed = True
+        # Enforce src layout for packaging
+        if import_name:
+            # Ensure package-dir = "src"
+            if build_pdm_tbl.get("package-dir") != "src":
+                build_pdm_tbl["package-dir"] = "src"
+                changed = True
+
+            # Ensure packages = [{ include = import_name, from = "src" }]
+            try:
+                from tomlkit import inline_table  # type: ignore
+            except Exception:  # pragma: no cover - very defensive
+                inline_table = None
+
+            desired_pkg = {"include": import_name, "from": "src"}
+            current_pkgs = build_pdm_tbl.get("packages")
+            need_set_pkgs = True
+            if isinstance(current_pkgs, list) and len(current_pkgs) == 1:
+                it = current_pkgs[0]
+                # Compare as plain dict
+                try:
+                    it_as_dict = {k: str(v) for k, v in it.items()}  # type: ignore[attr-defined]
+                except Exception:
+                    it_as_dict = None
+                if it_as_dict == {"include": import_name, "from": "src"}:
+                    need_set_pkgs = False
+
+            if need_set_pkgs and inline_table is not None:
+                it = inline_table()
+                it.update(desired_pkg)
+                build_pdm_tbl["packages"] = [it]
+                changed = True
+
         # Ensure py.typed is included for typing completeness
         if import_name:
-            desired_includes = {f"{import_name}/py.typed"}
+            desired_includes = {f"src/{import_name}/py.typed"}
             current_includes = {str(x) for x in list(includes_arr)}
             missing = desired_includes - current_includes
             if missing:

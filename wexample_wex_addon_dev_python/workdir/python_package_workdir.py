@@ -107,18 +107,26 @@ class PythonPackageWorkdir(PythonWorkdir):
 
         prepare_value["children"].append(
             {
-                "name": CallbackRenderConfigValue(raw=self._create_package_name_snake),
+                "class": PythonPackageTomlFile,
+                "name": "src",
                 "type": DiskItemType.DIRECTORY,
                 "should_exist": True,
                 "children": [
-                    self._create_init_children_factory(),
-                    self._create_python_file_children_filter(),
                     {
-                        "name": "py.typed",
-                        "type": DiskItemType.FILE,
+                        "name": CallbackRenderConfigValue(raw=self._create_package_name_snake),
+                        "type": DiskItemType.DIRECTORY,
                         "should_exist": True,
-                    },
-                ],
+                        "children": [
+                            self._create_init_children_factory(),
+                            self._create_python_file_children_filter(),
+                            {
+                                "name": "py.typed",
+                                "type": DiskItemType.FILE,
+                                "should_exist": True,
+                            },
+                        ],
+                    }
+                ]
             }
         )
 
