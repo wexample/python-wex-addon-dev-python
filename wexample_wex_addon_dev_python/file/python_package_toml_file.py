@@ -25,10 +25,12 @@ class PythonPackageTomlFile(TomlFile):
         from wexample_wex_addon_dev_python.workdir.python_package_workdir import (
             PythonPackageWorkdir,
         )
+
         return self.find_closest(PythonPackageWorkdir)
 
     def find_suite_workdir(self) -> PythonPackagesSuiteWorkdir | None:
         from wexample_wex_addon_dev_python.workdir.python_packages_suite_workdir import (
             PythonPackagesSuiteWorkdir,
         )
+
         return self.find_closest(PythonPackagesSuiteWorkdir)

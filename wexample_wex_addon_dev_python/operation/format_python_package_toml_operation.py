@@ -81,7 +81,7 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
 
         package_workdir = target.find_package_workdir()
         if package_workdir is not None:
-            version = package_workdir.get_config().get_config_item('version').get_str()
+            version = package_workdir.get_config().get_config_item("version").get_str()
 
             if version:
                 project_tbl = doc.get("project") if isinstance(doc, dict) else None
