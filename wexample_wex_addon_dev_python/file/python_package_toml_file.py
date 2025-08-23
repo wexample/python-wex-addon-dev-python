@@ -35,10 +35,6 @@ class PythonPackageTomlFile(TomlFile):
 
         return self.find_closest(PythonPackagesSuiteWorkdir)
 
-    # -------------------------
-    # Formatting helpers/logic
-    # -------------------------
-
     @classmethod
     def _sort_array_of_strings(cls, arr) -> bool:
         """Sort a tomlkit Array of String items in-place (case-insensitive) preserving style."""

@@ -98,36 +98,6 @@ class PythonWorkdir(FrameworkPackageWorkdir):
                     "should_exist": True,
                 },
                 {
-                    "name": "requirements.in",
-                    "type": DiskItemType.FILE,
-                    "should_exist": True,
-                    "should_not_contain_lines": ["pytest"],
-                    "content_options": [
-                        ContentOptionsConfigOption.OPTION_NAME_LINES_SORT,
-                        ContentOptionsConfigOption.OPTION_NAME_LINES_UNIQUE,
-                    ],
-                },
-                {
-                    "name": "requirements.txt",
-                    "type": DiskItemType.FILE,
-                    "should_exist": True,
-                },
-                {
-                    "name": "requirements-dev.in",
-                    "type": DiskItemType.FILE,
-                    "should_exist": True,
-                    "should_contain_lines": ["pytest"],
-                    "content_options": [
-                        ContentOptionsConfigOption.OPTION_NAME_LINES_SORT,
-                        ContentOptionsConfigOption.OPTION_NAME_LINES_UNIQUE,
-                    ],
-                },
-                {
-                    "name": "requirements-dev.txt",
-                    "type": DiskItemType.FILE,
-                    "should_exist": True,
-                },
-                {
                     "name": "tests",
                     "type": DiskItemType.DIRECTORY,
                     "should_exist": True,
@@ -135,6 +105,27 @@ class PythonWorkdir(FrameworkPackageWorkdir):
                         self._create_init_children_factory(),
                         self._create_python_file_children_filter(),
                     ],
+                },
+                # Replaced by pdm
+                {
+                    "name": "requirements.in",
+                    "type": DiskItemType.FILE,
+                    "should_exist": False,
+                },
+                {
+                    "name": "requirements.txt",
+                    "type": DiskItemType.FILE,
+                    "should_exist": False,
+                },
+                {
+                    "name": "requirements-dev.in",
+                    "type": DiskItemType.FILE,
+                    "should_exist": False,
+                },
+                {
+                    "name": "requirements-dev.txt",
+                    "type": DiskItemType.FILE,
+                    "should_exist": False,
                 },
                 # Remove unwanted files
                 # Should only be created during deployment
