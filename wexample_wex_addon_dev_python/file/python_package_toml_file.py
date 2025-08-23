@@ -6,7 +6,9 @@ from wexample_config.const.types import DictConfig
 from wexample_filestate.item.file.toml_file import TomlFile
 
 if TYPE_CHECKING:
-    from wexample_wex_addon_dev_python.workdir.python_packages_suite_workdir import PythonPackagesSuiteWorkdir
+    from wexample_wex_addon_dev_python.workdir.python_packages_suite_workdir import (
+        PythonPackagesSuiteWorkdir,
+    )
 
 
 class PythonPackageTomlFile(TomlFile):
@@ -19,6 +21,12 @@ class PythonPackageTomlFile(TomlFile):
 
         return prepare_value
 
+    def find_package_workdir(self) -> PythonPackagesSuiteWorkdir | None:
+        from wexample_wex_addon_dev_python.workdir.python_package_workdir import PythonPackageWorkdir
+        return self.find_closest(PythonPackageWorkdir)
+
     def find_suite_workdir(self) -> PythonPackagesSuiteWorkdir | None:
-        from wexample_wex_addon_dev_python.workdir.python_packages_suite_workdir import PythonPackagesSuiteWorkdir
+        from wexample_wex_addon_dev_python.workdir.python_packages_suite_workdir import (
+            PythonPackagesSuiteWorkdir,
+        )
         return self.find_closest(PythonPackagesSuiteWorkdir)
