@@ -84,7 +84,7 @@ class PythonPackageTomlFile(TomlFile):
                     changed = True
 
         # Ensure modern build backend: pdm-backend
-        from tomlkit import table, array
+        from tomlkit import array, table
 
         build_tbl = doc.get("build-system") if isinstance(doc, dict) else None
         if not build_tbl or not isinstance(build_tbl, dict):

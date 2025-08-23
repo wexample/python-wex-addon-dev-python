@@ -117,7 +117,7 @@ class PythonPackageWorkdir(PythonWorkdir):
                         "name": "py.typed",
                         "type": DiskItemType.FILE,
                         "should_exist": True,
-                    }
+                    },
                 ],
             }
         )
