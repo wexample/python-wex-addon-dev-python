@@ -35,34 +35,9 @@ class PythonPackageTomlFile(TomlFile):
 
         return self.find_closest(PythonPackagesSuiteWorkdir)
 
-    def _sort_array_of_strings(self, arr) -> bool:
-        """Sort a tomlkit Array of String items in-place (case-insensitive) preserving style."""
-        from tomlkit.items import Array, String
-
-        if not isinstance(arr, Array):
-            return False
-
-        items = list(arr)
-        if not items or not all(isinstance(i, String) for i in items):
-            return False
-
-        values = [i.value for i in items]
-        sorted_items = [x for _, x in sorted(zip([v.lower() for v in values], items), key=lambda t: t[0])]
-
-        if items == sorted_items:
-            return False
-
-        multiline_flag = getattr(arr, "multiline", None)
-        while len(arr):
-            arr.pop()
-        for item in sorted_items:
-            arr.append(item)
-        if multiline_flag is not None:
-            arr.multiline(multiline_flag)
-        return True
-
     def format_toml_doc(self, doc) -> bool:
         from wexample_filestate.helpers.comment import comment_indicates_protected
+        from wexample_filestate_python.helpers.toml import toml_sort_string_array
 
         """Apply formatting/rules to a parsed tomlkit doc. Returns True if changed."""
         changed = False
@@ -143,13 +118,13 @@ class PythonPackageTomlFile(TomlFile):
 
             deps = project_tbl.get("dependencies")
             if deps is not None:
-                changed |= self._sort_array_of_strings(deps)
+                changed |= toml_sort_string_array(deps)
 
             # Sort optional deps arrays
             opt_deps = project_tbl.get("optional-dependencies")
             if opt_deps and isinstance(opt_deps, dict):
                 for _group, arr in opt_deps.items():
-                    changed |= self._sort_array_of_strings(arr)
+                    changed |= toml_sort_string_array(arr)
 
             # Helper: detect inline protection marker on a String item
             from tomlkit.items import String as _TKString  # local alias
@@ -209,7 +184,7 @@ class PythonPackageTomlFile(TomlFile):
                     deps.pop(idx)
                 if to_remove:
                     changed = True
-                    changed |= self._sort_array_of_strings(deps)
+                    changed |= toml_sort_string_array(deps)
 
                 # Normalize any existing pydantic spec to pydantic>=2,<3
                 normalized = False
@@ -225,7 +200,7 @@ class PythonPackageTomlFile(TomlFile):
                         normalized = True
                 if normalized:
                     changed = True
-                    changed |= self._sort_array_of_strings(deps)
+                    changed |= toml_sort_string_array(deps)
 
                 # Ensure pydantic>=2,<3 is present unless excluded
                 # Read optional exclusion list from [tool.filestate].exclude-add
@@ -245,7 +220,7 @@ class PythonPackageTomlFile(TomlFile):
                 if "pydantic" not in exclude_add and "pydantic" not in existing_norm:
                     deps.append("pydantic>=2,<3")
                     changed = True
-                    changed |= self._sort_array_of_strings(deps)
+                    changed |= toml_sort_string_array(deps)
 
             # Ensure dev optional-dependencies has pytest
             if not opt_deps or not isinstance(opt_deps, dict):
@@ -277,7 +252,7 @@ class PythonPackageTomlFile(TomlFile):
             if not any(v == "pytest" for v in values) and not has_runtime_pytest:
                 dev_arr.append("pytest")
                 changed = True
-                changed |= self._sort_array_of_strings(dev_arr)
+                changed |= toml_sort_string_array(dev_arr)
 
         return changed
 
