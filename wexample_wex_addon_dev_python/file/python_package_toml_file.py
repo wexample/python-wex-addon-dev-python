@@ -71,6 +71,8 @@ class PythonPackageTomlFile(TomlFile):
         package_workdir = self.find_package_workdir()
 
         project_name = package_workdir.get_project_name()
+        # Heuristic import name: convention is distribution name with '-' replaced by '_'
+        import_name = project_name.replace("-", "_") if isinstance(project_name, str) else None
 
         if package_workdir is not None:
             version = package_workdir.get_project_version()
@@ -81,10 +83,59 @@ class PythonPackageTomlFile(TomlFile):
                     project_tbl["version"] = version
                     changed = True
 
+        # Ensure modern build backend: pdm-backend
+        from tomlkit import table, array
+
+        build_tbl = doc.get("build-system") if isinstance(doc, dict) else None
+        if not build_tbl or not isinstance(build_tbl, dict):
+            build_tbl = table()
+            doc["build-system"] = build_tbl
+            changed = True
+        # Always enforce pdm-backend
+        requires_list = build_tbl.get("requires")
+        desired_requires = ["pdm-backend"]
+        if requires_list != desired_requires:
+            build_tbl["requires"] = desired_requires
+            changed = True
+        if build_tbl.get("build-backend") != "pdm.backend":
+            build_tbl["build-backend"] = "pdm.backend"
+            changed = True
+
+        # Ensure [tool.pdm.build] includes py.typed (and package itself if include list is used)
+        tool_tbl = doc.get("tool") if isinstance(doc, dict) else None
+        if not tool_tbl or not isinstance(tool_tbl, dict):
+            tool_tbl = table()
+            doc["tool"] = tool_tbl
+            changed = True
+        pdm_tbl = tool_tbl.get("pdm")
+        if not pdm_tbl or not isinstance(pdm_tbl, dict):
+            pdm_tbl = table()
+            tool_tbl["pdm"] = pdm_tbl
+            changed = True
+        build_pdm_tbl = pdm_tbl.get("build")
+        if not build_pdm_tbl or not isinstance(build_pdm_tbl, dict):
+            build_pdm_tbl = table()
+            pdm_tbl["build"] = build_pdm_tbl
+            changed = True
+        includes_arr = build_pdm_tbl.get("includes")
+        if includes_arr is None:
+            includes_arr = array()
+            build_pdm_tbl["includes"] = includes_arr
+            changed = True
+        # Ensure py.typed is included for typing completeness
+        if import_name:
+            desired_includes = {f"{import_name}/py.typed"}
+            current_includes = {str(x) for x in list(includes_arr)}
+            missing = desired_includes - current_includes
+            if missing:
+                for item in sorted(missing):
+                    includes_arr.append(item)
+                changed = True
+
         project_tbl = doc.get("project") if isinstance(doc, dict) else None
         if project_tbl and isinstance(project_tbl, dict):
             # Enforce minimum Python version
-            target_requires = ">=3.12"
+            target_requires = ">=3.10"
             current_requires = project_tbl.get("requires-python")
             if current_requires != target_requires:
                 project_tbl["requires-python"] = target_requires
@@ -160,9 +211,24 @@ class PythonPackageTomlFile(TomlFile):
                     changed = True
                     changed |= self._sort_array_of_strings(deps)
 
+                # Normalize any existing pydantic spec to pydantic>=2,<3
+                normalized = False
+                for i, it in enumerate(list(deps)):
+                    val = (it.value if isinstance(it, String) else str(it)).strip()
+                    base = _norm_name(val)
+                    if base == "pydantic" and not _is_protected(it):
+                        if isinstance(it, String):
+                            deps[i] = "pydantic>=2,<3"
+                        else:
+                            deps.pop(i)
+                            deps.insert(i, "pydantic>=2,<3")
+                        normalized = True
+                if normalized:
+                    changed = True
+                    changed |= self._sort_array_of_strings(deps)
+
                 # Ensure pydantic>=2,<3 is present unless excluded
                 # Read optional exclusion list from [tool.filestate].exclude-add
-                tool_tbl = doc.get("tool") if isinstance(doc, dict) else None
                 filestate_tbl = None
                 exclude_add: set[str] = set()
                 if tool_tbl and isinstance(tool_tbl, dict):
@@ -191,9 +257,9 @@ class PythonPackageTomlFile(TomlFile):
 
             dev_arr = opt_deps.get("dev")
             if dev_arr is None:
-                from tomlkit import array
+                from tomlkit import array as _array
 
-                dev_arr = array()
+                dev_arr = _array()
                 opt_deps["dev"] = dev_arr
                 changed = True
 
