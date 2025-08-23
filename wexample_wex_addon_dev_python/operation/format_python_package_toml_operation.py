@@ -43,7 +43,7 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
 
     @classmethod
     def applicable_option(
-            cls, target: TargetFileOrDirectoryType, option: AbstractConfigOption
+        cls, target: TargetFileOrDirectoryType, option: AbstractConfigOption
     ) -> bool:
         from wexample_wex_addon_dev_python.config_option.format_python_package_toml_option import (
             FormatPythonPackageTomlOption,
@@ -62,4 +62,3 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
 
     def description(self) -> str:
         return "Format the pyproject.toml file of a Python package using tomlkit."
-
