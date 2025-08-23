@@ -101,7 +101,7 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
         return updated
 
     def applicable_operation(
-            self, target: TargetFileOrDirectoryType, option: AbstractConfigOption
+        self, target: TargetFileOrDirectoryType, option: AbstractConfigOption
     ) -> bool:
         from wexample_wex_addon_dev_python.config_option.format_python_package_toml_option import (
             FormatPythonPackageTomlOption,
