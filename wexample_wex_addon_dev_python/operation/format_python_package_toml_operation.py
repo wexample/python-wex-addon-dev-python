@@ -34,7 +34,6 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
         Assumes the array exists and contains only string items.
         Returns True if a re-ordering was applied, False otherwise.
         """
-        from tomlkit import array, string
         from tomlkit.items import Array, String
 
         if not isinstance(arr, Array):
@@ -45,18 +44,25 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
             return False
 
         values = [i.value for i in items]
-        sorted_values = sorted(values, key=lambda s: s.lower())
-        if values == sorted_values:
+        # Compute sorted order using existing String items to preserve style/quotes/comments
+        sorted_items = [
+            x
+            for _, x in sorted(
+                zip([v.lower() for v in values], items), key=lambda t: t[0]
+            )
+        ]
+
+        if items == sorted_items:
             return False
 
-        # rebuild preserving multiline style
-        new_arr = array([string(v) for v in sorted_values])
-        new_arr.multiline(arr.multiline)
-
+        # Rebuild in place with the original items, preserving style/quotes/comments and multiline flag
+        multiline_flag = getattr(arr, "multiline", None)
         while len(arr):
             arr.pop()
-        for item in new_arr:
+        for item in sorted_items:
             arr.append(item)
+        if multiline_flag is not None:
+            arr.multiline(multiline_flag)
 
         return True
 
