@@ -81,15 +81,14 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
 
         package_workdir = target.find_package_workdir()
         if package_workdir is not None:
-            version = package_workdir.get_config().get_config_item("version").get_str()
+            version = package_workdir.get_version()
 
-            if version:
-                project_tbl = doc.get("project") if isinstance(doc, dict) else None
-                if project_tbl and isinstance(project_tbl, dict):
-                    current_version = project_tbl.get("version")
-                    if current_version != version:
-                        project_tbl["version"] = version
-                        changed = True
+            project_tbl = doc.get("project") if isinstance(doc, dict) else None
+            if project_tbl and isinstance(project_tbl, dict):
+                current_version = project_tbl.get("version")
+                if current_version != version:
+                    project_tbl["version"] = version
+                    changed = True
 
         # Handle [project].dependencies
         project_tbl = doc.get("project") if isinstance(doc, dict) else None
@@ -118,13 +117,7 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
                 def _is_pytest_string(item: object) -> bool:
                     if isinstance(item, String):
                         v = item.value.strip()
-                        return (
-                            v == "pytest"
-                            or v.startswith("pytest ")
-                            or v.startswith("pytest>=")
-                            or v.startswith("pytest==")
-                            or v.startswith("pytest<")
-                        )
+                        return v == "pytest"
                     return False
 
                 len(list(deps))
