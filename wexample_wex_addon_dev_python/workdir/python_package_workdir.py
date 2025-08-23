@@ -45,7 +45,9 @@ class PythonPackageWorkdir(PythonWorkdir):
         prepare_value = super().prepare_value(prepare_value)
 
         # Retrieve the '.gitignore' configuration or create it if it doesn't exist
-        config_gitignore = array_dict_get_by("name", ".gitignore", prepare_value["children"])
+        config_gitignore = array_dict_get_by(
+            "name", ".gitignore", prepare_value["children"]
+        )
         if config_gitignore is not None:
             generic_gitignore_rules = {
                 "Python artifacts": [

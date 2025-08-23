@@ -15,7 +15,9 @@ if TYPE_CHECKING:
     from wexample_filestate.const.types_state_items import TargetFileOrDirectoryType
 
 
-class FormatPythonPackageTomlOperation(FileManipulationOperationMixin, AbstractOperation):
+class FormatPythonPackageTomlOperation(
+    FileManipulationOperationMixin, AbstractOperation
+):
     """Format a Python package's pyproject.toml using tomlkit.
 
     Triggered by: { "format_python_package_toml": true }
@@ -34,30 +36,25 @@ class FormatPythonPackageTomlOperation(FileManipulationOperationMixin, AbstractO
         return FormatPythonPackageTomlOption.OPTION_NAME
 
     @classmethod
-    def _is_target_pyproject(cls, target: "TargetFileOrDirectoryType") -> bool:
+    def _is_target_pyproject(cls, target: TargetFileOrDirectoryType) -> bool:
         local = target.get_local_file()
-        return target.is_file() and local.path.exists() and local.path.name == "pyproject.toml"
+        return (
+                target.is_file()
+                and local.path.exists()
+        )
 
     @classmethod
     def preview_source_change(cls, src: str) -> str:
-        try:
-            import tomlkit
-        except Exception:
-            # If tomlkit isn't available, do not change content
-            return src
+        import tomlkit
 
-        try:
-            doc = tomlkit.parse(src)
-            # Round-trip dump; tomlkit preserves comments/formatting while normalizing structure
-            updated = tomlkit.dumps(doc)
-            return updated
-        except Exception:
-            # Parsing failed; safest is to keep content unchanged
-            return src
+        doc = tomlkit.parse(src)
+        # Round-trip dump; tomlkit preserves comments/formatting while normalizing structure
+        updated = tomlkit.dumps(doc)
+        return updated
 
     @classmethod
     def applicable_option(
-        cls, target: "TargetFileOrDirectoryType", option: "AbstractConfigOption"
+            cls, target: TargetFileOrDirectoryType, option: AbstractConfigOption
     ) -> bool:
         from wexample_wex_addon_dev_python.config_option.format_python_package_toml_option import (
             FormatPythonPackageTomlOption,

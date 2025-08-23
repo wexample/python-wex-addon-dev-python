@@ -37,8 +37,16 @@ class PythonWorkdir(FrameworkPackageWorkdir):
         from wexample_filestate_python.options_provider.python_options_provider import (
             PythonOptionsProvider,
         )
+        from wexample_wex_addon_dev_python.options_provider.addon_dev_python_options_provider import (
+            AddonDevPythonOptionsProvider,
+        )
 
-        return [DefaultOptionsProvider, GitOptionsProvider, PythonOptionsProvider]
+        return [
+            DefaultOptionsProvider,
+            GitOptionsProvider,
+            PythonOptionsProvider,
+            AddonDevPythonOptionsProvider,
+        ]
 
     def get_operations_providers(self) -> list[type[AbstractOperationsProvider]]:
         from wexample_filestate.operations_provider.default_operations_provider import (
@@ -50,11 +58,15 @@ class PythonWorkdir(FrameworkPackageWorkdir):
         from wexample_filestate_python.operations_provider.python_operations_provider import (
             PythonOperationsProvider,
         )
+        from wexample_wex_addon_dev_python.operations_provider.addon_dev_python_operations_provider import (
+            AddonDevPythonOperationsProvider,
+        )
 
         return [
             DefaultOperationsProvider,
             GitOperationsProvider,
             PythonOperationsProvider,
+            AddonDevPythonOperationsProvider,
         ]
 
     @staticmethod
