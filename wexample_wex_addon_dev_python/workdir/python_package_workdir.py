@@ -113,6 +113,11 @@ class PythonPackageWorkdir(PythonWorkdir):
                 "children": [
                     self._create_init_children_factory(),
                     self._create_python_file_children_filter(),
+                    {
+                        "name": "py.typed",
+                        "type": DiskItemType.FILE,
+                        "should_exist": True,
+                    }
                 ],
             }
         )

@@ -10,7 +10,9 @@ if TYPE_CHECKING:
     from wexample_config.config_option.abstract_config_option import (
         AbstractConfigOption,
     )
-    from wexample_filestate.const.types_state_items import TargetFileOrDirectoryType
+    from wexample_wex_addon_dev_python.file.python_package_toml_file import (
+        PythonPackageTomlFile,
+    )
 
 
 class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
@@ -28,16 +30,13 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
         return FormatPythonPackageTomlOption.OPTION_NAME
 
     @classmethod
-    def preview_source_change(cls, target: TargetFileOrDirectoryType) -> str | None:
-        from wexample_wex_addon_dev_python.file.python_package_toml_file import (
-            PythonPackageTomlFile,
-        )
+    def preview_source_change(cls, target: PythonPackageTomlFile) -> str | None:
 
         src = cls._read_current_non_empty_src(target)
         if src is None:
             return None
 
-        return PythonPackageTomlFile.apply_format_to_src(target, src)
+        return target.apply_format_to_src(src)
 
     def applicable_for_option(self, option: AbstractConfigOption) -> bool:
         from wexample_wex_addon_dev_python.config_option.format_python_package_toml_option import (

@@ -35,8 +35,7 @@ class PythonPackageTomlFile(TomlFile):
 
         return self.find_closest(PythonPackagesSuiteWorkdir)
 
-    @classmethod
-    def _sort_array_of_strings(cls, arr) -> bool:
+    def _sort_array_of_strings(self, arr) -> bool:
         """Sort a tomlkit Array of String items in-place (case-insensitive) preserving style."""
         from tomlkit.items import Array, String
 
@@ -62,17 +61,19 @@ class PythonPackageTomlFile(TomlFile):
             arr.multiline(multiline_flag)
         return True
 
-    @classmethod
-    def format_toml_doc(cls, target: PythonPackageTomlFile, doc) -> bool:
+    def format_toml_doc(self, doc) -> bool:
         from wexample_filestate.helpers.comment import comment_indicates_protected
 
         """Apply formatting/rules to a parsed tomlkit doc. Returns True if changed."""
         changed = False
 
         # Sync version from package workdir if available
-        package_workdir = target.find_package_workdir()
+        package_workdir = self.find_package_workdir()
+
+        project_name = package_workdir.get_project_name()
+
         if package_workdir is not None:
-            version = package_workdir.get_version()
+            version = package_workdir.get_project_version()
             project_tbl = doc.get("project") if isinstance(doc, dict) else None
             if project_tbl and isinstance(project_tbl, dict):
                 current_version = project_tbl.get("version")
@@ -91,13 +92,13 @@ class PythonPackageTomlFile(TomlFile):
 
             deps = project_tbl.get("dependencies")
             if deps is not None:
-                changed |= cls._sort_array_of_strings(deps)
+                changed |= self._sort_array_of_strings(deps)
 
             # Sort optional deps arrays
             opt_deps = project_tbl.get("optional-dependencies")
             if opt_deps and isinstance(opt_deps, dict):
                 for _group, arr in opt_deps.items():
-                    changed |= cls._sort_array_of_strings(arr)
+                    changed |= self._sort_array_of_strings(arr)
 
             # Helper: detect inline protection marker on a String item
             from tomlkit.items import String as _TKString  # local alias
@@ -157,7 +158,7 @@ class PythonPackageTomlFile(TomlFile):
                     deps.pop(idx)
                 if to_remove:
                     changed = True
-                    changed |= cls._sort_array_of_strings(deps)
+                    changed |= self._sort_array_of_strings(deps)
 
                 # Ensure pydantic>=2,<3 is present unless excluded
                 # Read optional exclusion list from [tool.filestate].exclude-add
@@ -178,7 +179,7 @@ class PythonPackageTomlFile(TomlFile):
                 if "pydantic" not in exclude_add and "pydantic" not in existing_norm:
                     deps.append("pydantic>=2,<3")
                     changed = True
-                    changed |= cls._sort_array_of_strings(deps)
+                    changed |= self._sort_array_of_strings(deps)
 
             # Ensure dev optional-dependencies has pytest
             if not opt_deps or not isinstance(opt_deps, dict):
@@ -210,17 +211,16 @@ class PythonPackageTomlFile(TomlFile):
             if not any(v == "pytest" for v in values) and not has_runtime_pytest:
                 dev_arr.append("pytest")
                 changed = True
-                changed |= cls._sort_array_of_strings(dev_arr)
+                changed |= self._sort_array_of_strings(dev_arr)
 
         return changed
 
-    @classmethod
-    def apply_format_to_src(cls, target: PythonPackageTomlFile, src: str) -> str | None:
+    def apply_format_to_src(self, src: str) -> str | None:
         """Parse, format, and dump toml; return updated string or None if no changes."""
         import tomlkit
 
         doc = tomlkit.parse(src)
-        changed = cls.format_toml_doc(target, doc)
+        changed = self.format_toml_doc(doc)
         if not changed:
             return None
         return tomlkit.dumps(doc)
