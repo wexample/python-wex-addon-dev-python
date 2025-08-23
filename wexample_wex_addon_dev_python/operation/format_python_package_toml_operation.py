@@ -92,6 +92,52 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
                 for _group, arr in opt_deps.items():
                     changed |= cls._sort_array_of_strings(arr)
 
+            # Enforce rule: remove pytest from runtime deps, ensure it exists in optional deps (dev)
+            # 1) Remove any pytest entry from [project].dependencies
+            if deps is not None:
+                from tomlkit.items import String
+
+                def _is_pytest_string(item: object) -> bool:
+                    if isinstance(item, String):
+                        v = item.value.strip()
+                        return v == "pytest" or v.startswith("pytest ") or v.startswith("pytest>=") or v.startswith("pytest==") or v.startswith("pytest<")
+                    return False
+
+                original_len = len(list(deps))
+                # Collect indices to remove to avoid modifying while iterating
+                to_remove = [idx for idx, it in enumerate(list(deps)) if _is_pytest_string(it)]
+                for idx in reversed(to_remove):
+                    deps.pop(idx)
+                if to_remove:
+                    changed = True
+                    # Re-sort after modification
+                    changed |= cls._sort_array_of_strings(deps)
+
+            # 2) Ensure [project.optional-dependencies].dev exists and contains pytest
+            if not opt_deps or not isinstance(opt_deps, dict):
+                # Create the table if missing
+                from tomlkit import table, array
+                opt_deps = table()
+                project_tbl["optional-dependencies"] = opt_deps
+                changed = True
+
+            # Ensure "dev" group exists
+            dev_arr = opt_deps.get("dev")
+            if dev_arr is None:
+                from tomlkit import array
+                dev_arr = array()
+                # Make it a nice inline or multiline array depending on style; default inline
+                opt_deps["dev"] = dev_arr
+                changed = True
+
+            # Add pytest if missing
+            from tomlkit.items import String
+            values = [it.value if isinstance(it, String) else str(it) for it in list(dev_arr)]
+            if not any(v == "pytest" or v.startswith("pytest ") or v.startswith("pytest>=") or v.startswith("pytest==") or v.startswith("pytest<") for v in values):
+                dev_arr.append("pytest")
+                changed = True
+                changed |= cls._sort_array_of_strings(dev_arr)
+
         # If no change occurred, signal no-op to avoid churn
         if not changed:
             return None
