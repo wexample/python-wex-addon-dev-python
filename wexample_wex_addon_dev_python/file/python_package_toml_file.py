@@ -37,6 +37,7 @@ class PythonPackageTomlFile(TomlFile):
 
     def format_toml_doc(self, doc) -> bool:
         from wexample_filestate.helpers.comment import comment_indicates_protected
+        from wexample_helpers.helpers.string import string_to_snake_case
         from wexample_filestate_python.helpers.toml import toml_sort_string_array
 
         """Apply formatting/rules to a parsed tomlkit doc. Returns True if changed."""
@@ -46,8 +47,8 @@ class PythonPackageTomlFile(TomlFile):
         package_workdir = self.find_package_workdir()
 
         project_name = package_workdir.get_project_name()
-        # Heuristic import name: convention is distribution name with '-' replaced by '_'
-        import_name = project_name.replace("-", "_") if isinstance(project_name, str) else None
+        # Heuristic import name: distribution name converted to snake_case
+        import_name = string_to_snake_case(project_name) if isinstance(project_name, str) else None
 
         if package_workdir is not None:
             version = package_workdir.get_project_version()
@@ -214,7 +215,8 @@ class PythonPackageTomlFile(TomlFile):
                         exclude_add = {str(x).strip().lower() for x in ex}
 
                 existing_names = {
-                    (it.value if isinstance(it, String) else str(it)) for it in list(deps)
+                    (it.value if isinstance(it, String) else str(it))
+                    for it in list(deps)
                 }
                 existing_norm = {_norm_name(v) for v in existing_names}
                 if "pydantic" not in exclude_add and "pydantic" not in existing_norm:
@@ -239,13 +241,20 @@ class PythonPackageTomlFile(TomlFile):
                 changed = True
 
             from tomlkit.items import String
-            values = [it.value if isinstance(it, String) else str(it) for it in list(dev_arr)]
+
+            values = [
+                it.value if isinstance(it, String) else str(it) for it in list(dev_arr)
+            ]
 
             # Also avoid adding to dev if pytest already present in runtime deps
             has_runtime_pytest = False
             if deps is not None:
                 has_runtime_pytest = any(
-                    (it.value.strip() == "pytest") if isinstance(it, String) else str(it).strip() == "pytest"
+                    (
+                        (it.value.strip() == "pytest")
+                        if isinstance(it, String)
+                        else str(it).strip() == "pytest"
+                    )
                     for it in list(deps)
                 )
 
