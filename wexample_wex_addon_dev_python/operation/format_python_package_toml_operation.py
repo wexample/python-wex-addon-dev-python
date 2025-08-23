@@ -36,14 +36,6 @@ class FormatPythonPackageTomlOperation(
         return FormatPythonPackageTomlOption.OPTION_NAME
 
     @classmethod
-    def _is_target_pyproject(cls, target: TargetFileOrDirectoryType) -> bool:
-        local = target.get_local_file()
-        return (
-                target.is_file()
-                and local.path.exists()
-        )
-
-    @classmethod
     def preview_source_change(cls, src: str) -> str:
         import tomlkit
 
@@ -63,7 +55,8 @@ class FormatPythonPackageTomlOperation(
         if not isinstance(option, FormatPythonPackageTomlOption):
             return False
 
-        if not cls._is_target_pyproject(target):
+        local = target.get_local_file()
+        if not (target.is_file() and local.path.exists()):
             return False
 
         src = target.get_local_file().read()
@@ -83,8 +76,6 @@ class FormatPythonPackageTomlOperation(
         return "Format the pyproject.toml file of a Python package using tomlkit."
 
     def apply(self) -> None:
-        if not self._is_target_pyproject(self.target):
-            return
         src = self.target.get_local_file().read()
         updated = self.preview_source_change(src)
         if updated != src:
