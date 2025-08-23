@@ -112,7 +112,9 @@ class PythonPackageWorkdir(PythonWorkdir):
                 "should_exist": True,
                 "children": [
                     {
-                        "name": CallbackRenderConfigValue(raw=self._create_package_name_snake),
+                        "name": CallbackRenderConfigValue(
+                            raw=self._create_package_name_snake
+                        ),
                         "type": DiskItemType.DIRECTORY,
                         "should_exist": True,
                         "children": [
@@ -125,7 +127,7 @@ class PythonPackageWorkdir(PythonWorkdir):
                             },
                         ],
                     }
-                ]
+                ],
             }
         )
 

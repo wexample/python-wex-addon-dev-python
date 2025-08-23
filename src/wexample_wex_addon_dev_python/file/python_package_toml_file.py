@@ -52,7 +52,11 @@ class PythonPackageTomlFile(TomlFile):
 
         project_name = package_workdir.get_project_name()
         # Heuristic import name: distribution name converted to snake_case
-        import_name = string_to_snake_case(project_name) if isinstance(project_name, str) else None
+        import_name = (
+            string_to_snake_case(project_name)
+            if isinstance(project_name, str)
+            else None
+        )
 
         if package_workdir is not None:
             version = package_workdir.get_project_version()
@@ -268,8 +272,7 @@ class PythonPackageTomlFile(TomlFile):
             has_runtime_pytest = False
             if deps is not None:
                 has_runtime_pytest = any(
-                    toml_get_string_value(it).strip() == "pytest"
-                    for it in list(deps)
+                    toml_get_string_value(it).strip() == "pytest" for it in list(deps)
                 )
 
             if not any(v == "pytest" for v in values) and not has_runtime_pytest:

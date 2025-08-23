@@ -73,7 +73,9 @@ class PythonWorkdir(FrameworkPackageWorkdir):
         import os
 
         return "wexample_" + string_to_snake_case(
-            os.path.basename(os.path.dirname(os.path.realpath(option.get_parent_item().get_path())))
+            os.path.basename(
+                os.path.dirname(os.path.realpath(option.get_parent_item().get_path()))
+            )
         )
 
     def prepare_value(self, raw_value: DictConfig | None = None) -> DictConfig:
