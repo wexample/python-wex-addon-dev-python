@@ -100,9 +100,7 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
         updated = tomlkit.dumps(doc)
         return updated
 
-    def applicable_for_option(
-        self, option: AbstractConfigOption
-    ) -> bool:
+    def applicable_for_option(self, option: AbstractConfigOption) -> bool:
         from wexample_wex_addon_dev_python.config_option.format_python_package_toml_option import (
             FormatPythonPackageTomlOption,
         )
