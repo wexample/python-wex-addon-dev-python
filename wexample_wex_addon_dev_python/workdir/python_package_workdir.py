@@ -38,6 +38,9 @@ class PythonPackageWorkdir(PythonWorkdir):
             CallbackRenderConfigValue,
         )
         from wexample_filestate.const.disk import DiskItemType
+        from wexample_wex_addon_dev_python.file.python_package_toml_file import (
+            PythonPackageTomlFile,
+        )
 
         config = super().prepare_value(config)
 
@@ -93,6 +96,7 @@ class PythonPackageWorkdir(PythonWorkdir):
 
         config["children"].append(
             {
+                "class": PythonPackageTomlFile,
                 "name": "pyproject.toml",
                 "type": DiskItemType.FILE,
                 "should_exist": True,
