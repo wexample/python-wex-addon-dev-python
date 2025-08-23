@@ -36,14 +36,13 @@ class PythonPackageTomlFile(TomlFile):
         return self.find_closest(PythonPackagesSuiteWorkdir)
 
     def format_toml_doc(self, doc) -> bool:
-        from wexample_filestate.helpers.comment import comment_indicates_protected
-        from wexample_helpers.helpers.string import string_to_snake_case
         from wexample_filestate_python.helpers.toml import (
-            toml_sort_string_array,
-            toml_ensure_table,
             toml_ensure_array,
+            toml_ensure_table,
             toml_get_string_value,
+            toml_sort_string_array,
         )
+        from wexample_helpers.helpers.string import string_to_snake_case
 
         """Apply formatting/rules to a parsed tomlkit doc. Returns True if changed."""
         changed = False
@@ -118,14 +117,8 @@ class PythonPackageTomlFile(TomlFile):
                 for _group, arr in opt_deps.items():
                     changed |= toml_sort_string_array(arr)
 
-            # Helper: detect inline protection marker on a String item
-            from tomlkit.items import String as _TKString  # local alias
-
-            def _is_protected(item: object) -> bool:
-                if isinstance(item, _TKString):
-                    trivia = getattr(item, "trivia", None)
-                    comment = getattr(trivia, "comment", None)
-                    return comment_indicates_protected(comment)
+            # Inline comment protection disabled; use [tool.filestate].keep instead
+            def _is_protected(item: object) -> bool:  # noqa: ARG001
                 return False
 
             # Remove unwanted dev/build tools from runtime deps (unless explicitly protected)
@@ -156,8 +149,19 @@ class PythonPackageTomlFile(TomlFile):
                     base = _re.split(r"[\s<>=!~;\[]", val, maxsplit=1)[0]
                     return base.strip().lower()
 
+                # Optional whitelist: [tool.filestate].keep = ["black", "isort", ...]
+                keep_names: set[str] = set()
+                if tool_tbl and isinstance(tool_tbl, dict):
+                    filestate_tbl = tool_tbl.get("filestate")
+                    if filestate_tbl and isinstance(filestate_tbl, dict):
+                        keep_list = filestate_tbl.get("keep")
+                        if isinstance(keep_list, list):
+                            keep_names = {_norm_name(str(x)) for x in keep_list}
+
                 def _should_remove(item: object) -> bool:
                     name = _norm_name(toml_get_string_value(item))
+                    if name in keep_names:
+                        return False
                     if name == "typing-extensions":
                         # requires-python is set to >=3.12 above -> safe to drop
                         return True
