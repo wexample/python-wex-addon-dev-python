@@ -109,7 +109,7 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
                         return v == "pytest" or v.startswith("pytest ") or v.startswith("pytest>=") or v.startswith("pytest==") or v.startswith("pytest<")
                     return False
 
-                original_len = len(list(deps))
+                len(list(deps))
                 # Collect indices to remove to avoid modifying while iterating
                 to_remove = [idx for idx, it in enumerate(list(deps)) if _is_pytest_string(it)]
                 for idx in reversed(to_remove):
