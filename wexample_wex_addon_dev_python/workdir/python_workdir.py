@@ -81,9 +81,6 @@ class PythonWorkdir(FrameworkPackageWorkdir):
         from wexample_filestate.config_option.children_filter_config_option import (
             ChildrenFilterConfigOption,
         )
-        from wexample_filestate.config_option.content_options_config_option import (
-            ContentOptionsConfigOption,
-        )
         from wexample_filestate.const.disk import DiskItemType
 
         raw_value = super().prepare_value(raw_value=raw_value)

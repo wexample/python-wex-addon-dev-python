@@ -1,7 +1,0 @@
-black
-isort
-mypy
-pylint
-pyright
-wexample-filestate-python
-wexample-wex-core

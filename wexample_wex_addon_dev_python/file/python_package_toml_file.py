@@ -63,7 +63,7 @@ class PythonPackageTomlFile(TomlFile):
         return True
 
     @classmethod
-    def format_toml_doc(cls, target: "PythonPackageTomlFile", doc) -> bool:
+    def format_toml_doc(cls, target: PythonPackageTomlFile, doc) -> bool:
         """Apply formatting/rules to a parsed tomlkit doc. Returns True if changed."""
         changed = False
 

@@ -19,9 +19,7 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "black",
-    "isort",
-    "mypy",
+    "pydantic>=2,<3",
     "pylint",
     "pyright",
     "wexample-filestate-python",
