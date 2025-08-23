@@ -118,13 +118,20 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
                 def _is_pytest_string(item: object) -> bool:
                     if isinstance(item, String):
                         v = item.value.strip()
-                        return v == "pytest" or v.startswith("pytest ") or v.startswith("pytest>=") or v.startswith(
-                            "pytest==") or v.startswith("pytest<")
+                        return (
+                            v == "pytest"
+                            or v.startswith("pytest ")
+                            or v.startswith("pytest>=")
+                            or v.startswith("pytest==")
+                            or v.startswith("pytest<")
+                        )
                     return False
 
                 len(list(deps))
                 # Collect indices to remove to avoid modifying while iterating
-                to_remove = [idx for idx, it in enumerate(list(deps)) if _is_pytest_string(it)]
+                to_remove = [
+                    idx for idx, it in enumerate(list(deps)) if _is_pytest_string(it)
+                ]
                 for idx in reversed(to_remove):
                     deps.pop(idx)
                 if to_remove:
@@ -136,6 +143,7 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
             if not opt_deps or not isinstance(opt_deps, dict):
                 # Create the table if missing
                 from tomlkit import array, table
+
                 opt_deps = table()
                 project_tbl["optional-dependencies"] = opt_deps
                 changed = True
@@ -144,6 +152,7 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
             dev_arr = opt_deps.get("dev")
             if dev_arr is None:
                 from tomlkit import array
+
                 dev_arr = array()
                 # Make it a nice inline or multiline array depending on style; default inline
                 opt_deps["dev"] = dev_arr
@@ -151,9 +160,18 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
 
             # Add pytest if missing
             from tomlkit.items import String
-            values = [it.value if isinstance(it, String) else str(it) for it in list(dev_arr)]
-            if not any(v == "pytest" or v.startswith("pytest ") or v.startswith("pytest>=") or v.startswith(
-                    "pytest==") or v.startswith("pytest<") for v in values):
+
+            values = [
+                it.value if isinstance(it, String) else str(it) for it in list(dev_arr)
+            ]
+            if not any(
+                v == "pytest"
+                or v.startswith("pytest ")
+                or v.startswith("pytest>=")
+                or v.startswith("pytest==")
+                or v.startswith("pytest<")
+                for v in values
+            ):
                 dev_arr.append("pytest")
                 changed = True
                 changed |= cls._sort_array_of_strings(dev_arr)
