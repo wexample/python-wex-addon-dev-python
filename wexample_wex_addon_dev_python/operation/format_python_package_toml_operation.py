@@ -28,8 +28,13 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
         return FormatPythonPackageTomlOption.OPTION_NAME
 
     @classmethod
-    def preview_source_change(cls, src: str) -> str:
+    def preview_source_change(cls, target: TargetFileOrDirectoryType) -> str | None:
         import tomlkit
+
+        src = cls._read_current_non_empty_src(target)
+        # If no meaningful content, no change is proposed
+        if src is None:
+            return None
 
         doc = tomlkit.parse(src)
         # Round-trip dump; tomlkit preserves comments/formatting while normalizing structure
@@ -60,6 +65,6 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
 
     def apply(self) -> None:
         src = self.target.get_local_file().read()
-        updated = self.preview_source_change(src)
-        if updated != src:
+        updated = self.preview_source_change(self.target)
+        if updated is not None and updated != src:
             self._target_file_write(content=updated)
