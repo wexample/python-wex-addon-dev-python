@@ -106,7 +106,7 @@ class PythonPackageTomlFile(TomlFile):
                     comment = getattr(trivia, "comment", None)
                     if comment:
                         c = str(comment).lower()
-                        return "filestate:" in c and ("keep" in c or "ignore" in c)
+                        return "filestate:" in c and ("keep" in c)
                 return False
 
             # Remove pytest from runtime deps (unless explicitly protected by comment)
