@@ -109,24 +109,73 @@ class PythonPackageTomlFile(TomlFile):
                         return "filestate:" in c and ("keep" in c)
                 return False
 
-            # Remove pytest from runtime deps (unless explicitly protected by comment)
+            # Remove unwanted dev/build tools from runtime deps (unless explicitly protected)
             if deps is not None:
                 from tomlkit.items import String
+                import re as _re
 
-                def _is_pytest_string(item: object) -> bool:
+                _REMOVE_NAMES = {
+                    "pytest",
+                    "pip-tools",
+                    "black",
+                    "ruff",
+                    "flake8",
+                    "mypy",
+                    "isort",
+                    "coverage",
+                    "build",
+                    "twine",
+                    "pip",
+                    "setuptools",
+                    "wheel",
+                    "typing-extensions",
+                }
+
+                def _norm_name(val: str) -> str:
+                    # strip extras, versions, markers
+                    base = _re.split(r"[\s<>=!~;\[]", val, maxsplit=1)[0]
+                    return base.strip().lower()
+
+                def _should_remove(item: object) -> bool:
                     if isinstance(item, String):
-                        v = item.value.strip()
-                        return v == "pytest"
-                    return False
+                        name = _norm_name(item.value)
+                        if name == "typing-extensions":
+                            # requires-python is set to >=3.12 above -> safe to drop
+                            return True
+                        return name in _REMOVE_NAMES
+                    else:
+                        name = _norm_name(str(item))
+                        return name in _REMOVE_NAMES
 
                 to_remove = [
                     idx
                     for idx, it in enumerate(list(deps))
-                    if _is_pytest_string(it) and not _is_protected(it)
+                    if _should_remove(it) and not _is_protected(it)
                 ]
                 for idx in reversed(to_remove):
                     deps.pop(idx)
                 if to_remove:
+                    changed = True
+                    changed |= cls._sort_array_of_strings(deps)
+
+                # Ensure pydantic>=2,<3 is present unless excluded
+                # Read optional exclusion list from [tool.filestate].exclude-add
+                tool_tbl = doc.get("tool") if isinstance(doc, dict) else None
+                filestate_tbl = None
+                exclude_add: set[str] = set()
+                if tool_tbl and isinstance(tool_tbl, dict):
+                    filestate_tbl = tool_tbl.get("filestate")
+                if filestate_tbl and isinstance(filestate_tbl, dict):
+                    ex = filestate_tbl.get("exclude-add")
+                    if isinstance(ex, list):
+                        exclude_add = {str(x).strip().lower() for x in ex}
+
+                existing_names = {
+                    (it.value if isinstance(it, String) else str(it)) for it in list(deps)
+                }
+                existing_norm = {_norm_name(v) for v in existing_names}
+                if "pydantic" not in exclude_add and "pydantic" not in existing_norm:
+                    deps.append("pydantic>=2,<3")
                     changed = True
                     changed |= cls._sort_array_of_strings(deps)
 
