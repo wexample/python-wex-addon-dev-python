@@ -42,6 +42,7 @@ class PythonPackageTomlFile(TomlFile):
             toml_sort_string_array,
             toml_ensure_table,
             toml_ensure_array,
+            toml_get_string_value,
         )
 
         """Apply formatting/rules to a parsed tomlkit doc. Returns True if changed."""
@@ -156,15 +157,11 @@ class PythonPackageTomlFile(TomlFile):
                     return base.strip().lower()
 
                 def _should_remove(item: object) -> bool:
-                    if isinstance(item, String):
-                        name = _norm_name(item.value)
-                        if name == "typing-extensions":
-                            # requires-python is set to >=3.12 above -> safe to drop
-                            return True
-                        return name in _REMOVE_NAMES
-                    else:
-                        name = _norm_name(str(item))
-                        return name in _REMOVE_NAMES
+                    name = _norm_name(toml_get_string_value(item))
+                    if name == "typing-extensions":
+                        # requires-python is set to >=3.12 above -> safe to drop
+                        return True
+                    return name in _REMOVE_NAMES
 
                 to_remove = [
                     idx
@@ -180,7 +177,7 @@ class PythonPackageTomlFile(TomlFile):
                 # Normalize any existing pydantic spec to pydantic>=2,<3
                 normalized = False
                 for i, it in enumerate(list(deps)):
-                    val = (it.value if isinstance(it, String) else str(it)).strip()
+                    val = toml_get_string_value(it).strip()
                     base = _norm_name(val)
                     if base == "pydantic" and not _is_protected(it):
                         if isinstance(it, String):
@@ -204,10 +201,7 @@ class PythonPackageTomlFile(TomlFile):
                     if isinstance(ex, list):
                         exclude_add = {str(x).strip().lower() for x in ex}
 
-                existing_names = {
-                    (it.value if isinstance(it, String) else str(it))
-                    for it in list(deps)
-                }
+                existing_names = {toml_get_string_value(it) for it in list(deps)}
                 existing_norm = {_norm_name(v) for v in existing_names}
                 if "pydantic" not in exclude_add and "pydantic" not in existing_norm:
                     deps.append("pydantic>=2,<3")
@@ -232,19 +226,13 @@ class PythonPackageTomlFile(TomlFile):
 
             from tomlkit.items import String
 
-            values = [
-                it.value if isinstance(it, String) else str(it) for it in list(dev_arr)
-            ]
+            values = [toml_get_string_value(it) for it in list(dev_arr)]
 
             # Also avoid adding to dev if pytest already present in runtime deps
             has_runtime_pytest = False
             if deps is not None:
                 has_runtime_pytest = any(
-                    (
-                        (it.value.strip() == "pytest")
-                        if isinstance(it, String)
-                        else str(it).strip() == "pytest"
-                    )
+                    toml_get_string_value(it).strip() == "pytest"
                     for it in list(deps)
                 )
 
