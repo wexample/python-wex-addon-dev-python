@@ -83,6 +83,14 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
         if workdir is not None:
             version = workdir.get_config().get_config_item('version').get_str()
 
+            if version:
+                project_tbl = doc.get("project") if isinstance(doc, dict) else None
+                if project_tbl and isinstance(project_tbl, dict):
+                    current_version = project_tbl.get("version")
+                    if current_version != version:
+                        project_tbl["version"] = version
+                        changed = True
+
         # Handle [project].dependencies
         project_tbl = doc.get("project") if isinstance(doc, dict) else None
         if project_tbl and isinstance(project_tbl, dict):
