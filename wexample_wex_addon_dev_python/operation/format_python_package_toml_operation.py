@@ -79,9 +79,9 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
 
         changed = False
 
-        workdir = target.find_suite_workdir()
-        if workdir is not None:
-            version = workdir.get_config().get_config_item('version').get_str()
+        package_workdir = target.find_package_workdir()
+        if package_workdir is not None:
+            version = package_workdir.get_config().get_config_item('version').get_str()
 
             if version:
                 project_tbl = doc.get("project") if isinstance(doc, dict) else None
@@ -135,7 +135,7 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
             # 2) Ensure [project.optional-dependencies].dev exists and contains pytest
             if not opt_deps or not isinstance(opt_deps, dict):
                 # Create the table if missing
-                from tomlkit import table, array
+                from tomlkit import array, table
                 opt_deps = table()
                 project_tbl["optional-dependencies"] = opt_deps
                 changed = True
