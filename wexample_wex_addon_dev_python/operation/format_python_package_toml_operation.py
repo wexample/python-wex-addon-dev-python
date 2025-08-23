@@ -79,6 +79,10 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
 
         changed = False
 
+        workdir = target.find_suite_workdir()
+        if workdir is not None:
+            version = workdir.get_config().get_config_item('version').get_str()
+
         # Handle [project].dependencies
         project_tbl = doc.get("project") if isinstance(doc, dict) else None
         if project_tbl and isinstance(project_tbl, dict):
@@ -106,7 +110,8 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
                 def _is_pytest_string(item: object) -> bool:
                     if isinstance(item, String):
                         v = item.value.strip()
-                        return v == "pytest" or v.startswith("pytest ") or v.startswith("pytest>=") or v.startswith("pytest==") or v.startswith("pytest<")
+                        return v == "pytest" or v.startswith("pytest ") or v.startswith("pytest>=") or v.startswith(
+                            "pytest==") or v.startswith("pytest<")
                     return False
 
                 len(list(deps))
@@ -139,7 +144,8 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
             # Add pytest if missing
             from tomlkit.items import String
             values = [it.value if isinstance(it, String) else str(it) for it in list(dev_arr)]
-            if not any(v == "pytest" or v.startswith("pytest ") or v.startswith("pytest>=") or v.startswith("pytest==") or v.startswith("pytest<") for v in values):
+            if not any(v == "pytest" or v.startswith("pytest ") or v.startswith("pytest>=") or v.startswith(
+                    "pytest==") or v.startswith("pytest<") for v in values):
                 dev_arr.append("pytest")
                 changed = True
                 changed |= cls._sort_array_of_strings(dev_arr)
