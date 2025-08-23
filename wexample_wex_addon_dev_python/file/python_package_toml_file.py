@@ -67,7 +67,7 @@ class PythonPackageTomlFile(TomlFile):
         return True
 
     @classmethod
-    def format_toml_doc(cls, target: "PythonPackageTomlFile", doc) -> bool:
+    def format_toml_doc(cls, target: PythonPackageTomlFile, doc) -> bool:
         """Apply formatting/rules to a parsed tomlkit doc. Returns True if changed."""
         changed = False
 
@@ -138,10 +138,6 @@ class PythonPackageTomlFile(TomlFile):
             values = [it.value if isinstance(it, String) else str(it) for it in list(dev_arr)]
             if not any(
                 v == "pytest"
-                or v.startswith("pytest ")
-                or v.startswith("pytest>=")
-                or v.startswith("pytest==")
-                or v.startswith("pytest<")
                 for v in values
             ):
                 dev_arr.append("pytest")
@@ -151,7 +147,7 @@ class PythonPackageTomlFile(TomlFile):
         return changed
 
     @classmethod
-    def apply_format_to_src(cls, target: "PythonPackageTomlFile", src: str) -> str | None:
+    def apply_format_to_src(cls, target: PythonPackageTomlFile, src: str) -> str | None:
         """Parse, format, and dump toml; return updated string or None if no changes."""
         import tomlkit
 
