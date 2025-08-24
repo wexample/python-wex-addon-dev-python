@@ -14,6 +14,9 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
         # TODO
         for package in self.get_packages():
             self.io.log(f'Publishing package {package.get_project_name()}')
+            self.io.indentation_up()
+            self.io.success(f'Package {package.get_project_name()}')
+            self.io.indentation_down()
 
     def get_packages(self) -> list[PythonPackageWorkdir]:
         pip_dir = self.find_by_name(item_name='pip')
