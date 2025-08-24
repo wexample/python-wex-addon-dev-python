@@ -33,6 +33,25 @@ class PythonPackageWorkdir(PythonWorkdir):
 
         return pyproject_data
 
+    def publish(self):
+        from wexample_helpers.helpers.shell import shell_run
+
+        # Map token to PyPI's token-based authentication if provided
+        username = "__token__"
+        password = self.get_env_parameter("PIPY_TOKEN")
+
+        # Build the publish command, adding credentials only when given
+        publish_cmd = ["pdm", "publish"]
+        if username is not None:
+            publish_cmd += ["--username", username]
+        if password is not None:
+            publish_cmd += ["--password", password]
+
+        shell_run(
+            publish_cmd,
+            inherit_stdio=True,
+        )
+
     def prepare_value(self, prepare_value: DictConfig | None = None) -> DictConfig:
         from wexample_config.config_value.callback_render_config_value import (
             CallbackRenderConfigValue,
