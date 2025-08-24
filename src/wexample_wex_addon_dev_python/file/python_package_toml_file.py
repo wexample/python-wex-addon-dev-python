@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from wexample_filestate.item.file.toml_file import TomlFile
+from wexample_wex_addon_app.workdir.mixin.as_suite_package_item import AsSuitePackageItem
 
 if TYPE_CHECKING:
     from wexample_config.const.types import DictConfig
@@ -11,7 +12,7 @@ if TYPE_CHECKING:
     )
 
 
-class PythonPackageTomlFile(TomlFile):
+class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
     def prepare_value(self, prepare_value: DictConfig | None = None) -> DictConfig:
         from wexample_wex_addon_dev_python.config_option.format_python_package_toml_option import (
             FormatPythonPackageTomlOption,
@@ -27,13 +28,6 @@ class PythonPackageTomlFile(TomlFile):
         )
 
         return self.find_closest(PythonPackageWorkdir)
-
-    def find_suite_workdir(self) -> PythonPackagesSuiteWorkdir | None:
-        from wexample_wex_addon_dev_python.workdir.python_packages_suite_workdir import (
-            PythonPackagesSuiteWorkdir,
-        )
-
-        return self.find_closest(PythonPackagesSuiteWorkdir)
 
     def format_toml_doc(self, doc) -> bool:
         from wexample_filestate_python.helpers.package import package_normalize_name
