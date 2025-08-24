@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from wexample_config.const.types import DictConfig
 from wexample_filestate.item.file.toml_file import TomlFile
 
 if TYPE_CHECKING:
+    from wexample_config.const.types import DictConfig
     from wexample_wex_addon_dev_python.workdir.python_packages_suite_workdir import (
         PythonPackagesSuiteWorkdir,
     )
@@ -43,6 +43,7 @@ class PythonPackageTomlFile(TomlFile):
             toml_sort_string_array,
         )
         from wexample_helpers.helpers.string import string_to_snake_case
+        from wexample_filestate_python.helpers.package import package_normalize_name
 
         """Apply formatting/rules to a parsed tomlkit doc. Returns True if changed."""
         changed = False
@@ -139,8 +140,6 @@ class PythonPackageTomlFile(TomlFile):
 
             # Remove unwanted dev/build tools from runtime deps (unless explicitly protected)
             if deps is not None:
-                import re as _re
-
                 from tomlkit.items import String
 
                 _REMOVE_NAMES = {
@@ -160,11 +159,6 @@ class PythonPackageTomlFile(TomlFile):
                     "typing-extensions",
                 }
 
-                def _norm_name(val: str) -> str:
-                    # strip extras, versions, markers
-                    base = _re.split(r"[\s<>=!~;\[]", val, maxsplit=1)[0]
-                    return base.strip().lower()
-
                 # Optional whitelist: [tool.filestate].keep = ["black", "isort", ...]
                 keep_names: set[str] = set()
                 if tool_tbl and isinstance(tool_tbl, dict):
@@ -172,10 +166,10 @@ class PythonPackageTomlFile(TomlFile):
                     if filestate_tbl and isinstance(filestate_tbl, dict):
                         keep_list = filestate_tbl.get("keep")
                         if isinstance(keep_list, list):
-                            keep_names = {_norm_name(str(x)) for x in keep_list}
+                            keep_names = {package_normalize_name(str(x)) for x in keep_list}
 
                 def _should_remove(item: object) -> bool:
-                    name = _norm_name(toml_get_string_value(item))
+                    name = package_normalize_name(toml_get_string_value(item))
                     if name in keep_names:
                         return False
                     if name == "typing-extensions":
@@ -198,7 +192,7 @@ class PythonPackageTomlFile(TomlFile):
                 normalized = False
                 for i, it in enumerate(list(deps)):
                     val = toml_get_string_value(it).strip()
-                    base = _norm_name(val)
+                    base = package_normalize_name(val)
                     if base == "pydantic" and not _is_protected(it):
                         if isinstance(it, String):
                             deps[i] = "pydantic>=2,<3"
@@ -222,7 +216,7 @@ class PythonPackageTomlFile(TomlFile):
                         exclude_add = {str(x).strip().lower() for x in ex}
 
                 existing_names = {toml_get_string_value(it) for it in list(deps)}
-                existing_norm = {_norm_name(v) for v in existing_names}
+                existing_norm = {package_normalize_name(v) for v in existing_names}
                 if "pydantic" not in exclude_add and "pydantic" not in existing_norm:
                     deps.append("pydantic>=2,<3")
                     changed = True
