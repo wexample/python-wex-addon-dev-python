@@ -36,14 +36,13 @@ class PythonPackageTomlFile(TomlFile):
         return self.find_closest(PythonPackagesSuiteWorkdir)
 
     def format_toml_doc(self, doc) -> bool:
+        from wexample_filestate_python.helpers.package import package_normalize_name
         from wexample_filestate_python.helpers.toml import (
             toml_ensure_array,
             toml_ensure_table,
             toml_get_string_value,
             toml_sort_string_array,
         )
-        from wexample_helpers.helpers.string import string_to_snake_case
-        from wexample_filestate_python.helpers.package import package_normalize_name
 
         """Apply formatting/rules to a parsed tomlkit doc. Returns True if changed."""
         changed = False
@@ -52,12 +51,9 @@ class PythonPackageTomlFile(TomlFile):
         package_workdir = self.find_package_workdir()
 
         project_name = package_workdir.get_project_name()
+
         # Heuristic import name: distribution name converted to snake_case
-        import_name = (
-            string_to_snake_case(project_name)
-            if isinstance(project_name, str)
-            else None
-        )
+        import_name = f"wexample_{project_name}"
 
         if package_workdir is not None:
             version = package_workdir.get_project_version()
