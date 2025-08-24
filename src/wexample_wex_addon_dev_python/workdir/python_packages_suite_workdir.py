@@ -12,6 +12,12 @@ from wexample_wex_addon_dev_python.workdir.python_package_workdir import PythonP
 class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
     def publish_suite(self):
         ordered_dependencies = self.build_ordered_dependencies()
+        # for package in self.get_packages():
+        #     self.io.log(f'Publishing package {package.get_project_name()}')
+        #     self.io.indentation_up()
+        #     self.io.success(f'Package {package.get_project_name()}')
+        #     self.io.indentation_down()
+
     def build_ordered_dependencies(self):
         unordered_dependencies = self.build_dependencies()
         ordered_dependencies = []
@@ -67,9 +73,10 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
         A local dependency is one whose package name matches one of the packages
         discovered by get_packages().
         """
-        local_names = {p.get_package_name() for p in self.get_packages()}
         if not packages:
             return []
+        # Use the dedicated helper to retrieve local package names
+        local_names = set(self.get_local_packages_names())
         # Return only those present locally, preserve order and remove duplicates
         seen: set[str] = set()
         filtered: list[str] = []
@@ -79,6 +86,8 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
                 filtered.append(name)
         return filtered
 
+    def get_local_packages_names(self) -> list[str]:
+        return [p.get_package_name() for p in self.get_packages()]
 
     def get_packages(self) -> list[PythonPackageWorkdir]:
         pip_dir = self.find_by_name(item_name='pip')
