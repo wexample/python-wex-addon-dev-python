@@ -13,8 +13,7 @@ if TYPE_CHECKING:
 def python__release__publish(
         context: ExecutionContext,
 ) -> None:
-
     shell_run(
         ['pdm', 'build'],
-        inherit_stdio=True
+        inherit_stdio=True,
     )
