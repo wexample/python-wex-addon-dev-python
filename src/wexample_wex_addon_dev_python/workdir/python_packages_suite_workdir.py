@@ -19,45 +19,10 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
         #     self.io.indentation_down()
 
     def build_ordered_dependencies(self):
-        unordered_dependencies = self.build_dependencies()
-        ordered_dependencies = []
-        # We want an order from leaves (no local deps) to the trunk (most depended on)
-        # unordered_dependencies maps: package -> [local_dep1, local_dep2, ...]
-        # We'll perform a Kahn topological sort.
-
-        # Build reverse adjacency: dep -> [dependents]
-        dependents: dict[str, list[str]] = {name: [] for name in unordered_dependencies}
-        for pkg, deps in unordered_dependencies.items():
-            for d in deps:
-                if d in dependents:
-                    dependents[d].append(pkg)
-
-        # In-degree is number of local deps
-        in_degree: dict[str, int] = {name: len(deps) for name, deps in unordered_dependencies.items()}
-
-        # Start with leaves (in_degree == 0)
-        queue: list[str] = [name for name, deg in in_degree.items() if deg == 0]
-
-        # Deterministic order: sort alphanumerically
-        queue.sort()
-
-        while queue:
-            node = queue.pop(0)
-            ordered_dependencies.append(node)
-            for depd in dependents.get(node, []):
-                in_degree[depd] -= 1
-                if in_degree[depd] == 0:
-                    # keep deterministic ordering
-                    queue.append(depd)
-                    queue.sort()
-
-        # Cycle detection: if not all nodes processed, we have a cycle
-        if len(ordered_dependencies) != len(unordered_dependencies):
-            # Find nodes still with in_degree > 0 for diagnostics
-            cyclic = [n for n, deg in in_degree.items() if deg > 0]
-            raise ValueError(f"Cyclic dependencies detected among: {', '.join(sorted(cyclic))}")
-
-        return ordered_dependencies
+        # Build and validate the dependency map, then compute a stable topological order
+        dep_map = self.build_dependencies()
+        self.validate_internal_dependencies(dep_map)
+        return self.topological_order(dep_map)
 
     def build_dependencies(self) -> dict[str, list[str]]:
         dependencies = {}
@@ -66,6 +31,9 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
 
         return dependencies
 
+    def get_local_packages_names(self) -> list[str]:
+        return [p.get_package_name() for p in self.get_packages()]
+
     def filter_local_packages(self, packages: list[str]) -> list[str]:
         """
         Keep only dependencies that are local to this workspace.
@@ -73,10 +41,10 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
         A local dependency is one whose package name matches one of the packages
         discovered by get_packages().
         """
-        if not packages:
-            return []
         # Use the dedicated helper to retrieve local package names
         local_names = set(self.get_local_packages_names())
+        if not packages:
+            return []
         # Return only those present locally, preserve order and remove duplicates
         seen: set[str] = set()
         filtered: list[str] = []
@@ -86,8 +54,60 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
                 filtered.append(name)
         return filtered
 
-    def get_local_packages_names(self) -> list[str]:
-        return [p.get_package_name() for p in self.get_packages()]
+    def validate_internal_dependencies(self, dep_map: dict[str, list[str]]) -> None:
+        """
+        Ensure all referenced internal dependencies exist among local packages.
+        Raises ValueError on unknown references.
+        """
+        local = set(dep_map.keys())
+        unknown: set[str] = set()
+        for deps in dep_map.values():
+            for d in deps:
+                if d not in local:
+                    unknown.add(d)
+        if unknown:
+            raise ValueError(f"Unknown internal dependencies referenced: {', '.join(sorted(unknown))}")
+
+    def topological_order(self, dep_map: dict[str, list[str]]) -> list[str]:
+        """
+        Deterministic Kahn topological sort.
+        Returns an order from leaves (no deps) to trunk (most depended on).
+        Raises ValueError on cycles.
+        """
+        # Build reverse adjacency: dep -> [dependents]
+        dependents: dict[str, list[str]] = {name: [] for name in dep_map}
+        for pkg, deps in dep_map.items():
+            for d in deps:
+                if d in dependents:
+                    dependents[d].append(pkg)
+
+        # In-degree is number of local deps
+        in_degree: dict[str, int] = {name: len(deps) for name, deps in dep_map.items()}
+
+        # Start with leaves (in_degree == 0), keep deterministic ordering
+        queue: list[str] = sorted([name for name, deg in in_degree.items() if deg == 0])
+
+        ordered: list[str] = []
+        while queue:
+            node = queue.pop(0)
+            ordered.append(node)
+            for depd in sorted(dependents.get(node, [])):
+                in_degree[depd] -= 1
+                if in_degree[depd] == 0:
+                    queue.append(depd)
+                    queue.sort()
+
+        if len(ordered) != len(dep_map):
+            cyclic = [n for n, deg in in_degree.items() if deg > 0]
+            raise ValueError(f"Cyclic dependencies detected among: {', '.join(sorted(cyclic))}")
+
+        return ordered
+
+    def get_ordered_packages(self) -> list[PythonPackageWorkdir]:
+        """Return package objects ordered leaves -> trunk."""
+        order = self.build_ordered_dependencies()
+        by_name = {p.get_package_name(): p for p in self.get_packages()}
+        return [by_name[n] for n in order]
 
     def get_packages(self) -> list[PythonPackageWorkdir]:
         pip_dir = self.find_by_name(item_name='pip')
