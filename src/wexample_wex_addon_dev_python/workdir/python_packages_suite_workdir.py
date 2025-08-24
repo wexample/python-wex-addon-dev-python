@@ -11,12 +11,27 @@ from wexample_wex_addon_dev_python.workdir.python_package_workdir import PythonP
 
 class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
     def publish_suite(self):
+        ordered_dependencies = self.build_ordered_dependencies()
+    def build_ordered_dependencies(self):
+        unordered_dependencies = self.build_dependencies()
+        ordered_dependencies = []
         # TODO
+        return ordered_dependencies
+
+    def build_dependencies(self) -> dict[str, list[str]]:
+        dependencies = {}
         for package in self.get_packages():
             self.io.log(f'Publishing package {package.get_project_name()}')
             self.io.indentation_up()
             self.io.success(f'Package {package.get_project_name()}')
             self.io.indentation_down()
+            dependencies[package.get_package_name()] = self.filter_local_packages(package.get_dependencies())
+
+        return dependencies
+
+    def filter_local_packages(self, packages:list[str])->[str]:
+        """Based on the list """
+
 
     def get_packages(self) -> list[PythonPackageWorkdir]:
         pip_dir = self.find_by_name(item_name='pip')

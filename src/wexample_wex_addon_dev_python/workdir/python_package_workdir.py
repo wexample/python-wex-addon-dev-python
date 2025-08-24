@@ -1,14 +1,29 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from wexample_config.const.types import DictConfig
 from wexample_helpers.helpers.array import array_dict_get_by
 from wexample_wex_addon_dev_python.workdir.python_workdir import PythonWorkdir
+
+if TYPE_CHECKING:
+    from wexample_config.config_value.nested_config_value import NestedConfigValue
 
 
 class PythonPackageWorkdir(PythonWorkdir):
     _project_info_cache = None
 
-    def get_project_info(self, force: bool = False, default: dict = {}) -> dict:
+    def get_dependencies(self) -> list[str]:
+        from packaging.requirements import Requirement
+        dependencies = []
+        info = self.get_project_info()
+        for dependency in info.search('project.dependencies').get_list():
+            dependencies.append(Requirement(dependency.get_str()).name)
+        return dependencies
+
+    def get_project_info(self, force: bool = False, default: dict | None = None) -> NestedConfigValue:
+        from wexample_config.config_value.nested_config_value import NestedConfigValue
+
         """
         Fetch the data from the pyproject.toml file.
         """
@@ -27,11 +42,14 @@ class PythonPackageWorkdir(PythonWorkdir):
             pyproject_content = file_read(pyproject_file)
             pyproject_data = tomli.loads(pyproject_content)
             # Store in cache
-            self._project_info_cache = pyproject_data
+            self._project_info_cache = NestedConfigValue(raw=pyproject_data)
         except FileNotFoundError:
-            return default
+            return NestedConfigValue(raw=default or {})
 
-        return pyproject_data
+        return self._project_info_cache
+
+    def get_package_name(self) -> str:
+        return f"wexample_{self.get_project_name()}"
 
     def publish(self):
         from wexample_helpers.helpers.shell import shell_run

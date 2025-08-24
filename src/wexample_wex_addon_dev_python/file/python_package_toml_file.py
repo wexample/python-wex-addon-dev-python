@@ -46,10 +46,8 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         # Sync version from package workdir if available
         package_workdir = self.find_package_workdir()
 
-        project_name = package_workdir.get_project_name()
-
         # Heuristic import name: distribution name converted to snake_case
-        import_name = f"wexample_{project_name}"
+        import_name = package_workdir.get_package_name()
 
         if package_workdir is not None:
             version = package_workdir.get_project_version()
