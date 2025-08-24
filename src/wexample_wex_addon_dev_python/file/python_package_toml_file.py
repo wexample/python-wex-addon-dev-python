@@ -99,39 +99,19 @@ class PythonPackageTomlFile(TomlFile):
                 build_pdm_tbl["package-dir"] = "src"
                 changed = True
 
-            # Ensure packages = [{ include = import_name, from = "src" }]
-            try:
-                from tomlkit import inline_table  # type: ignore
-            except Exception:  # pragma: no cover - very defensive
-                inline_table = None
-
-            desired_pkg = {"include": import_name, "from": "src"}
+            # Ensure packages = [{ include = import_name, from = "src" }] (deterministic replace)
+            desired_pkgs = [{"include": import_name, "from": "src"}]
             current_pkgs = build_pdm_tbl.get("packages")
-            need_set_pkgs = True
-            if isinstance(current_pkgs, list) and len(current_pkgs) == 1:
-                it = current_pkgs[0]
-                # Compare as plain dict
-                try:
-                    it_as_dict = {k: str(v) for k, v in it.items()}  # type: ignore[attr-defined]
-                except Exception:
-                    it_as_dict = None
-                if it_as_dict == {"include": import_name, "from": "src"}:
-                    need_set_pkgs = False
-
-            if need_set_pkgs and inline_table is not None:
-                it = inline_table()
-                it.update(desired_pkg)
-                build_pdm_tbl["packages"] = [it]
+            if current_pkgs != desired_pkgs:
+                build_pdm_tbl["packages"] = desired_pkgs
                 changed = True
 
-        # Ensure py.typed is included for typing completeness
+        # Ensure py.typed is included for typing completeness (deterministic replace)
         if import_name:
-            desired_includes = {f"src/{import_name}/py.typed"}
-            current_includes = {str(x) for x in list(includes_arr)}
-            missing = desired_includes - current_includes
-            if missing:
-                for item in sorted(missing):
-                    includes_arr.append(item)
+            desired_includes = [f"src/{import_name}/py.typed"]
+            current_includes = [str(x) for x in list(includes_arr)]
+            if current_includes != desired_includes:
+                build_pdm_tbl["includes"] = desired_includes
                 changed = True
 
         project_tbl = doc.get("project") if isinstance(doc, dict) else None
