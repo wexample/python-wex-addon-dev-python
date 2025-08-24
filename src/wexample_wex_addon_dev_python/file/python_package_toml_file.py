@@ -162,7 +162,9 @@ class PythonPackageTomlFile(TomlFile):
                     if filestate_tbl and isinstance(filestate_tbl, dict):
                         keep_list = filestate_tbl.get("keep")
                         if isinstance(keep_list, list):
-                            keep_names = {package_normalize_name(str(x)) for x in keep_list}
+                            keep_names = {
+                                package_normalize_name(str(x)) for x in keep_list
+                            }
 
                 def _should_remove(item: object) -> bool:
                     name = package_normalize_name(toml_get_string_value(item))
