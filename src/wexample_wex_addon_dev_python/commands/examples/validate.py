@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from wexample_wex_core.context.execution_context import ExecutionContext
 
 
-@command(description="Check python code on every file: ")
+@command(description="Check python code on every file.")
 def python__examples__validate(
     context: ExecutionContext,
 ) -> None:
