@@ -21,13 +21,21 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
             for package_name_search in dependencies_map:
                 searched_package = self.get_package(package_name_search)
                 if package.imports_package_in_codebase(searched_package):
-                    self.build_dependencies_stack(
+                    dependencies_stack = self.build_dependencies_stack(
                         package,
                         searched_package,
                         dependencies_map
                     )
 
-                    pass
+                    if len(dependencies_stack) == 0:
+                        raise AssertionError(
+                            (
+                                "Dependency violation: package \"{pkg}\" imports code from \"{dep}\" "
+                                "but there is no declared local dependency path. "
+                                "Add \"{dep}\" to the 'project.dependencies' of \"{pkg}\" in its pyproject.toml, "
+                                "or declare an intermediate local package that depends on \"{dep}\"."
+                            ).format(pkg=package_name, dep=package_name_search)
+                        )
 
         # for package in self.get_packages():
         #     self.io.log(f'Publishing package {package.get_project_name()}')
@@ -93,13 +101,13 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
         )
 
     def topological_order(self, dep_map: dict[str, list[str]]) -> list[str]:
-        """Ordre topologique déterministe via graphlib.TopologicalSorter.
-        Retourne un ordre feuilles -> tronc (dépendances avant dépendants).
-        Lève ValueError en cas de cycle.
+        """Deterministic topological order using graphlib.TopologicalSorter.
+        Returns a leaves -> trunk order (dependencies before dependents).
+        Raises ValueError on cycles.
         """
         from graphlib import TopologicalSorter, CycleError
 
-        # Normaliser: inclure tout nœud mentionné, trier pour un résultat stable
+        # Normalize: include every mentioned node and sort for stable results
         nodes = set(dep_map.keys()) | {d for deps in dep_map.values() for d in deps}
         normalized: dict[str, list[str]] = {
             k: sorted([d for d in dep_map.get(k, []) if d in nodes])
@@ -113,11 +121,11 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
         try:
             order = list(ts.static_order())
         except CycleError as e:
-            # Extraire les nœuds impliqués si possible, sinon message générique
+            # Extract involved nodes if present, otherwise a generic message
             msg = getattr(e, 'args', [None])[0] or 'Cyclic dependencies detected'
             raise ValueError(str(msg)) from e
 
-        # Ne retourner que les packages locaux (clés originales du dep_map)
+        # Return only local packages (original keys of dep_map)
         return [n for n in order if n in dep_map]
 
     def get_ordered_packages(self) -> list[PythonPackageWorkdir]:
