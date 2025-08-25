@@ -14,15 +14,24 @@ if TYPE_CHECKING:
 class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
     _content_cache: TOMLDocument | None = None
 
-    def list_dependencies(self) -> list[str]:
-        doc = self._content_cache
-        project = doc.get("project")
-        if not isinstance(project, dict):
-            return []
-        deps = project.get("dependencies")
-        if not isinstance(deps, list):
-            return []
-        return [str(x) for x in list(deps)]
+    def list_dependency_names(self, canonicalize_names: bool = True) -> list[str]:
+        """Return dependency package names derived from list_dependencies().
+
+        If canonicalize_names is True, names are normalized using packaging's
+        canonicalize_name for robust comparisons (dash/underscore, case, etc.).
+        """
+        from packaging.requirements import Requirement
+        from packaging.utils import canonicalize_name
+
+        names: list[str] = []
+        for spec in self.list_dependencies():
+            try:
+                name = Requirement(spec).name
+                names.append(canonicalize_name(name) if canonicalize_names else name)
+            except Exception:
+                # Skip unparsable entries when deriving names
+                continue
+        return names
 
     def add_dependency(self, spec: str) -> None:
         from wexample_filestate_python.helpers.toml import (
@@ -36,35 +45,51 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         doc = self._content_cache
         project, _ = toml_ensure_table(doc, ["project"])
         deps, _ = toml_ensure_array(project, "dependencies")
-        # Parse and canonicalize the package name from the given spec.
+        # Remove existing entries for the same package name before adding the new spec.
         try:
-            new_req = Requirement(spec)
-            new_name = canonicalize_name(new_req.name)
+            new_name = canonicalize_name(Requirement(spec).name)
+            self.remove_dependency_by_name(new_name)
         except Exception:
-            # If parsing fails, fallback to simple behavior to avoid breaking writes.
-            new_req = None
-            new_name = None
-
-        # Remove existing entries with the same package name (regardless of version/markers).
-        if new_name is not None:
-            filtered: list[str] = []
-            for existing in list(deps):
-                try:
-                    existing_name = canonicalize_name(Requirement(str(existing)).name)
-                except Exception:
-                    # If an entry is not parseable, keep it as-is.
-                    filtered.append(existing)
-                    continue
-                if existing_name != new_name:
-                    filtered.append(existing)
-            # Replace deps content with filtered list
-            deps.clear()
-            deps.extend(filtered)
+            # If parsing fails, we won't attempt name-based removal.
+            pass
 
         # Append (or re-append) the new spec if it is not already present verbatim
         if spec not in deps:
             deps.append(spec)
         toml_sort_string_array(deps)
+
+    def remove_dependency_by_name(self, package_name: str) -> None:
+        """Remove all dependency entries that match the given package name.
+
+        The provided package_name can be raw; it will be canonicalized to ensure
+        consistent matching against entries parsed from list_dependencies().
+        """
+        from wexample_filestate_python.helpers.toml import (
+            toml_ensure_table,
+            toml_ensure_array,
+        )
+        from packaging.requirements import Requirement
+        from packaging.utils import canonicalize_name
+
+        doc = self._content_cache
+        project, _ = toml_ensure_table(doc, ["project"])
+        deps, _ = toml_ensure_array(project, "dependencies")
+
+        target = canonicalize_name(package_name)
+        filtered: list[str] = []
+        for existing in list(deps):
+            try:
+                existing_name = canonicalize_name(Requirement(str(existing)).name)
+            except Exception:
+                # Keep unparsable entries untouched
+                filtered.append(existing)
+                continue
+            if existing_name != target:
+                filtered.append(existing)
+
+        if len(filtered) != len(deps):
+            deps.clear()
+            deps.extend(filtered)
 
     def list_optional_dependencies(self, group: str) -> list[str]:
         doc = self._content_cache

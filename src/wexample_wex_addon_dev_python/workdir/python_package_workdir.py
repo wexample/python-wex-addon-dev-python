@@ -19,7 +19,7 @@ class PythonPackageWorkdir(PythonWorkdir):
     def get_dependencies(self) -> list[str]:
         from packaging.requirements import Requirement
         dependencies = []
-        for dependency in self.get_project_config_file().list_dependencies():
+        for dependency in self.get_project_config_file().list_dependency_names():
             dependencies.append(Requirement(dependency).name)
         return dependencies
 
