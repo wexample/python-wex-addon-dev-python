@@ -19,9 +19,9 @@ dependencies = [
     "pydantic>=2,<3",
     "pylint",
     "pyright",
-    "wexample-filestate-python",
-    "wexample-wex-addon-app",
-    "wexample-wex-core",
+    "wexample-filestate-python==0.0.36",
+    "wexample-wex-addon-app==0.0.38",
+    "wexample-wex-core==6.0.40",
 ]
 
 [project.readme]
