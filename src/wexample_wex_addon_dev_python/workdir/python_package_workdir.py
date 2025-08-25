@@ -8,7 +8,7 @@ from wexample_wex_addon_dev_python.workdir.python_workdir import PythonWorkdir
 
 if TYPE_CHECKING:
     from wexample_config.config_value.nested_config_value import NestedConfigValue
-    from wexample_filestate.search.search_result import SearchResult
+    from wexample_filestate.common.search_result import SearchResult
 
 
 class PythonPackageWorkdir(PythonWorkdir):
@@ -48,7 +48,7 @@ class PythonPackageWorkdir(PythonWorkdir):
     def search_in_codebase(self, string: str) -> list[SearchResult]:
         found = []
         from wexample_filestate_python.file.python_file import PythonFile
-        from wexample_filestate.search.search_result import SearchResult
+        from wexample_filestate.common.search_result import SearchResult
 
         def _search(item: PythonFile):
             found.extend(

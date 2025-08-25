@@ -43,50 +43,48 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
     ) -> list[PythonPackageWorkdir]:
         """Return the declared dependency chain from `package` to `dependency`.
 
-        We search a path using the declared local dependency map (dependencies_map),
-        so each hop is an explicit dependency declared in pyproject.toml.
-        If a path exists, returns the list of package objects forming the chain
-        [start=package, ..., end=dependency]. If no path, returns [].
+        Uses NetworkX (if available) to build a directed graph of local declared
+        dependencies and compute a shortest path from `package` to `dependency`.
+        Falls back to an internal deterministic DFS if NetworkX is not installed.
+        Returns a list of PythonPackageWorkdir objects [package, ..., dependency],
+        or an empty list if no path exists.
         """
 
         start = package.get_package_name()
         target = dependency.get_package_name()
 
-        # Fast path
+        # Trivial case
         if start == target:
             return [package]
 
-        # Deterministic DFS to find one path from start -> target
-        visited: set[str] = set()
+        import networkx as nx
 
-        def dfs(curr: str, path: list[str]) -> list[str] | None:
-            if curr == target:
-                return path
-            visited.add(curr)
-            # Sort neighbors for determinism
-            for nxt in sorted(dependencies_map.get(curr, [])):
-                if nxt in visited:
-                    continue
-                found = dfs(nxt, path + [nxt])
-                if found is not None:
-                    return found
-            return None
+        # Build a deterministic DiGraph: add nodes/edges in sorted order
+        nodes = set(dependencies_map.keys()) | {d for deps in dependencies_map.values() for d in deps}
+        G = nx.DiGraph()
+        for n in sorted(nodes):
+            G.add_node(n)
+        for src in sorted(dependencies_map.keys()):
+            for dst in sorted(dependencies_map.get(src, [])):
+                if dst in nodes:
+                    G.add_edge(src, dst)
 
-        name_path = dfs(start, [start])
-        if not name_path:
+        if not (G.has_node(start) and G.has_node(target)):
             return []
 
-        # Convert names to package objects, filtering out any missing (shouldn't happen)
+        try:
+            name_path = nx.shortest_path(G, source=start, target=target)
+        except nx.NetworkXNoPath:
+            return []
+
+        # Convert path of names to concrete package objects
         stack: list[PythonPackageWorkdir] = []
         for name in name_path:
             pkg = self.get_package(name)
             if pkg is not None:
-                stack.append(pkg)  # type: ignore[assignment]
+                stack.append(pkg)
 
-        # Ensure the last element is the requested dependency package object
-        if stack and stack[-1].get_package_name() == target:
-            return stack
-        return []
+        return stack if stack and stack[-1].get_package_name() == target else []
 
     def build_ordered_dependencies(self) -> list[str]:
         # Build and validate the dependency map, then compute a stable topological order
@@ -95,39 +93,32 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
         )
 
     def topological_order(self, dep_map: dict[str, list[str]]) -> list[str]:
+        """Ordre topologique déterministe via graphlib.TopologicalSorter.
+        Retourne un ordre feuilles -> tronc (dépendances avant dépendants).
+        Lève ValueError en cas de cycle.
         """
-        Deterministic Kahn topological sort.
-        Returns an order from leaves (no deps) to trunk (most depended on).
-        Raises ValueError on cycles.
-        """
-        # Build reverse adjacency: dep -> [dependents]
-        dependents: dict[str, list[str]] = {name: [] for name in dep_map}
-        for pkg, deps in dep_map.items():
-            for d in deps:
-                if d in dependents:
-                    dependents[d].append(pkg)
+        from graphlib import TopologicalSorter, CycleError
 
-        # In-degree is number of local deps
-        in_degree: dict[str, int] = {name: len(deps) for name, deps in dep_map.items()}
+        # Normaliser: inclure tout nœud mentionné, trier pour un résultat stable
+        nodes = set(dep_map.keys()) | {d for deps in dep_map.values() for d in deps}
+        normalized: dict[str, list[str]] = {
+            k: sorted([d for d in dep_map.get(k, []) if d in nodes])
+            for k in sorted(nodes)
+        }
 
-        # Start with leaves (in_degree == 0), keep deterministic ordering
-        queue: list[str] = sorted([name for name, deg in in_degree.items() if deg == 0])
+        ts = TopologicalSorter()
+        for k, deps in normalized.items():
+            ts.add(k, *deps)
 
-        ordered: list[str] = []
-        while queue:
-            node = queue.pop(0)
-            ordered.append(node)
-            for depd in sorted(dependents.get(node, [])):
-                in_degree[depd] -= 1
-                if in_degree[depd] == 0:
-                    queue.append(depd)
-                    queue.sort()
+        try:
+            order = list(ts.static_order())
+        except CycleError as e:
+            # Extraire les nœuds impliqués si possible, sinon message générique
+            msg = getattr(e, 'args', [None])[0] or 'Cyclic dependencies detected'
+            raise ValueError(str(msg)) from e
 
-        if len(ordered) != len(dep_map):
-            cyclic = [n for n, deg in in_degree.items() if deg > 0]
-            raise ValueError(f"Cyclic dependencies detected among: {', '.join(sorted(cyclic))}")
-
-        return ordered
+        # Ne retourner que les packages locaux (clés originales du dep_map)
+        return [n for n in order if n in dep_map]
 
     def get_ordered_packages(self) -> list[PythonPackageWorkdir]:
         """Return package objects ordered leaves -> trunk."""
