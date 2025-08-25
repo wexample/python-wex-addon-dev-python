@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 
 class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
-    def packages_harmonize_versions(self):
+    def packages_validate_internal_dependencies_declarations(self):
         dependencies_map = self.build_dependencies_map()
         for package_name in dependencies_map:
             package = self.get_package(package_name)
@@ -48,6 +48,8 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
                             )
                         )
 
+    def packages_propagate_versions(self):
+        pass
         # for package in self.get_packages():
         #     self.io.log(f'Publishing package {package.get_project_name()}')
         #     self.io.indentation_up()
