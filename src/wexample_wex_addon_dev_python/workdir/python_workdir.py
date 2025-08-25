@@ -10,7 +10,7 @@ from wexample_filestate_python.config_option.python_config_option import (
     PythonConfigOption,
 )
 from wexample_helpers.helpers.string import string_to_snake_case
-from wexample_wex_addon_app.workdir.framework_package_workdir import (
+from wexample_wex_core.workdir.framework_package_workdir import (
     FrameworkPackageWorkdir,
 )
 
