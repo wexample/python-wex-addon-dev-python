@@ -14,14 +14,40 @@ if TYPE_CHECKING:
 class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
     _content_cache: TOMLDocument | None = None
 
-    def list_dependencies(self) -> list[str]:
+    def _project_table(self):
+        """Ensure and return the [project] table."""
+        from wexample_filestate_python.helpers.toml import toml_ensure_table
+
         doc = self._content_cache
-        project = doc.get("project")
-        if not isinstance(project, dict):
-            return []
-        deps = project.get("dependencies")
-        if not isinstance(deps, list):
-            return []
+        project, _ = toml_ensure_table(doc, ["project"])
+        return project
+
+    def _dependencies_array(self):
+        """Ensure and return project.dependencies as a multi-line TOML array."""
+        from wexample_filestate_python.helpers.toml import (
+            toml_ensure_array,
+        )
+
+        project = self._project_table()
+        deps, _ = toml_ensure_array(project, "dependencies")
+        deps.multiline(True)
+        return deps
+
+    def _optional_group_array(self, group: str):
+        """Ensure and return project.optional-dependencies[group] as multi-line array."""
+        from wexample_filestate_python.helpers.toml import (
+            toml_ensure_table,
+            toml_ensure_array,
+        )
+
+        project = self._project_table()
+        opt, _ = toml_ensure_table(project, ["optional-dependencies"])
+        arr, _ = toml_ensure_array(opt, group)
+        arr.multiline(True)
+        return arr
+
+    def list_dependencies(self) -> list[str]:
+        deps = self._dependencies_array()
         return [str(x) for x in list(deps)]
 
     def list_dependency_names(self, canonicalize_names: bool = True) -> list[str]:
@@ -44,17 +70,11 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         return names
 
     def add_dependency(self, spec: str) -> None:
-        from wexample_filestate_python.helpers.toml import (
-            toml_ensure_table,
-            toml_ensure_array,
-            toml_sort_string_array,
-        )
+        from wexample_filestate_python.helpers.toml import toml_sort_string_array
         from packaging.requirements import Requirement
         from packaging.utils import canonicalize_name
 
-        doc = self._content_cache
-        project, _ = toml_ensure_table(doc, ["project"])
-        deps, _ = toml_ensure_array(project, "dependencies")
+        deps = self._dependencies_array()
         # Remove existing entries for the same package name before adding the new spec.
         try:
             new_name = canonicalize_name(Requirement(spec).name)
@@ -74,16 +94,10 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         The provided package_name can be raw; it will be canonicalized to ensure
         consistent matching against entries parsed from list_dependencies().
         """
-        from wexample_filestate_python.helpers.toml import (
-            toml_ensure_table,
-            toml_ensure_array,
-        )
         from packaging.requirements import Requirement
         from packaging.utils import canonicalize_name
 
-        doc = self._content_cache
-        project, _ = toml_ensure_table(doc, ["project"])
-        deps, _ = toml_ensure_array(project, "dependencies")
+        deps = self._dependencies_array()
 
         target = canonicalize_name(package_name)
         filtered: list[str] = []
@@ -102,20 +116,11 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             deps.extend(filtered)
 
     def list_optional_dependencies(self, group: str) -> list[str]:
-        doc = self._content_cache
-        project = doc.get("project")
-        if not isinstance(project, dict):
-            return []
-        opt = project.get("optional-dependencies")
-        if not isinstance(opt, dict):
-            return []
-        arr = opt.get(group)
-        if not isinstance(arr, list):
-            return []
+        arr = self._optional_group_array(group)
         return [str(x) for x in list(arr)]
 
     def list_optional_dependency_names(
-            self, group: str, canonicalize_names: bool = True
+        self, group: str, canonicalize_names: bool = True
     ) -> list[str]:
         """Return only the package names for a given optional dependency group.
 
@@ -136,18 +141,11 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         return names
 
     def add_optional_dependency(self, group: str, spec: str) -> None:
-        from wexample_filestate_python.helpers.toml import (
-            toml_ensure_table,
-            toml_ensure_array,
-            toml_sort_string_array,
-        )
+        from wexample_filestate_python.helpers.toml import toml_sort_string_array
         from packaging.requirements import Requirement
         from packaging.utils import canonicalize_name
 
-        doc = self._content_cache
-        project, _ = toml_ensure_table(doc, ["project"])
-        opt, _ = toml_ensure_table(project, ["optional-dependencies"])
-        arr, _ = toml_ensure_array(opt, group)
+        arr = self._optional_group_array(group)
         # Remove existing entries for the same package name before adding the new spec.
         try:
             new_name = canonicalize_name(Requirement(spec).name)
@@ -155,26 +153,21 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         except Exception:
             # If parsing fails, we won't attempt name-based removal.
             pass
+
+        # Append (or re-append) the new spec if it is not already present verbatim
         if spec not in arr:
             arr.append(spec)
-            toml_sort_string_array(arr)
+        toml_sort_string_array(arr)
 
     def remove_optional_dependency_by_name(self, group: str, package_name: str) -> None:
         """Remove all optional dependency entries in a group matching a name.
 
         Name matching is canonicalized to ensure robust comparisons.
         """
-        from wexample_filestate_python.helpers.toml import (
-            toml_ensure_table,
-            toml_ensure_array,
-        )
         from packaging.requirements import Requirement
         from packaging.utils import canonicalize_name
 
-        doc = self._content_cache
-        project, _ = toml_ensure_table(doc, ["project"])
-        opt, _ = toml_ensure_table(project, ["optional-dependencies"])
-        arr, _ = toml_ensure_array(opt, group)
+        arr = self._optional_group_array(group)
 
         target = canonicalize_name(package_name)
         filtered: list[str] = []
@@ -193,10 +186,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             arr.extend(filtered)
 
     def set_python_requires(self, spec: str) -> None:
-        from wexample_filestate_python.helpers.toml import toml_ensure_table
-
-        doc = self._content_cache
-        project, _ = toml_ensure_table(doc, ["project"])
+        project = self._project_table()
         if project.get("requires-python") != spec:
             project["requires-python"] = spec
 
