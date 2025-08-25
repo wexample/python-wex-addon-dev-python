@@ -1,24 +1,33 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from wexample_config.const.types import DictConfig
 from wexample_wex_addon_app.workdir.framework_packages_suite_workdir import (
     FrameworkPackageSuiteWorkdir,
 )
-from wexample_wex_addon_dev_python.workdir.python_package_workdir import PythonPackageWorkdir
+
+if TYPE_CHECKING:
+    from wexample_wex_addon_dev_python.workdir.python_package_workdir import PythonPackageWorkdir
 
 
 class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
     def packages_harmonize_versions(self):
-        all_dependencies = self.build_dependencies()
-        for package_name in all_dependencies:
+        dependencies_map = self.build_dependencies_map()
+        for package_name in dependencies_map:
             package = self.get_package(package_name)
 
-            for package_name_search in all_dependencies:
-                package.ensure_dependency_declaration(
-                    self.get_package(package_name_search)
-                )
+            for package_name_search in dependencies_map:
+                searched_package = self.get_package(package_name_search)
+                if package.imports_package_in_codebase(searched_package):
+                    self.build_dependencies_stack(
+                        package,
+                        searched_package,
+                        dependencies_map
+                    )
+
+                    pass
 
         # for package in self.get_packages():
         #     self.io.log(f'Publishing package {package.get_project_name()}')
@@ -26,31 +35,64 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
         #     self.io.success(f'Package {package.get_project_name()}')
         #     self.io.indentation_down()
 
+    def build_dependencies_stack(
+            self,
+            package: PythonPackageWorkdir,
+            dependency: PythonPackageWorkdir,
+            dependencies_map: dict[str, list[str]],
+    ) -> list[PythonPackageWorkdir]:
+        """Return the declared dependency chain from `package` to `dependency`.
+
+        We search a path using the declared local dependency map (dependencies_map),
+        so each hop is an explicit dependency declared in pyproject.toml.
+        If a path exists, returns the list of package objects forming the chain
+        [start=package, ..., end=dependency]. If no path, returns [].
+        """
+
+        start = package.get_package_name()
+        target = dependency.get_package_name()
+
+        # Fast path
+        if start == target:
+            return [package]
+
+        # Deterministic DFS to find one path from start -> target
+        visited: set[str] = set()
+
+        def dfs(curr: str, path: list[str]) -> list[str] | None:
+            if curr == target:
+                return path
+            visited.add(curr)
+            # Sort neighbors for determinism
+            for nxt in sorted(dependencies_map.get(curr, [])):
+                if nxt in visited:
+                    continue
+                found = dfs(nxt, path + [nxt])
+                if found is not None:
+                    return found
+            return None
+
+        name_path = dfs(start, [start])
+        if not name_path:
+            return []
+
+        # Convert names to package objects, filtering out any missing (shouldn't happen)
+        stack: list[PythonPackageWorkdir] = []
+        for name in name_path:
+            pkg = self.get_package(name)
+            if pkg is not None:
+                stack.append(pkg)  # type: ignore[assignment]
+
+        # Ensure the last element is the requested dependency package object
+        if stack and stack[-1].get_package_name() == target:
+            return stack
+        return []
+
     def build_ordered_dependencies(self) -> list[str]:
         # Build and validate the dependency map, then compute a stable topological order
         return self.topological_order(
-            self.build_dependencies()
+            self.build_dependencies_map()
         )
-
-    def filter_local_packages(self, packages: list[str]) -> list[str]:
-        """
-        Keep only dependencies that are local to this workspace.
-
-        A local dependency is one whose package name matches one of the packages
-        discovered by get_packages().
-        """
-        # Use the dedicated helper to retrieve local package names
-        local_names = set(self.get_local_packages_names())
-        if not packages:
-            return []
-        # Return only those present locally, preserve order and remove duplicates
-        seen: set[str] = set()
-        filtered: list[str] = []
-        for name in packages:
-            if name in local_names and name not in seen:
-                seen.add(name)
-                filtered.append(name)
-        return filtered
 
     def topological_order(self, dep_map: dict[str, list[str]]) -> list[str]:
         """
