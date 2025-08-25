@@ -30,13 +30,41 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             toml_ensure_array,
             toml_sort_string_array,
         )
+        from packaging.requirements import Requirement
+        from packaging.utils import canonicalize_name
 
         doc = self._content_cache
         project, _ = toml_ensure_table(doc, ["project"])
         deps, _ = toml_ensure_array(project, "dependencies")
+        # Parse and canonicalize the package name from the given spec.
+        try:
+            new_req = Requirement(spec)
+            new_name = canonicalize_name(new_req.name)
+        except Exception:
+            # If parsing fails, fallback to simple behavior to avoid breaking writes.
+            new_req = None
+            new_name = None
+
+        # Remove existing entries with the same package name (regardless of version/markers).
+        if new_name is not None:
+            filtered: list[str] = []
+            for existing in list(deps):
+                try:
+                    existing_name = canonicalize_name(Requirement(str(existing)).name)
+                except Exception:
+                    # If an entry is not parseable, keep it as-is.
+                    filtered.append(existing)
+                    continue
+                if existing_name != new_name:
+                    filtered.append(existing)
+            # Replace deps content with filtered list
+            deps.clear()
+            deps.extend(filtered)
+
+        # Append (or re-append) the new spec if it is not already present verbatim
         if spec not in deps:
             deps.append(spec)
-            toml_sort_string_array(deps)
+        toml_sort_string_array(deps)
 
     def list_optional_dependencies(self, group: str) -> list[str]:
         doc = self._content_cache
