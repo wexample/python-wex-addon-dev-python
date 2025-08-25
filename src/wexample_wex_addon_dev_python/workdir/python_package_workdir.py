@@ -40,10 +40,9 @@ class PythonPackageWorkdir(PythonWorkdir):
     def get_package_import_name(self) -> str:
         return f"wexample_{self.get_project_name()}"
 
-    def imports_package_in_codebase(self, searched_package: PythonPackageWorkdir) -> bool:
+    def search_imports_in_codebase(self, searched_package: PythonPackageWorkdir) -> list[SearchResult]:
         """Search if package is used in the current one, and update dependencies if not declared into."""
-        results = self.search_in_codebase(f'from {searched_package.get_package_import_name()}.')
-        return len(results) > 0
+        return self.search_in_codebase(f'from {searched_package.get_package_import_name()}.')
 
     def search_in_codebase(self, string: str) -> list[SearchResult]:
         found = []

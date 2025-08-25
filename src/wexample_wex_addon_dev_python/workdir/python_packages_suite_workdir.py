@@ -20,7 +20,8 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
 
             for package_name_search in dependencies_map:
                 searched_package = self.get_package(package_name_search)
-                if package.imports_package_in_codebase(searched_package):
+                imports = package.search_imports_in_codebase(searched_package)
+                if len(imports) > 0:
                     dependencies_stack = self.build_dependencies_stack(
                         package,
                         searched_package,
@@ -28,13 +29,23 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
                     )
 
                     if len(dependencies_stack) == 0:
+                        # Build a readable list of import locations to help debugging
+                        imports_details = "\n".join(
+                            f" - {res.item.get_path()}:{res.line}:{res.column} (searched='{res.searched}')"
+                            for res in imports
+                        )
                         raise AssertionError(
                             (
                                 "Dependency violation: package \"{pkg}\" imports code from \"{dep}\" "
                                 "but there is no declared local dependency path. "
                                 "Add \"{dep}\" to the 'project.dependencies' of \"{pkg}\" in its pyproject.toml, "
-                                "or declare an intermediate local package that depends on \"{dep}\"."
-                            ).format(pkg=package_name, dep=package_name_search)
+                                "or declare an intermediate local package that depends on \"{dep}\".\n\n"
+                                "Detected import locations (file:line:col):\n{locations}"
+                            ).format(
+                                pkg=package_name,
+                                dep=package_name_search,
+                                locations=imports_details or " - <no locations captured>"
+                            )
                         )
 
         # for package in self.get_packages():
