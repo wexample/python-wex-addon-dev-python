@@ -49,12 +49,20 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
                         )
 
     def packages_propagate_versions(self):
-        pass
-        # for package in self.get_packages():
-        #     self.io.log(f'Publishing package {package.get_project_name()}')
-        #     self.io.indentation_up()
-        #     self.io.success(f'Package {package.get_project_name()}')
-        #     self.io.indentation_down()
+        ordered_packages = self.get_ordered_packages()
+
+        for package in ordered_packages:
+            self.io.log(f'Propagating package "{package.get_package_name()}" version "{package.get_project_version()}"')
+            for dependent in self.get_dependents(package):
+                self.io.log(f'  {dependent.get_package_name()}')
+                dependent.save_dependency(package)
+
+    def get_dependents(self, package: PythonPackageWorkdir) -> list[PythonPackageWorkdir]:
+        dependents = []
+        for neighbor_package in self.get_packages():
+            if neighbor_package.depends_from(package):
+                dependents.append(neighbor_package)
+        return dependents
 
     def build_dependencies_stack(
             self,

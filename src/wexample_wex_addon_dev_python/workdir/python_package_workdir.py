@@ -3,12 +3,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from wexample_config.const.types import DictConfig
+from wexample_helpers.const.types import StructuredData
 from wexample_helpers.helpers.array import array_dict_get_by
+from wexample_wex_addon_dev_python.file.python_package_toml_file import PythonPackageTomlFile
 from wexample_wex_addon_dev_python.workdir.python_workdir import PythonWorkdir
 
 if TYPE_CHECKING:
-    from wexample_config.config_value.nested_config_value import NestedConfigValue
     from wexample_filestate.common.search_result import SearchResult
+    from tomlkit import TOMLDocument
 
 
 class PythonPackageWorkdir(PythonWorkdir):
@@ -17,21 +19,26 @@ class PythonPackageWorkdir(PythonWorkdir):
     def get_dependencies(self) -> list[str]:
         from packaging.requirements import Requirement
         dependencies = []
-        info = self.get_project_info()
-        for dependency in info.search('project.dependencies').get_list():
-            dependencies.append(Requirement(dependency.get_str()).name)
+        for dependency in self.get_project_config_file().list_dependencies():
+            dependencies.append(Requirement(dependency).name)
         return dependencies
 
-    def get_project_info(self) -> NestedConfigValue:
+    def get_project_config_file(self, reload: bool = True) -> PythonPackageTomlFile:
+        config_file = self.find_by_name('pyproject.toml')
+        assert isinstance(config_file, PythonPackageTomlFile)
+        # Read once to populate content with file source.
+        config_file.read(reload=reload)
+        return config_file
+
+    def save_project_config_file(self, config: StructuredData):
+        config_file = self.get_project_config_file()
+        config_file.write(config)
+
+    def get_project_config(self, reload: bool = True) -> TOMLDocument:
         """
         Fetch the data from the pyproject.toml file.
         """
-        from wexample_config.config_value.nested_config_value import NestedConfigValue
-        toml_file = self.find_by_name('pyproject.toml')
-
-        return NestedConfigValue(
-            raw=toml_file.read() if toml_file is not None else {}
-        )
+        return self.get_project_config_file(reload=reload).content
 
     def get_package_name(self) -> str:
         from wexample_helpers.helpers.string import string_to_kebab_case
@@ -39,6 +46,18 @@ class PythonPackageWorkdir(PythonWorkdir):
 
     def get_package_import_name(self) -> str:
         return f"wexample_{self.get_project_name()}"
+
+    def depends_from(self, package: PythonPackageWorkdir) -> bool:
+        for dependence_name in self.get_dependencies():
+            if package.get_package_name() == dependence_name:
+                return True
+        return False
+
+    def save_dependency(self, package: PythonPackageWorkdir) -> None:
+        """Add a dependency, use strict version as this is the intended internal management."""
+        config = self.get_project_config_file()
+        config.add_dependency(f"{package.get_package_name()}=={package.get_project_version()}")
+        config.save()
 
     def search_imports_in_codebase(self, searched_package: PythonPackageWorkdir) -> list[SearchResult]:
         """Find import statements that reference the given package.
