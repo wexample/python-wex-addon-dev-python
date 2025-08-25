@@ -181,12 +181,12 @@ class PythonWorkdir(FrameworkPackageWorkdir):
         from wexample_filestate.config_option.children_file_factory_config_option import (
             ChildrenFileFactoryConfigOption,
         )
-        from wexample_filestate_python.file.python_file import PythonFile
         from wexample_filestate.const.disk import DiskItemType
         from wexample_filestate.const.globals import NAME_PATTERN_NO_LEADING_DOT
         from wexample_filestate_python.const.name_pattern import (
             NAME_PATTERN_PYTHON_NOT_PYCACHE,
         )
+        from wexample_filestate_python.file.python_file import PythonFile
 
         return ChildrenFileFactoryConfigOption(
             pattern={

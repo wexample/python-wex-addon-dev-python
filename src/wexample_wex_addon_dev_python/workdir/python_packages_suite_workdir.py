@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 
 class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
-    def packages_validate_internal_dependencies_declarations(self):
+    def packages_validate_internal_dependencies_declarations(self) -> None:
         dependencies_map = self.build_dependencies_map()
         for package_name in dependencies_map:
             package = self.get_package(package_name)
@@ -48,7 +48,7 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
                             )
                         )
 
-    def packages_propagate_versions(self):
+    def packages_propagate_versions(self) -> None:
         ordered_packages = self.get_ordered_packages()
 
         progress = self.io.progress(label=f'Starting...', total=len(ordered_packages)).get_handle()

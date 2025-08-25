@@ -36,8 +36,8 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
     def _optional_group_array(self, group: str):
         """Ensure and return project.optional-dependencies[group] as multi-line array."""
         from wexample_filestate_python.helpers.toml import (
-            toml_ensure_table,
             toml_ensure_array,
+            toml_ensure_table,
         )
 
         project = self._project_table()
@@ -70,9 +70,9 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         return names
 
     def add_dependency(self, spec: str) -> None:
-        from wexample_filestate_python.helpers.toml import toml_sort_string_array
         from packaging.requirements import Requirement
         from packaging.utils import canonicalize_name
+        from wexample_filestate_python.helpers.toml import toml_sort_string_array
 
         deps = self._dependencies_array()
         # Remove existing entries for the same package name before adding the new spec.
@@ -141,9 +141,9 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         return names
 
     def add_optional_dependency(self, group: str, spec: str) -> None:
-        from wexample_filestate_python.helpers.toml import toml_sort_string_array
         from packaging.requirements import Requirement
         from packaging.utils import canonicalize_name
+        from wexample_filestate_python.helpers.toml import toml_sort_string_array
 
         arr = self._optional_group_array(group)
         # Remove existing entries for the same package name before adding the new spec.

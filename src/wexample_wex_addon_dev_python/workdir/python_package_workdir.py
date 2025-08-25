@@ -30,7 +30,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         config_file.read(reload=reload)
         return config_file
 
-    def save_project_config_file(self, config: StructuredData):
+    def save_project_config_file(self, config: StructuredData) -> None:
         config_file = self.get_project_config_file()
         config_file.write(config)
 
@@ -83,7 +83,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         from wexample_filestate_python.file.python_file import PythonFile
         from wexample_filestate.common.search_result import SearchResult
 
-        def _search(item: PythonFile):
+        def _search(item: PythonFile) -> None:
             found.extend(
                 SearchResult.create_for_all_matches(string, item, regex=regex, flags=flags)
             )
@@ -95,7 +95,7 @@ class PythonPackageWorkdir(PythonWorkdir):
 
         return found
 
-    def publish(self):
+    def publish(self) -> None:
         from wexample_helpers.helpers.shell import shell_run
 
         # Map token to PyPI's token-based authentication if provided

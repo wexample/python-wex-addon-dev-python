@@ -45,12 +45,16 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
         description = project.get("description", "")
         python_version = project.get("requires-python", "")
         dependencies = project.get("dependencies", [])
-        urls = project.get("urls", {}) if isinstance(project.get("urls", {}), dict) else {}
+        urls = (
+            project.get("urls", {}) if isinstance(project.get("urls", {}), dict) else {}
+        )
         # Accept both lowercase and capitalized homepage key variants
         homepage = urls.get("homepage") or urls.get("Homepage") or ""
         license_field = project.get("license", {})
         if isinstance(license_field, dict):
-            license_info = license_field.get("text", "") or license_field.get("file", "")
+            license_info = license_field.get("text", "") or license_field.get(
+                "file", ""
+            )
         else:
             license_info = str(license_field) if license_field else ""
         version = project.get("version", "")
@@ -70,7 +74,7 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
             f"{deps_list}\n\n"
             "## Installation\n\n"
             "```bash\n"
-            f'pip install {name}\n'
+            f"pip install {name}\n"
             "```\n\n"
             f'{self._add_section_if_exists("usage")}'
             "## Links\n\n"
