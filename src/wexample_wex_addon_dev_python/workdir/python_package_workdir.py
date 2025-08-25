@@ -8,6 +8,7 @@ from wexample_wex_addon_dev_python.workdir.python_workdir import PythonWorkdir
 
 if TYPE_CHECKING:
     from wexample_config.config_value.nested_config_value import NestedConfigValue
+    from wexample_filestate.search.search_result import SearchResult
 
 
 class PythonPackageWorkdir(PythonWorkdir):
@@ -21,35 +22,45 @@ class PythonPackageWorkdir(PythonWorkdir):
             dependencies.append(Requirement(dependency.get_str()).name)
         return dependencies
 
-    def get_project_info(self, force: bool = False, default: dict | None = None) -> NestedConfigValue:
-        from wexample_config.config_value.nested_config_value import NestedConfigValue
-
+    def get_project_info(self) -> NestedConfigValue:
         """
         Fetch the data from the pyproject.toml file.
         """
-        # Return cached data if available and force is False
-        if not force and self._project_info_cache is not None:
-            return self._project_info_cache
+        from wexample_config.config_value.nested_config_value import NestedConfigValue
+        toml_file = self.find_by_name('pyproject.toml')
 
-        import tomli
-        from wexample_helpers.helpers.file import file_read
-
-        project_path = self.get_resolved()
-        pyproject_file = f"{project_path}pyproject.toml"
-
-        # Read the pyproject.toml file
-        try:
-            pyproject_content = file_read(pyproject_file)
-            pyproject_data = tomli.loads(pyproject_content)
-            # Store in cache
-            self._project_info_cache = NestedConfigValue(raw=pyproject_data)
-        except FileNotFoundError:
-            return NestedConfigValue(raw=default or {})
-
-        return self._project_info_cache
+        return NestedConfigValue(
+            raw=toml_file.read() if toml_file is not None else {}
+        )
 
     def get_package_name(self) -> str:
+        from wexample_helpers.helpers.string import string_to_kebab_case
+        return f"wexample-{string_to_kebab_case(self.get_project_name())}"
+
+    def get_package_import_name(self) -> str:
         return f"wexample_{self.get_project_name()}"
+
+    def imports_package_in_codebase(self, searched_package: PythonPackageWorkdir) -> bool:
+        """Search if package is used in the current one, and update dependencies if not declared into."""
+        results = self.search_in_codebase(f'from {searched_package.get_package_import_name()}.')
+        return len(results) > 0
+
+    def search_in_codebase(self, string: str) -> list[SearchResult]:
+        found = []
+        from wexample_filestate_python.file.python_file import PythonFile
+        from wexample_filestate.search.search_result import SearchResult
+
+        def _search(item: PythonFile):
+            found.extend(
+                SearchResult.create_for_all_matches(string, item)
+            )
+
+        self.for_each_child_of_type_recursive(
+            callback=_search,
+            class_type=PythonFile
+        )
+
+        return found
 
     def publish(self):
         from wexample_helpers.helpers.shell import shell_run

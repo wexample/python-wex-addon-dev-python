@@ -47,7 +47,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         package_workdir = self.find_package_workdir()
 
         # Heuristic import name: distribution name converted to snake_case
-        import_name = package_workdir.get_package_name()
+        import_name = package_workdir.get_package_import_name()
 
         if package_workdir is not None:
             version = package_workdir.get_project_version()

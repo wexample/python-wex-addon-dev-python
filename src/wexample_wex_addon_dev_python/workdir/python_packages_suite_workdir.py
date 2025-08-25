@@ -10,29 +10,27 @@ from wexample_wex_addon_dev_python.workdir.python_package_workdir import PythonP
 
 
 class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
-    def publish_suite(self):
-        ordered_dependencies = self.build_ordered_dependencies()
+    def packages_harmonize_versions(self):
+        all_dependencies = self.build_dependencies()
+        for package_name in all_dependencies:
+            package = self.get_package(package_name)
+
+            for package_name_search in all_dependencies:
+                package.ensure_dependency_declaration(
+                    self.get_package(package_name_search)
+                )
+
         # for package in self.get_packages():
         #     self.io.log(f'Publishing package {package.get_project_name()}')
         #     self.io.indentation_up()
         #     self.io.success(f'Package {package.get_project_name()}')
         #     self.io.indentation_down()
 
-    def build_ordered_dependencies(self):
+    def build_ordered_dependencies(self) -> list[str]:
         # Build and validate the dependency map, then compute a stable topological order
-        dep_map = self.build_dependencies()
-        self.validate_internal_dependencies(dep_map)
-        return self.topological_order(dep_map)
-
-    def build_dependencies(self) -> dict[str, list[str]]:
-        dependencies = {}
-        for package in self.get_packages():
-            dependencies[package.get_package_name()] = self.filter_local_packages(package.get_dependencies())
-
-        return dependencies
-
-    def get_local_packages_names(self) -> list[str]:
-        return [p.get_package_name() for p in self.get_packages()]
+        return self.topological_order(
+            self.build_dependencies()
+        )
 
     def filter_local_packages(self, packages: list[str]) -> list[str]:
         """
@@ -53,20 +51,6 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
                 seen.add(name)
                 filtered.append(name)
         return filtered
-
-    def validate_internal_dependencies(self, dep_map: dict[str, list[str]]) -> None:
-        """
-        Ensure all referenced internal dependencies exist among local packages.
-        Raises ValueError on unknown references.
-        """
-        local = set(dep_map.keys())
-        unknown: set[str] = set()
-        for deps in dep_map.values():
-            for d in deps:
-                if d not in local:
-                    unknown.add(d)
-        if unknown:
-            raise ValueError(f"Unknown internal dependencies referenced: {', '.join(sorted(unknown))}")
 
     def topological_order(self, dep_map: dict[str, list[str]]) -> list[str]:
         """
@@ -108,12 +92,6 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
         order = self.build_ordered_dependencies()
         by_name = {p.get_package_name(): p for p in self.get_packages()}
         return [by_name[n] for n in order]
-
-    def get_packages(self) -> list[PythonPackageWorkdir]:
-        pip_dir = self.find_by_name(item_name='pip')
-        if pip_dir:
-            return pip_dir.get_children_list()
-        return []
 
     def prepare_value(self, raw_value: DictConfig | None = None) -> DictConfig:
         from wexample_filestate.config_option.children_filter_config_option import (
