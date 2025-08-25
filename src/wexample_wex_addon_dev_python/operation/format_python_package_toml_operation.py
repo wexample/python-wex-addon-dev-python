@@ -31,7 +31,6 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
 
     @classmethod
     def preview_source_change(cls, target: PythonPackageTomlFile) -> str | None:
-
         src = cls._read_current_non_empty_src(target)
         if src is None:
             return None

@@ -30,23 +30,31 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
         doc_path = self._get_doc_path(section)
 
         if os.path.exists(doc_path):
-            with open(doc_path) as file:
+            with open(doc_path, encoding="utf-8") as file:
                 content = file.read()
                 return f"## {section.title()}\n\n{content}\n\n"
 
         return ""
 
     def get_templates(self) -> list[str] | None:
-        project_info = self.workdir.get_project_info()
-        project = project_info.get("project", {})
+        # Use TOMLDocument from the workdir
+        doc = self.workdir.get_project_config()
+        project = doc.get("project", {}) if isinstance(doc, dict) else {}
 
         # Extract information
         description = project.get("description", "")
         python_version = project.get("requires-python", "")
         dependencies = project.get("dependencies", [])
-        homepage = project.get("urls", {}).get("homepage", "")
-        license_info = project.get("license", {}).get("text", "")
+        urls = project.get("urls", {}) if isinstance(project.get("urls", {}), dict) else {}
+        # Accept both lowercase and capitalized homepage key variants
+        homepage = urls.get("homepage") or urls.get("Homepage") or ""
+        license_field = project.get("license", {})
+        if isinstance(license_field, dict):
+            license_info = license_field.get("text", "") or license_field.get("file", "")
+        else:
+            license_info = str(license_field) if license_field else ""
         version = project.get("version", "")
+        name = project.get("name", "")
 
         # Format dependencies list
         deps_list = "\n".join([f"- {dep}" for dep in dependencies])
@@ -62,7 +70,7 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
             f"{deps_list}\n\n"
             "## Installation\n\n"
             "```bash\n"
-            f'pip install {project.get("name", "")}\n'
+            f'pip install {name}\n'
             "```\n\n"
             f'{self._add_section_if_exists("usage")}'
             "## Links\n\n"
@@ -72,10 +80,10 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
         ]
 
     def build_package_name(self) -> str:
-        project_info = self.workdir.get_project_info()
-
-        # Get project name from pyproject.toml
-        project_name = project_info.get("project", {}).get("name", "")
+        # Read project name from pyproject.toml
+        doc = self.workdir.get_project_config()
+        project = doc.get("project", {}) if isinstance(doc, dict) else {}
+        project_name = project.get("name", "")
 
         # Remove vendor prefix if vendor is provided
         if self.vendor:
