@@ -41,17 +41,32 @@ class PythonPackageWorkdir(PythonWorkdir):
         return f"wexample_{self.get_project_name()}"
 
     def search_imports_in_codebase(self, searched_package: PythonPackageWorkdir) -> list[SearchResult]:
-        """Search if package is used in the current one, and update dependencies if not declared into."""
-        return self.search_in_codebase(f'from {searched_package.get_package_import_name()}.')
+        """Find import statements that reference the given package.
 
-    def search_in_codebase(self, string: str) -> list[SearchResult]:
+        Supports common Python forms:
+        - from <pkg>(.<sub>)* import ...
+        - import <pkg>(.<sub>)* [as alias]
+
+        Returns a list of SearchResult with file, line and column for each match.
+        """
+        import re
+        pkg = searched_package.get_package_import_name()
+        pattern = (
+            rf"(?m)^\s*(?:"
+            rf"from\s+{re.escape(pkg)}(?:\.[\w\.]+)?\s+import\s+"
+            rf"|import\s+{re.escape(pkg)}(?:\.[\w\.]+)?(?:\s+as\s+\w+)?\b"
+            rf")"
+        )
+        return self.search_in_codebase(pattern, regex=True, flags=re.MULTILINE)
+
+    def search_in_codebase(self, string: str, *, regex: bool = False, flags: int = 0) -> list[SearchResult]:
         found = []
         from wexample_filestate_python.file.python_file import PythonFile
         from wexample_filestate.common.search_result import SearchResult
 
         def _search(item: PythonFile):
             found.extend(
-                SearchResult.create_for_all_matches(string, item)
+                SearchResult.create_for_all_matches(string, item, regex=regex, flags=flags)
             )
 
         self.for_each_child_of_type_recursive(
