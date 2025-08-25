@@ -20,6 +20,7 @@ dependencies = [
     "pylint",
     "pyright",
     "wexample-filestate-python",
+    "wexample-wex-addon-app",
     "wexample-wex-core",
 ]
 

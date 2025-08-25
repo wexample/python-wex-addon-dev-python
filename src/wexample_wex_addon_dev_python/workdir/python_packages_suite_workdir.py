@@ -31,7 +31,7 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
                     if len(dependencies_stack) == 0:
                         # Build a readable list of import locations to help debugging
                         imports_details = "\n".join(
-                            f" - {res.item.get_path()}:{res.line}:{res.column} (searched='{res.searched}')"
+                            f" - {res.item.get_path()}:{res.line}:{res.column}"
                             for res in imports
                         )
                         raise AssertionError(
@@ -40,7 +40,7 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
                                 "but there is no declared local dependency path. "
                                 "Add \"{dep}\" to the 'project.dependencies' of \"{pkg}\" in its pyproject.toml, "
                                 "or declare an intermediate local package that depends on \"{dep}\".\n\n"
-                                "Detected import locations (file:line:col):\n{locations}"
+                                "Detected import locations:\n{locations}"
                             ).format(
                                 pkg=package_name,
                                 dep=package_name_search,
