@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Type
 
 from wexample_config.const.types import DictConfig
 from wexample_wex_core.workdir.framework_packages_suite_workdir import (
@@ -10,6 +10,7 @@ from wexample_wex_core.workdir.framework_packages_suite_workdir import (
 
 if TYPE_CHECKING:
     from wexample_wex_addon_dev_python.workdir.python_package_workdir import PythonPackageWorkdir
+    from wexample_wex_core.workdir.framework_package_workdir import FrameworkPackageWorkdir
 
 
 class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
@@ -167,9 +168,6 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
             ChildrenFilterConfigOption,
         )
         from wexample_filestate.const.disk import DiskItemType
-        from wexample_wex_addon_dev_python.workdir.python_package_workdir import (
-            PythonPackageWorkdir,
-        )
 
         raw_value = super().prepare_value(raw_value=raw_value)
 
@@ -184,7 +182,7 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
                     ChildrenFilterConfigOption(
                         filter=self._has_pyproject,
                         pattern={
-                            "class": PythonPackageWorkdir,
+                            "class": self._get_framework_workdir_class(),
                             "type": DiskItemType.DIRECTORY,
                         },
                     )
@@ -193,6 +191,12 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
         )
 
         return raw_value
+
+    def _get_framework_workdir_class(self) -> Type[FrameworkPackageWorkdir]:
+        from wexample_wex_addon_dev_python.workdir.python_package_workdir import (
+            PythonPackageWorkdir,
+        )
+        return PythonPackageWorkdir
 
     def _has_pyproject(self, entry: Path) -> bool:
         return entry.is_dir() and (entry / "pyproject.toml").is_file()
