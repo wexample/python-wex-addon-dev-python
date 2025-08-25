@@ -9,7 +9,7 @@ from wexample_wex_addon_app.workdir.mixin.as_suite_package_item import (
 
 if TYPE_CHECKING:
     from wexample_config.const.types import DictConfig
-    from wexample_wex_addon_dev_python.workdir.python_packages_suite_workdir import (
+    from wexample_filestate_python.workdir.python_packages_suite_workdir import (
         PythonPackagesSuiteWorkdir,
     )
 
@@ -25,7 +25,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         return prepare_value
 
     def find_package_workdir(self) -> PythonPackagesSuiteWorkdir | None:
-        from wexample_wex_addon_dev_python.workdir.python_package_workdir import (
+        from wexample_filestate_python.workdir.python_package_workdir import (
             PythonPackageWorkdir,
         )
 
