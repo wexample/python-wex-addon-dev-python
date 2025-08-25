@@ -53,9 +53,11 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
 
         for package in ordered_packages:
             self.io.log(f'Propagating package "{package.get_package_name()}" version "{package.get_project_version()}"')
+            self.io.indentation_up()
             for dependent in self.get_dependents(package):
-                self.io.log(f'  {dependent.get_package_name()}')
+                self.io.log(f'Applying to {dependent.get_package_name()}')
                 dependent.save_dependency(package)
+            self.io.indentation_down()
 
     def get_dependents(self, package: PythonPackageWorkdir) -> list[PythonPackageWorkdir]:
         dependents = []
