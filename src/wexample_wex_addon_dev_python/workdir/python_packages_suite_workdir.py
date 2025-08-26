@@ -192,7 +192,7 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
 
         return raw_value
 
-    def _get_framework_workdir_class(self) -> Type[FrameworkPackageWorkdir]:
+    def _get_framework_workdir_class(self) -> type[FrameworkPackageWorkdir]:
         from wexample_wex_addon_dev_python.workdir.python_package_workdir import (
             PythonPackageWorkdir,
         )

@@ -5,12 +5,14 @@ from typing import TYPE_CHECKING
 from wexample_config.const.types import DictConfig
 from wexample_helpers.const.types import StructuredData
 from wexample_helpers.helpers.array import array_dict_get_by
-from wexample_wex_addon_dev_python.file.python_package_toml_file import PythonPackageTomlFile
+from wexample_wex_addon_dev_python.file.python_package_toml_file import (
+    PythonPackageTomlFile,
+)
 from wexample_wex_addon_dev_python.workdir.python_workdir import PythonWorkdir
 
 if TYPE_CHECKING:
-    from wexample_filestate.common.search_result import SearchResult
     from tomlkit import TOMLDocument
+    from wexample_filestate.common.search_result import SearchResult
 
 
 class PythonPackageWorkdir(PythonWorkdir):
@@ -81,8 +83,8 @@ class PythonPackageWorkdir(PythonWorkdir):
 
     def search_in_codebase(self, string: str, *, regex: bool = False, flags: int = 0) -> list[SearchResult]:
         found = []
-        from wexample_filestate_python.file.python_file import PythonFile
         from wexample_filestate.common.search_result import SearchResult
+        from wexample_filestate_python.file.python_file import PythonFile
 
         def _search(item: PythonFile) -> None:
             found.extend(
