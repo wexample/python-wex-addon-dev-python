@@ -42,9 +42,10 @@ class PythonPackageWorkdir(PythonWorkdir):
 
     def get_package_name(self) -> str:
         from wexample_helpers.helpers.string import string_to_kebab_case
-        return f"wexample-{string_to_kebab_case(self.get_project_name())}"
+        return string_to_kebab_case(self.get_package_import_name())
 
     def get_package_import_name(self) -> str:
+        # TODO concat suite name prefix.
         return f"wexample_{self.get_project_name()}"
 
     def depends_from(self, package: PythonPackageWorkdir) -> bool:
