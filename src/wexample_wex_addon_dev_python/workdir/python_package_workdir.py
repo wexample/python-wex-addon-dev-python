@@ -3,7 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from wexample_config.const.types import DictConfig
-from wexample_filestate.config_value.readme_content_config_value import ReadmeContentConfigValue
+from wexample_filestate.config_value.readme_content_config_value import (
+    ReadmeContentConfigValue,
+)
 from wexample_helpers.const.types import StructuredData
 from wexample_helpers.helpers.array import array_dict_get_by
 from wexample_wex_addon_dev_python.file.python_package_toml_file import (
@@ -227,7 +229,8 @@ class PythonPackageWorkdir(PythonWorkdir):
         return raw_value
 
     def _get_readme_content(self) -> ReadmeContentConfigValue | None:
-        from wexample_wex_addon_dev_python.config_value.python_package_readme_config_value import \
-            PythonPackageReadmeContentConfigValue
+        from wexample_wex_addon_dev_python.config_value.python_package_readme_config_value import (
+            PythonPackageReadmeContentConfigValue,
+        )
 
         return PythonPackageReadmeContentConfigValue(workdir=self)
