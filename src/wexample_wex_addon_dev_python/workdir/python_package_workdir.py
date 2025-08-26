@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from wexample_config.const.types import DictConfig
+from wexample_filestate.config_value.readme_content_config_value import ReadmeContentConfigValue
 from wexample_helpers.const.types import StructuredData
 from wexample_helpers.helpers.array import array_dict_get_by
 from wexample_wex_addon_dev_python.file.python_package_toml_file import (
@@ -67,7 +68,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         config.save()
 
     def search_imports_in_codebase(
-        self, searched_package: PythonPackageWorkdir
+            self, searched_package: PythonPackageWorkdir
     ) -> list[SearchResult]:
         """Find import statements that reference the given package.
 
@@ -89,7 +90,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         return self.search_in_codebase(pattern, regex=True, flags=re.MULTILINE)
 
     def search_in_codebase(
-        self, string: str, *, regex: bool = False, flags: int = 0
+            self, string: str, *, regex: bool = False, flags: int = 0
     ) -> list[SearchResult]:
         found = []
         from wexample_filestate.common.search_result import SearchResult
@@ -224,3 +225,9 @@ class PythonPackageWorkdir(PythonWorkdir):
         )
 
         return raw_value
+
+    def _get_readme_content(self) -> ReadmeContentConfigValue | None:
+        from wexample_wex_addon_dev_python.config_value.python_package_readme_config_value import \
+            PythonPackageReadmeContentConfigValue
+
+        return PythonPackageReadmeContentConfigValue(workdir=self)
