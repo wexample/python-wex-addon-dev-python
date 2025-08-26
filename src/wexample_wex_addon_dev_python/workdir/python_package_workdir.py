@@ -114,7 +114,7 @@ class PythonPackageWorkdir(PythonWorkdir):
             inherit_stdio=True,
         )
 
-    def prepare_value(self, prepare_value: DictConfig | None = None) -> DictConfig:
+    def prepare_value(self, raw_value: DictConfig | None = None) -> DictConfig:
         from wexample_config.config_value.callback_render_config_value import (
             CallbackRenderConfigValue,
         )
@@ -123,11 +123,11 @@ class PythonPackageWorkdir(PythonWorkdir):
             PythonPackageTomlFile,
         )
 
-        prepare_value = super().prepare_value(prepare_value)
+        raw_value = super().prepare_value(raw_value=raw_value)
 
         # Retrieve the '.gitignore' configuration or create it if it doesn't exist
         config_gitignore = array_dict_get_by(
-            "name", ".gitignore", prepare_value["children"]
+            "name", ".gitignore", raw_value["children"]
         )
         if config_gitignore is not None:
             generic_gitignore_rules = {
@@ -177,7 +177,7 @@ class PythonPackageWorkdir(PythonWorkdir):
                     if rule not in should_contain_lines:
                         should_contain_lines.append(rule)
 
-        prepare_value["children"].append(
+        raw_value["children"].append(
             {
                 "class": PythonPackageTomlFile,
                 "name": "pyproject.toml",
@@ -186,7 +186,7 @@ class PythonPackageWorkdir(PythonWorkdir):
             }
         )
 
-        prepare_value["children"].append(
+        raw_value["children"].append(
             {
                 "name": "src",
                 "type": DiskItemType.DIRECTORY,
@@ -212,4 +212,4 @@ class PythonPackageWorkdir(PythonWorkdir):
             }
         )
 
-        return prepare_value
+        return raw_value
