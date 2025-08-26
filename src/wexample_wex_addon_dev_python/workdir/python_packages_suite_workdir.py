@@ -9,8 +9,12 @@ from wexample_wex_core.workdir.framework_packages_suite_workdir import (
 )
 
 if TYPE_CHECKING:
-    from wexample_wex_addon_dev_python.workdir.python_package_workdir import PythonPackageWorkdir
-    from wexample_wex_core.workdir.framework_package_workdir import FrameworkPackageWorkdir
+    from wexample_wex_addon_dev_python.workdir.python_package_workdir import (
+        PythonPackageWorkdir,
+    )
+    from wexample_wex_core.workdir.framework_package_workdir import (
+        FrameworkPackageWorkdir,
+    )
 
 
 class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
@@ -134,7 +138,7 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
         Returns a leaves -> trunk order (dependencies before dependents).
         Raises ValueError on cycles.
         """
-        from graphlib import TopologicalSorter, CycleError
+        from graphlib import CycleError, TopologicalSorter
 
         # Normalize: include every mentioned node and sort for stable results
         nodes = set(dep_map.keys()) | {d for deps in dep_map.values() for d in deps}
