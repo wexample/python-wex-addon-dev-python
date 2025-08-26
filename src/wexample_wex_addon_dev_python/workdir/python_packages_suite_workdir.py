@@ -28,9 +28,7 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
                 imports = package.search_imports_in_codebase(searched_package)
                 if len(imports) > 0:
                     dependencies_stack = self.build_dependencies_stack(
-                        package,
-                        searched_package,
-                        dependencies_map
+                        package, searched_package, dependencies_map
                     )
 
                     if len(dependencies_stack) == 0:
@@ -41,35 +39,40 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
                         )
                         raise AssertionError(
                             (
-                                "Dependency violation: package \"{pkg}\" imports code from \"{dep}\" "
+                                'Dependency violation: package "{pkg}" imports code from "{dep}" '
                                 "but there is no declared local dependency path. "
-                                "Add \"{dep}\" to the 'project.dependencies' of \"{pkg}\" in its pyproject.toml, "
-                                "or declare an intermediate local package that depends on \"{dep}\".\n\n"
+                                'Add "{dep}" to the \'project.dependencies\' of "{pkg}" in its pyproject.toml, '
+                                'or declare an intermediate local package that depends on "{dep}".\n\n'
                                 "Detected import locations:\n{locations}"
                             ).format(
                                 pkg=package_name,
                                 dep=package_name_search,
-                                locations=imports_details or " - <no locations captured>"
+                                locations=imports_details
+                                or " - <no locations captured>",
                             )
                         )
 
     def packages_propagate_versions(self) -> None:
         ordered_packages = self.get_ordered_packages()
 
-        progress = self.io.progress(label=f'Starting...', total=len(ordered_packages)).get_handle()
+        progress = self.io.progress(
+            label=f"Starting...", total=len(ordered_packages)
+        ).get_handle()
         for package in ordered_packages:
             progress.advance(
                 label=f'Propagating package "{package.get_package_name()}" version "{package.get_project_version()}"',
-                step=1
+                step=1,
             )
             self.io.indentation_up()
             for dependent in self.get_dependents(package):
-                self.io.log(f'Applying to {dependent.get_package_name()}')
+                self.io.log(f"Applying to {dependent.get_package_name()}")
                 dependent.save_dependency(package)
             self.io.indentation_down()
         progress.finish()
 
-    def get_dependents(self, package: PythonPackageWorkdir) -> list[PythonPackageWorkdir]:
+    def get_dependents(
+        self, package: PythonPackageWorkdir
+    ) -> list[PythonPackageWorkdir]:
         dependents = []
         for neighbor_package in self.get_packages():
             if neighbor_package.depends_from(package):
@@ -77,10 +80,10 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
         return dependents
 
     def build_dependencies_stack(
-            self,
-            package: PythonPackageWorkdir,
-            dependency: PythonPackageWorkdir,
-            dependencies_map: dict[str, list[str]],
+        self,
+        package: PythonPackageWorkdir,
+        dependency: PythonPackageWorkdir,
+        dependencies_map: dict[str, list[str]],
     ) -> list[PythonPackageWorkdir]:
         """Return the declared dependency chain from `package` to `dependency`.
 
@@ -101,7 +104,9 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
         import networkx as nx
 
         # Build a deterministic DiGraph: add nodes/edges in sorted order
-        nodes = set(dependencies_map.keys()) | {d for deps in dependencies_map.values() for d in deps}
+        nodes = set(dependencies_map.keys()) | {
+            d for deps in dependencies_map.values() for d in deps
+        }
         G = nx.DiGraph()
         for n in sorted(nodes):
             G.add_node(n)
@@ -129,9 +134,7 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
 
     def build_ordered_dependencies(self) -> list[str]:
         # Build and validate the dependency map, then compute a stable topological order
-        return self.topological_order(
-            self.build_dependencies_map()
-        )
+        return self.topological_order(self.build_dependencies_map())
 
     def topological_order(self, dep_map: dict[str, list[str]]) -> list[str]:
         """Deterministic topological order using graphlib.TopologicalSorter.
@@ -155,7 +158,7 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
             order = list(ts.static_order())
         except CycleError as e:
             # Extract involved nodes if present, otherwise a generic message
-            msg = getattr(e, 'args', [None])[0] or 'Cyclic dependencies detected'
+            msg = getattr(e, "args", [None])[0] or "Cyclic dependencies detected"
             raise ValueError(str(msg)) from e
 
         # Return only local packages (original keys of dep_map)
@@ -200,6 +203,7 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
         from wexample_wex_addon_dev_python.workdir.python_package_workdir import (
             PythonPackageWorkdir,
         )
+
         return PythonPackageWorkdir
 
     def _has_pyproject(self, entry: Path) -> bool:
