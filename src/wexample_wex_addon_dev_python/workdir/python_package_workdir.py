@@ -20,13 +20,14 @@ class PythonPackageWorkdir(PythonWorkdir):
 
     def get_dependencies(self) -> list[str]:
         from packaging.requirements import Requirement
+
         dependencies = []
         for dependency in self.get_project_config_file().list_dependency_names():
             dependencies.append(Requirement(dependency).name)
         return dependencies
 
     def get_project_config_file(self, reload: bool = True) -> PythonPackageTomlFile:
-        config_file = self.find_by_name('pyproject.toml')
+        config_file = self.find_by_name("pyproject.toml")
         assert isinstance(config_file, PythonPackageTomlFile)
         # Read once to populate content with file source.
         config_file.read(reload=reload)
@@ -44,6 +45,7 @@ class PythonPackageWorkdir(PythonWorkdir):
 
     def get_package_name(self) -> str:
         from wexample_helpers.helpers.string import string_to_kebab_case
+
         return string_to_kebab_case(self.get_package_import_name())
 
     def get_package_import_name(self) -> str:
@@ -59,10 +61,14 @@ class PythonPackageWorkdir(PythonWorkdir):
     def save_dependency(self, package: PythonPackageWorkdir) -> None:
         """Add a dependency, use strict version as this is the intended internal management."""
         config = self.get_project_config_file()
-        config.add_dependency(f"{package.get_package_name()}=={package.get_project_version()}")
+        config.add_dependency(
+            f"{package.get_package_name()}=={package.get_project_version()}"
+        )
         config.save()
 
-    def search_imports_in_codebase(self, searched_package: PythonPackageWorkdir) -> list[SearchResult]:
+    def search_imports_in_codebase(
+        self, searched_package: PythonPackageWorkdir
+    ) -> list[SearchResult]:
         """Find import statements that reference the given package.
 
         Supports common Python forms:
@@ -72,6 +78,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         Returns a list of SearchResult with file, line and column for each match.
         """
         import re
+
         pkg = searched_package.get_package_import_name()
         pattern = (
             rf"(?m)^\s*(?:"
@@ -81,20 +88,21 @@ class PythonPackageWorkdir(PythonWorkdir):
         )
         return self.search_in_codebase(pattern, regex=True, flags=re.MULTILINE)
 
-    def search_in_codebase(self, string: str, *, regex: bool = False, flags: int = 0) -> list[SearchResult]:
+    def search_in_codebase(
+        self, string: str, *, regex: bool = False, flags: int = 0
+    ) -> list[SearchResult]:
         found = []
         from wexample_filestate.common.search_result import SearchResult
         from wexample_filestate_python.file.python_file import PythonFile
 
         def _search(item: PythonFile) -> None:
             found.extend(
-                SearchResult.create_for_all_matches(string, item, regex=regex, flags=flags)
+                SearchResult.create_for_all_matches(
+                    string, item, regex=regex, flags=flags
+                )
             )
 
-        self.for_each_child_of_type_recursive(
-            callback=_search,
-            class_type=PythonFile
-        )
+        self.for_each_child_of_type_recursive(callback=_search, class_type=PythonFile)
 
         return found
 

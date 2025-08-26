@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Type
+from typing import TYPE_CHECKING
 
 from wexample_config.const.types import DictConfig
 from wexample_wex_core.workdir.framework_packages_suite_workdir import (
