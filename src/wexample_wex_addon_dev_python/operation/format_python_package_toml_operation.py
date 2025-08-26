@@ -35,7 +35,7 @@ class FormatPythonPackageTomlOperation(AbstractExistingFileOperation):
         if src is None:
             return None
 
-        return target.apply_format_to_src(src)
+        return target.make_writable_content(src)
 
     def applicable_for_option(self, option: AbstractConfigOption) -> bool:
         from wexample_wex_addon_dev_python.config_option.format_python_package_toml_option import (
