@@ -199,12 +199,173 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         """Serialize a TOMLDocument (preferred) or a plain dict to TOML.
         Using tomlkit.dumps preserves comments/formatting when content is a TOMLDocument.
         """
-        from tomlkit import dumps
+        from tomlkit import dumps, table, array as toml_array
+        from wexample_filestate_python.helpers.toml import (
+            toml_ensure_array,
+            toml_ensure_table,
+            toml_get_string_value,
+            toml_sort_string_array,
+        )
+        from wexample_filestate_python.helpers.package import package_normalize_name
 
         content = content or self.read()
 
-        package = self.find_package_workdir()
-        if package:
-            content["project"]["name"] = package.get_package_name()
+        # Ensure content is a TOMLDocument-like dict
+        doc = content
 
-        return dumps(content)
+        # Try to get current package/workdir context
+        package = self.find_package_workdir()
+        import_name: str | None = None
+        project_version: str | None = None
+        project_name: str | None = None
+        if package:
+            # Best-effort getters; replace by correct accessors if needed.
+            try:
+                project_name = package.get_package_name()
+            except Exception:  # noqa: BLE001
+                project_name = None
+            try:
+                # TODO: remplacer par l'API exacte pour la version (ex: package.get_project_version())
+                project_version = package.get_project_version()  # type: ignore[attr-defined]
+            except Exception:  # noqa: BLE001
+                project_version = None
+            try:
+                # TODO: remplacer par l'API exacte pour le nom d'import (ex: package.get_package_import_name())
+                import_name = package.get_package_import_name()  # type: ignore[attr-defined]
+            except Exception:  # noqa: BLE001
+                import_name = None
+
+        # --- [build-system] enforcement ---
+        build_tbl = doc.get("build-system") if isinstance(doc, dict) else None
+        if not build_tbl or not isinstance(build_tbl, dict):
+            build_tbl = table()
+            doc["build-system"] = build_tbl
+        desired_requires = ["pdm-backend"]
+        if build_tbl.get("requires") != desired_requires:
+            build_tbl["requires"] = desired_requires
+        if build_tbl.get("build-backend") != "pdm.backend":
+            build_tbl["build-backend"] = "pdm.backend"
+
+        # --- [tool.pdm.build] enforcement ---
+        tool_tbl, _ = toml_ensure_table(doc, ["tool"])
+        pdm_tbl, _ = toml_ensure_table(tool_tbl, ["pdm"])
+        build_pdm_tbl, _ = toml_ensure_table(pdm_tbl, ["build"])
+        includes_arr, _ = toml_ensure_array(build_pdm_tbl, "includes")
+
+        # Enforce src layout, packages, and includes (py.typed)
+        if build_pdm_tbl.get("package-dir") != "src":
+            build_pdm_tbl["package-dir"] = "src"
+        if import_name:
+            desired_pkgs = [{"include": import_name, "from": "src"}]
+            if build_pdm_tbl.get("packages") != desired_pkgs:
+                build_pdm_tbl["packages"] = desired_pkgs
+            desired_includes = [f"src/{import_name}/py.typed"]
+            current_includes = [str(x) for x in list(includes_arr)]
+            if current_includes != desired_includes:
+                build_pdm_tbl["includes"] = desired_includes
+
+        # --- [project] table and basic fields ---
+        project_tbl, _ = toml_ensure_table(doc, ["project"])
+        # Name sync (best-effort)
+        if project_name:
+            project_tbl["name"] = project_name
+        # Version sync (best-effort)
+        if project_version:
+            project_tbl["version"] = project_version
+        # Python requirement
+        target_requires_python = ">=3.10"
+        if project_tbl.get("requires-python") != target_requires_python:
+            project_tbl["requires-python"] = target_requires_python
+
+        # --- Dependencies normalization ---
+        deps_arr, _ = toml_ensure_array(project_tbl, "dependencies")
+        # Sort dependencies array
+        toml_sort_string_array(deps_arr)
+
+        # Optional dependency groups
+        opt_tbl, _ = toml_ensure_table(project_tbl, ["optional-dependencies"])
+        # Ensure dev group exists
+        dev_arr, _ = toml_ensure_array(opt_tbl, "dev")
+
+        # Filestate configuration for keep/exclude-add
+        filestate_tbl = None
+        if isinstance(tool_tbl, dict):
+            filestate_tbl = tool_tbl.get("filestate")
+        keep_names: set[str] = set()
+        exclude_add: set[str] = set()
+        if isinstance(filestate_tbl, dict):
+            keep_list = filestate_tbl.get("keep")
+            if isinstance(keep_list, list):
+                keep_names = {package_normalize_name(str(x)) for x in keep_list}
+            ex_list = filestate_tbl.get("exclude-add")
+            if isinstance(ex_list, list):
+                exclude_add = {str(x).strip().lower() for x in ex_list}
+
+        # Remove unwanted dev/build tools from runtime deps (unless kept)
+        REMOVE_NAMES = {
+            "pytest",
+            "pip-tools",
+            "black",
+            "ruff",
+            "flake8",
+            "mypy",
+            "isort",
+            "coverage",
+            "build",
+            "twine",
+            "pip",
+            "setuptools",
+            "wheel",
+            "typing-extensions",
+        }
+
+        def _should_remove(item: object) -> bool:
+            name = package_normalize_name(toml_get_string_value(item))
+            if name in keep_names:
+                return False
+            if name == "typing-extensions":
+                # Safe to drop when python >= 3.10 and we manage deps
+                return True
+            return name in REMOVE_NAMES
+
+        to_keep = []
+        for it in list(deps_arr):
+            if not _should_remove(it):
+                to_keep.append(it)
+        if len(to_keep) != len(deps_arr):
+            deps_arr.clear()
+            deps_arr.extend(to_keep)
+            toml_sort_string_array(deps_arr)
+
+        # Normalize any pydantic spec to pydantic>=2,<3
+        normalized = False
+        new_deps = []
+        for it in list(deps_arr):
+            val = toml_get_string_value(it).strip()
+            base = package_normalize_name(val)
+            if base == "pydantic":
+                new_deps.append("pydantic>=2,<3")
+                normalized = True
+            else:
+                new_deps.append(it)
+        if normalized:
+            deps_arr.clear()
+            deps_arr.extend(new_deps)
+            toml_sort_string_array(deps_arr)
+
+        # Ensure pydantic>=2,<3 present unless excluded
+        existing_norm = {package_normalize_name(toml_get_string_value(it)) for it in list(deps_arr)}
+        if "pydantic" not in exclude_add and "pydantic" not in existing_norm:
+            deps_arr.append("pydantic>=2,<3")
+            toml_sort_string_array(deps_arr)
+
+        # Ensure optional dev group contains pytest unless already in runtime deps
+        runtime_has_pytest = any(
+            package_normalize_name(toml_get_string_value(it)) == "pytest" for it in list(deps_arr)
+        )
+        dev_values = [toml_get_string_value(it) for it in list(dev_arr)]
+        if not runtime_has_pytest and not any(v.strip() == "pytest" for v in dev_values):
+            dev_arr.append("pytest")
+            toml_sort_string_array(dev_arr)
+
+        return dumps(doc)
