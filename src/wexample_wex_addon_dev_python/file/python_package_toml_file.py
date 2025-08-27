@@ -184,17 +184,3 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         if len(filtered) != len(arr):
             arr.clear()
             arr.extend(filtered)
-
-    def set_python_requires(self, spec: str) -> None:
-        project = self._project_table()
-        if project.get("requires-python") != spec:
-            project["requires-python"] = spec
-
-    def ensure_build_system_pdm(self) -> None:
-        from wexample_filestate_python.helpers.toml import toml_ensure_table
-
-        doc = self._content_cache
-        build, _ = toml_ensure_table(doc, ["build-system"])
-        # Minimal deterministic config
-        build["requires"] = ["pdm-backend"]
-        build["build-backend"] = "pdm.backend"
