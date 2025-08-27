@@ -59,16 +59,16 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         )
 
     def list_dependencies(
-        self, optional: bool = False, group: str = "dev"
+            self, optional: bool = False, group: str = "dev"
     ) -> list[str]:
         deps = self._get_deps_array(optional=optional, group=group)
         return [str(x) for x in list(deps)]
 
     def list_dependency_names(
-        self,
-        canonicalize_names: bool = True,
-        optional: bool = False,
-        group: str = "dev",
+            self,
+            canonicalize_names: bool = True,
+            optional: bool = False,
+            group: str = "dev",
     ) -> list[str]:
         """Return dependency package names derived from list_dependencies().
 
@@ -89,7 +89,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         return names
 
     def add_dependency(
-        self, spec: str, optional: bool = False, group: str = "dev"
+            self, spec: str, optional: bool = False, group: str = "dev"
     ) -> None:
         from packaging.requirements import Requirement
         from packaging.utils import canonicalize_name
@@ -110,7 +110,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         toml_sort_string_array(deps)
 
     def remove_dependency_by_name(
-        self, package_name: str, optional: bool = False, group: str = "dev"
+            self, package_name: str, optional: bool = False, group: str = "dev"
     ) -> None:
         """Remove all dependency entries that match the given package name.
 
@@ -164,9 +164,6 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
 
         content = content or self.read()
 
-        # Ensure content is a TOMLDocument-like dict
-        doc = content
-
         # Try to get current package/workdir context
         package = self.find_package_workdir()
         import_name: str | None = None
@@ -178,10 +175,10 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             import_name = package.get_package_import_name()
 
         # --- [build-system] enforcement ---
-        build_tbl = doc.get("build-system") if isinstance(doc, dict) else None
+        build_tbl = content.get("build-system") if isinstance(content, dict) else None
         if not build_tbl or not isinstance(build_tbl, dict):
             build_tbl = table()
-            doc["build-system"] = build_tbl
+            content["build-system"] = build_tbl
         desired_requires = ["pdm-backend"]
         if build_tbl.get("requires") != desired_requires:
             build_tbl["requires"] = desired_requires
@@ -189,11 +186,12 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             build_tbl["build-backend"] = "pdm.backend"
 
         # --- [tool.pdm.build] enforcement ---
-        tool_tbl, _ = toml_ensure_table(doc, ["tool"])
+        tool_tbl, _ = toml_ensure_table(content, ["tool"])
         pdm_tbl, _ = toml_ensure_table(tool_tbl, ["pdm"])
         build_pdm_tbl, _ = toml_ensure_table(pdm_tbl, ["build"])
         includes_arr, _ = toml_ensure_array_multiline(build_pdm_tbl, "includes")
 
+        pdm_tbl["distribution"] = True
         # Enforce src layout, packages, and includes (py.typed)
         if build_pdm_tbl.get("package-dir") != "src":
             build_pdm_tbl["package-dir"] = "src"
@@ -207,7 +205,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
                 toml_set_array_multiline(build_pdm_tbl, "includes", desired_includes)
 
         # --- [project] table and basic fields ---
-        project_tbl, _ = toml_ensure_table(doc, ["project"])
+        project_tbl, _ = toml_ensure_table(content, ["project"])
         # Name sync (best-effort)
         if project_name:
             project_tbl["name"] = project_name
@@ -295,9 +293,9 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         )
         dev_values = [toml_get_string_value(it) for it in list(dev_arr)]
         if not runtime_has_pytest and not any(
-            v.strip() == "pytest" for v in dev_values
+                v.strip() == "pytest" for v in dev_values
         ):
             dev_arr.append("pytest")
             toml_sort_string_array(dev_arr)
 
-        return dumps(doc)
+        return dumps(content)
