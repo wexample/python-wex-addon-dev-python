@@ -15,13 +15,12 @@ if TYPE_CHECKING:
 
 
 class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
-    _content_cache: TOMLDocument | None = None
 
     def _project_table(self):
         """Ensure and return the [project] table."""
         from wexample_filestate_python.helpers.toml import toml_ensure_table
 
-        doc = self._content_cache
+        doc = self.read_parsed()
         project, _ = toml_ensure_table(doc, ["project"])
         return project
 
@@ -145,7 +144,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
 
         return self.find_closest(FrameworkPackageWorkdir)
 
-    def writable(self, content: TOMLDocument | dict | None = None) -> str:
+    def dumps(self, content: TOMLDocument | dict | None = None) -> str:
         """Serialize a TOMLDocument (preferred) or a plain dict to TOML.
         Using tomlkit.dumps preserves comments/formatting when content is a TOMLDocument.
         """
@@ -162,7 +161,8 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             RUNTIME_DEPENDENCY_REMOVE_NAMES,
         )
 
-        content = content or self.read()
+        # Obtain the current TOML document (preserving formatting) if not provided
+        content = content or self.read_parsed()
 
         # Try to get current package/workdir context
         package = self.find_package_workdir()

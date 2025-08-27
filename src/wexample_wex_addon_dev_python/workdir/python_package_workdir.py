@@ -33,7 +33,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         config_file = self.find_by_name("pyproject.toml")
         assert isinstance(config_file, PythonPackageTomlFile)
         # Read once to populate content with file source.
-        config_file.read(reload=reload)
+        config_file.read_text(reload=reload)
         return config_file
 
     def save_project_config_file(self, config: StructuredData) -> None:
@@ -44,7 +44,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         """
         Fetch the data from the pyproject.toml file.
         """
-        return self.get_project_config_file(reload=reload).content
+        return self.get_project_config_file(reload=reload).read_parsed()
 
     def get_package_name(self) -> str:
         from wexample_helpers.helpers.string import string_to_kebab_case
@@ -118,7 +118,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         package_name = self.get_package_name()
         version = self.get_project_version()
         if client.package_release_exists(package_name=package_name, version=version):
-            self.io.warning(
+            self.warning(
                 f'Trying to publish an existing release for package "{package_name}" version {version}'
             )
 
