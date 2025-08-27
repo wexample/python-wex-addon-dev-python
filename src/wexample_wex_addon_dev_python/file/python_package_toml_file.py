@@ -49,11 +49,16 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         arr.multiline(True)
         return arr
 
-    def list_dependencies(self) -> list[str]:
-        deps = self._dependencies_array()
+    # --- Unified dependency accessors (runtime vs optional) ---
+    def _get_deps_array(self, optional: bool = False, group: str = "dev"):
+        """Return TOML array for runtime deps or optional group (multiline)."""
+        return self._optional_group_array(group) if optional else self._dependencies_array()
+
+    def list_dependencies(self, optional: bool = False, group: str = "dev") -> list[str]:
+        deps = self._get_deps_array(optional=optional, group=group)
         return [str(x) for x in list(deps)]
 
-    def list_dependency_names(self, canonicalize_names: bool = True) -> list[str]:
+    def list_dependency_names(self, canonicalize_names: bool = True, optional: bool = False, group: str = "dev") -> list[str]:
         """Return dependency package names derived from list_dependencies().
 
         If canonicalize_names is True, names are normalized using packaging's
@@ -63,7 +68,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         from packaging.utils import canonicalize_name
 
         names: list[str] = []
-        for spec in self.list_dependencies():
+        for spec in self.list_dependencies(optional=optional, group=group):
             try:
                 name = Requirement(spec).name
                 names.append(canonicalize_name(name) if canonicalize_names else name)
@@ -72,16 +77,16 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
                 continue
         return names
 
-    def add_dependency(self, spec: str) -> None:
+    def add_dependency(self, spec: str, optional: bool = False, group: str = "dev") -> None:
         from packaging.requirements import Requirement
         from packaging.utils import canonicalize_name
         from wexample_filestate_python.helpers.toml import toml_sort_string_array
 
-        deps = self._dependencies_array()
+        deps = self._get_deps_array(optional=optional, group=group)
         # Remove existing entries for the same package name before adding the new spec.
         try:
             new_name = canonicalize_name(Requirement(spec).name)
-            self.remove_dependency_by_name(new_name)
+            self.remove_dependency_by_name(new_name, optional=optional, group=group)
         except Exception:
             # If parsing fails, we won't attempt name-based removal.
             pass
@@ -91,7 +96,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             deps.append(spec)
         toml_sort_string_array(deps)
 
-    def remove_dependency_by_name(self, package_name: str) -> None:
+    def remove_dependency_by_name(self, package_name: str, optional: bool = False, group: str = "dev") -> None:
         """Remove all dependency entries that match the given package name.
 
         The provided package_name can be raw; it will be canonicalized to ensure
@@ -100,7 +105,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         from packaging.requirements import Requirement
         from packaging.utils import canonicalize_name
 
-        deps = self._dependencies_array()
+        deps = self._get_deps_array(optional=optional, group=group)
 
         target = canonicalize_name(package_name)
         filtered: list[str] = []
@@ -118,76 +123,6 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             deps.clear()
             deps.extend(filtered)
 
-    def list_optional_dependencies(self, group: str) -> list[str]:
-        arr = self._optional_group_array(group)
-        return [str(x) for x in list(arr)]
-
-    def list_optional_dependency_names(
-            self, group: str, canonicalize_names: bool = True
-    ) -> list[str]:
-        """Return only the package names for a given optional dependency group.
-
-        Mirrors list_dependency_names() behavior by parsing requirement specs
-        and (optionally) canonicalizing names.
-        """
-        from packaging.requirements import Requirement
-        from packaging.utils import canonicalize_name
-
-        names: list[str] = []
-        for spec in self.list_optional_dependencies(group):
-            try:
-                name = Requirement(spec).name
-                names.append(canonicalize_name(name) if canonicalize_names else name)
-            except Exception:
-                # Skip unparsable entries when deriving names
-                continue
-        return names
-
-    def add_optional_dependency(self, group: str, spec: str) -> None:
-        from packaging.requirements import Requirement
-        from packaging.utils import canonicalize_name
-        from wexample_filestate_python.helpers.toml import toml_sort_string_array
-
-        arr = self._optional_group_array(group)
-        # Remove existing entries for the same package name before adding the new spec.
-        try:
-            new_name = canonicalize_name(Requirement(spec).name)
-            self.remove_optional_dependency_by_name(group, new_name)
-        except Exception:
-            # If parsing fails, we won't attempt name-based removal.
-            pass
-
-        # Append (or re-append) the new spec if it is not already present verbatim
-        if spec not in arr:
-            arr.append(spec)
-        toml_sort_string_array(arr)
-
-    def remove_optional_dependency_by_name(self, group: str, package_name: str) -> None:
-        """Remove all optional dependency entries in a group matching a name.
-
-        Name matching is canonicalized to ensure robust comparisons.
-        """
-        from packaging.requirements import Requirement
-        from packaging.utils import canonicalize_name
-
-        arr = self._optional_group_array(group)
-
-        target = canonicalize_name(package_name)
-        filtered: list[str] = []
-        for existing in list(arr):
-            try:
-                existing_name = canonicalize_name(Requirement(str(existing)).name)
-            except Exception:
-                # Keep unparsable entries untouched
-                filtered.append(existing)
-                continue
-            if existing_name != target:
-                filtered.append(existing)
-
-        if len(filtered) != len(arr):
-            arr.clear()
-            arr.extend(filtered)
-
     def find_package_workdir(self) -> FrameworkPackageWorkdir | None:
         from wexample_wex_core.workdir.framework_package_workdir import (
             FrameworkPackageWorkdir,
@@ -201,7 +136,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         """
         from tomlkit import dumps, table
         from wexample_filestate_python.helpers.package import package_normalize_name
-        from wexample_wex_addon_dev_python.const.package import REMOVE_NAMES
+        from wexample_wex_addon_dev_python.const.package import RUNTIME_DEPENDENCY_REMOVE_NAMES
         from wexample_filestate_python.helpers.toml import (
             toml_ensure_array,
             toml_ensure_table,
@@ -302,7 +237,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             if name == "typing-extensions":
                 # Safe to drop when python >= 3.10 and we manage deps
                 return True
-            return name in REMOVE_NAMES
+            return name in RUNTIME_DEPENDENCY_REMOVE_NAMES
 
         to_keep = []
         for it in list(deps_arr):
