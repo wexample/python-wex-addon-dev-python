@@ -201,6 +201,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         """
         from tomlkit import dumps, table
         from wexample_filestate_python.helpers.package import package_normalize_name
+        from wexample_wex_addon_dev_python.const.package import REMOVE_NAMES
         from wexample_filestate_python.helpers.toml import (
             toml_ensure_array,
             toml_ensure_table,
@@ -293,22 +294,6 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
                 exclude_add = {str(x).strip().lower() for x in ex_list}
 
         # Remove unwanted dev/build tools from runtime deps (unless kept)
-        REMOVE_NAMES = {
-            "pytest",
-            "pip-tools",
-            "black",
-            "ruff",
-            "flake8",
-            "mypy",
-            "isort",
-            "coverage",
-            "build",
-            "twine",
-            "pip",
-            "setuptools",
-            "wheel",
-            "typing-extensions",
-        }
 
         def _should_remove(item: object) -> bool:
             name = package_normalize_name(toml_get_string_value(item))
