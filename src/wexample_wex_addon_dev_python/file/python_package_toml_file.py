@@ -219,21 +219,9 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         project_version: str | None = None
         project_name: str | None = None
         if package:
-            # Best-effort getters; replace by correct accessors if needed.
-            try:
-                project_name = package.get_package_name()
-            except Exception:  # noqa: BLE001
-                project_name = None
-            try:
-                # TODO: remplacer par l'API exacte pour la version (ex: package.get_project_version())
-                project_version = package.get_project_version()  # type: ignore[attr-defined]
-            except Exception:  # noqa: BLE001
-                project_version = None
-            try:
-                # TODO: remplacer par l'API exacte pour le nom d'import (ex: package.get_package_import_name())
-                import_name = package.get_package_import_name()  # type: ignore[attr-defined]
-            except Exception:  # noqa: BLE001
-                import_name = None
+            project_name = package.get_package_name()
+            project_version = package.get_project_version()
+            import_name = package.get_package_import_name()
 
         # --- [build-system] enforcement ---
         build_tbl = doc.get("build-system") if isinstance(doc, dict) else None
