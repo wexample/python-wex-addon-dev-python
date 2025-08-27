@@ -67,7 +67,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         config.add_dependency(
             f"{package.get_package_name()}=={package.get_project_version()}"
         )
-        config.write()
+        config.write_parsed()
 
     def search_imports_in_codebase(
         self, searched_package: PythonPackageWorkdir
