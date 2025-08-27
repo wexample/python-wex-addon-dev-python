@@ -2,7 +2,7 @@
 
 Python dev addon for wex
 
-Version: 0.0.40
+Version: 0.0.41
 
 ## Requirements
 
