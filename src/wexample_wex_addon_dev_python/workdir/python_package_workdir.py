@@ -70,7 +70,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         config.write()
 
     def search_imports_in_codebase(
-            self, searched_package: PythonPackageWorkdir
+        self, searched_package: PythonPackageWorkdir
     ) -> list[SearchResult]:
         """Find import statements that reference the given package.
 
@@ -92,7 +92,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         return self.search_in_codebase(pattern, regex=True, flags=re.MULTILINE)
 
     def search_in_codebase(
-            self, string: str, *, regex: bool = False, flags: int = 0
+        self, string: str, *, regex: bool = False, flags: int = 0
     ) -> list[SearchResult]:
         found = []
         from wexample_filestate.common.search_result import SearchResult
@@ -117,10 +117,7 @@ class PythonPackageWorkdir(PythonWorkdir):
 
         package_name = self.get_package_name()
         version = self.get_project_version()
-        if client.package_release_exists(
-                package_name=package_name,
-                version=version
-        ):
+        if client.package_release_exists(package_name=package_name, version=version):
             self.io.warning(
                 f'Trying to publish an existing release for package "{package_name}" version {version}'
             )
@@ -137,11 +134,7 @@ class PythonPackageWorkdir(PythonWorkdir):
             if password is not None:
                 publish_cmd += ["--password", password]
 
-            shell_run(
-                publish_cmd,
-                inherit_stdio=True,
-                cwd=self.get_path()
-            )
+            shell_run(publish_cmd, inherit_stdio=True, cwd=self.get_path())
 
     def prepare_value(self, raw_value: DictConfig | None = None) -> DictConfig:
         from wexample_config.config_value.callback_render_config_value import (
