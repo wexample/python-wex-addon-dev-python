@@ -70,7 +70,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         config.write()
 
     def search_imports_in_codebase(
-        self, searched_package: PythonPackageWorkdir
+            self, searched_package: PythonPackageWorkdir
     ) -> list[SearchResult]:
         """Find import statements that reference the given package.
 
@@ -92,7 +92,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         return self.search_in_codebase(pattern, regex=True, flags=re.MULTILINE)
 
     def search_in_codebase(
-        self, string: str, *, regex: bool = False, flags: int = 0
+            self, string: str, *, regex: bool = False, flags: int = 0
     ) -> list[SearchResult]:
         found = []
         from wexample_filestate.common.search_result import SearchResult
@@ -110,23 +110,38 @@ class PythonPackageWorkdir(PythonWorkdir):
         return found
 
     def publish(self) -> None:
+        from wexample_filestate_python.common.pipy_gateway import PipyGateway
         from wexample_helpers.helpers.shell import shell_run
 
-        # Map token to PyPI's token-based authentication if provided
-        username = "__token__"
-        password = self.get_env_parameter("PIPY_TOKEN")
+        client = PipyGateway(parent_io_handler=self)
 
-        # Build the publish command, adding credentials only when given
-        publish_cmd = ["pdm", "publish"]
-        if username is not None:
-            publish_cmd += ["--username", username]
-        if password is not None:
-            publish_cmd += ["--password", password]
+        package_name = self.get_package_name()
+        version = self.get_project_version()
+        if client.package_release_exists(
+                package_name=package_name,
+                version=version
+        ):
+            self.io.warning(
+                f'Trying to publish an existing release for package "{package_name}" version {version}'
+            )
 
-        shell_run(
-            publish_cmd,
-            inherit_stdio=True,
-        )
+        else:
+            # Map token to PyPI's token-based authentication if provided
+            username = "__token__"
+            password = self.get_env_parameter("PIPY_TOKEN")
+
+            # Build the publish command, adding credentials only when given
+            publish_cmd = ["pdm", "publish"]
+            if username is not None:
+                publish_cmd += ["--username", username]
+            if password is not None:
+                publish_cmd += ["--password", password]
+
+            shell_run(
+                publish_cmd,
+                inherit_stdio=True,
+                cwd=self.get_path()
+            )
 
     def prepare_value(self, raw_value: DictConfig | None = None) -> DictConfig:
         from wexample_config.config_value.callback_render_config_value import (
