@@ -206,6 +206,8 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             toml_ensure_table,
             toml_get_string_value,
             toml_sort_string_array,
+            toml_ensure_array_multiline,
+            toml_set_array_multiline,
         )
 
         content = content or self.read()
@@ -238,8 +240,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         tool_tbl, _ = toml_ensure_table(doc, ["tool"])
         pdm_tbl, _ = toml_ensure_table(tool_tbl, ["pdm"])
         build_pdm_tbl, _ = toml_ensure_table(pdm_tbl, ["build"])
-        includes_arr, _ = toml_ensure_array(build_pdm_tbl, "includes")
-        includes_arr.multiline(True)
+        includes_arr, _ = toml_ensure_array_multiline(build_pdm_tbl, "includes")
 
         # Enforce src layout, packages, and includes (py.typed)
         if build_pdm_tbl.get("package-dir") != "src":
@@ -251,7 +252,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             desired_includes = [f"src/{import_name}/py.typed"]
             current_includes = [str(x) for x in list(includes_arr)]
             if current_includes != desired_includes:
-                build_pdm_tbl["includes"] = desired_includes
+                toml_set_array_multiline(build_pdm_tbl, "includes", desired_includes)
 
         # --- [project] table and basic fields ---
         project_tbl, _ = toml_ensure_table(doc, ["project"])
@@ -267,16 +268,15 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             project_tbl["requires-python"] = target_requires_python
 
         # --- Dependencies normalization ---
-        deps_arr, _ = toml_ensure_array(project_tbl, "dependencies")
-        deps_arr.multiline(True)
+        # Use class helper to ensure multiline dependencies array
+        deps_arr = self._dependencies_array()
         # Sort dependencies array
         toml_sort_string_array(deps_arr)
 
         # Optional dependency groups
         opt_tbl, _ = toml_ensure_table(project_tbl, ["optional-dependencies"])
-        # Ensure dev group exists
-        dev_arr, _ = toml_ensure_array(opt_tbl, "dev")
-        dev_arr.multiline(True)
+        # Ensure dev group exists (multiline)
+        dev_arr = self._optional_group_array("dev")
 
         # Filestate configuration for keep/exclude-add
         filestate_tbl = None
