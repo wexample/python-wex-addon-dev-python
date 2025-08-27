@@ -9,7 +9,9 @@ from wexample_wex_core.workdir.mixin.as_suite_package_item import (
 
 if TYPE_CHECKING:
     from tomlkit import TOMLDocument
-    from wexample_wex_core.workdir.framework_package_workdir import FrameworkPackageWorkdir
+    from wexample_wex_core.workdir.framework_package_workdir import (
+        FrameworkPackageWorkdir,
+    )
 
 
 class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
@@ -187,7 +189,9 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             arr.extend(filtered)
 
     def find_package_workdir(self) -> FrameworkPackageWorkdir | None:
-        from wexample_wex_core.workdir.framework_package_workdir import FrameworkPackageWorkdir
+        from wexample_wex_core.workdir.framework_package_workdir import (
+            FrameworkPackageWorkdir,
+        )
 
         return self.find_closest(FrameworkPackageWorkdir)
 

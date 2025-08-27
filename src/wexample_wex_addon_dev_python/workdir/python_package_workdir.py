@@ -70,7 +70,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         config.write()
 
     def search_imports_in_codebase(
-            self, searched_package: PythonPackageWorkdir
+        self, searched_package: PythonPackageWorkdir
     ) -> list[SearchResult]:
         """Find import statements that reference the given package.
 
@@ -92,7 +92,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         return self.search_in_codebase(pattern, regex=True, flags=re.MULTILINE)
 
     def search_in_codebase(
-            self, string: str, *, regex: bool = False, flags: int = 0
+        self, string: str, *, regex: bool = False, flags: int = 0
     ) -> list[SearchResult]:
         found = []
         from wexample_filestate.common.search_result import SearchResult
