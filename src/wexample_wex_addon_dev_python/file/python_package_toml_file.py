@@ -123,7 +123,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         return [str(x) for x in list(arr)]
 
     def list_optional_dependency_names(
-        self, group: str, canonicalize_names: bool = True
+            self, group: str, canonicalize_names: bool = True
     ) -> list[str]:
         """Return only the package names for a given optional dependency group.
 
