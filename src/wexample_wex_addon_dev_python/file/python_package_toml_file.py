@@ -199,14 +199,14 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         """Serialize a TOMLDocument (preferred) or a plain dict to TOML.
         Using tomlkit.dumps preserves comments/formatting when content is a TOMLDocument.
         """
-        from tomlkit import dumps, table, array as toml_array
+        from tomlkit import dumps, table
+        from wexample_filestate_python.helpers.package import package_normalize_name
         from wexample_filestate_python.helpers.toml import (
             toml_ensure_array,
             toml_ensure_table,
             toml_get_string_value,
             toml_sort_string_array,
         )
-        from wexample_filestate_python.helpers.package import package_normalize_name
 
         content = content or self.read()
 
@@ -239,6 +239,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         pdm_tbl, _ = toml_ensure_table(tool_tbl, ["pdm"])
         build_pdm_tbl, _ = toml_ensure_table(pdm_tbl, ["build"])
         includes_arr, _ = toml_ensure_array(build_pdm_tbl, "includes")
+        includes_arr.multiline(True)
 
         # Enforce src layout, packages, and includes (py.typed)
         if build_pdm_tbl.get("package-dir") != "src":
@@ -267,6 +268,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
 
         # --- Dependencies normalization ---
         deps_arr, _ = toml_ensure_array(project_tbl, "dependencies")
+        deps_arr.multiline(True)
         # Sort dependencies array
         toml_sort_string_array(deps_arr)
 
@@ -274,6 +276,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         opt_tbl, _ = toml_ensure_table(project_tbl, ["optional-dependencies"])
         # Ensure dev group exists
         dev_arr, _ = toml_ensure_array(opt_tbl, "dev")
+        dev_arr.multiline(True)
 
         # Filestate configuration for keep/exclude-add
         filestate_tbl = None

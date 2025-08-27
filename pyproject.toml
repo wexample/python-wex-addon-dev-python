@@ -35,10 +35,14 @@ text = "MIT"
 homepage = "https://github.com/wexample/python-wex-dev-python"
 
 [project.optional-dependencies]
-dev = ["pytest"]
+dev = [
+    "pytest",
+]
 
 [tool.pdm.build]
-includes = ["src/wexample_wex_addon_dev_python/py.typed"]
+includes = [
+    "src/wexample_wex_addon_dev_python/py.typed",
+]
 package-dir = "src"
 
 [[tool.pdm.build.packages]]
