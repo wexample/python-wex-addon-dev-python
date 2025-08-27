@@ -205,6 +205,6 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
 
         package = self.find_package_workdir()
         if package:
-            content['project']['name'] = package.get_package_name()
+            content["project"]["name"] = package.get_package_name()
 
         return dumps(content)
