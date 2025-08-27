@@ -18,4 +18,3 @@ RUNTIME_DEPENDENCY_REMOVE_NAMES: set[str] = {
     "wheel",
     "typing-extensions",
 }
-

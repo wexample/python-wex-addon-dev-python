@@ -52,13 +52,24 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
     # --- Unified dependency accessors (runtime vs optional) ---
     def _get_deps_array(self, optional: bool = False, group: str = "dev"):
         """Return TOML array for runtime deps or optional group (multiline)."""
-        return self._optional_group_array(group) if optional else self._dependencies_array()
+        return (
+            self._optional_group_array(group)
+            if optional
+            else self._dependencies_array()
+        )
 
-    def list_dependencies(self, optional: bool = False, group: str = "dev") -> list[str]:
+    def list_dependencies(
+        self, optional: bool = False, group: str = "dev"
+    ) -> list[str]:
         deps = self._get_deps_array(optional=optional, group=group)
         return [str(x) for x in list(deps)]
 
-    def list_dependency_names(self, canonicalize_names: bool = True, optional: bool = False, group: str = "dev") -> list[str]:
+    def list_dependency_names(
+        self,
+        canonicalize_names: bool = True,
+        optional: bool = False,
+        group: str = "dev",
+    ) -> list[str]:
         """Return dependency package names derived from list_dependencies().
 
         If canonicalize_names is True, names are normalized using packaging's
@@ -77,7 +88,9 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
                 continue
         return names
 
-    def add_dependency(self, spec: str, optional: bool = False, group: str = "dev") -> None:
+    def add_dependency(
+        self, spec: str, optional: bool = False, group: str = "dev"
+    ) -> None:
         from packaging.requirements import Requirement
         from packaging.utils import canonicalize_name
         from wexample_filestate_python.helpers.toml import toml_sort_string_array
@@ -96,7 +109,9 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             deps.append(spec)
         toml_sort_string_array(deps)
 
-    def remove_dependency_by_name(self, package_name: str, optional: bool = False, group: str = "dev") -> None:
+    def remove_dependency_by_name(
+        self, package_name: str, optional: bool = False, group: str = "dev"
+    ) -> None:
         """Remove all dependency entries that match the given package name.
 
         The provided package_name can be raw; it will be canonicalized to ensure
@@ -136,14 +151,15 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         """
         from tomlkit import dumps, table
         from wexample_filestate_python.helpers.package import package_normalize_name
-        from wexample_wex_addon_dev_python.const.package import RUNTIME_DEPENDENCY_REMOVE_NAMES
         from wexample_filestate_python.helpers.toml import (
-            toml_ensure_array,
+            toml_ensure_array_multiline,
             toml_ensure_table,
             toml_get_string_value,
-            toml_sort_string_array,
-            toml_ensure_array_multiline,
             toml_set_array_multiline,
+            toml_sort_string_array,
+        )
+        from wexample_wex_addon_dev_python.const.package import (
+            RUNTIME_DEPENDENCY_REMOVE_NAMES,
         )
 
         content = content or self.read()
@@ -265,17 +281,22 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             toml_sort_string_array(deps_arr)
 
         # Ensure pydantic>=2,<3 present unless excluded
-        existing_norm = {package_normalize_name(toml_get_string_value(it)) for it in list(deps_arr)}
+        existing_norm = {
+            package_normalize_name(toml_get_string_value(it)) for it in list(deps_arr)
+        }
         if "pydantic" not in exclude_add and "pydantic" not in existing_norm:
             deps_arr.append("pydantic>=2,<3")
             toml_sort_string_array(deps_arr)
 
         # Ensure optional dev group contains pytest unless already in runtime deps
         runtime_has_pytest = any(
-            package_normalize_name(toml_get_string_value(it)) == "pytest" for it in list(deps_arr)
+            package_normalize_name(toml_get_string_value(it)) == "pytest"
+            for it in list(deps_arr)
         )
         dev_values = [toml_get_string_value(it) for it in list(dev_arr)]
-        if not runtime_has_pytest and not any(v.strip() == "pytest" for v in dev_values):
+        if not runtime_has_pytest and not any(
+            v.strip() == "pytest" for v in dev_values
+        ):
             dev_arr.append("pytest")
             toml_sort_string_array(dev_arr)
 
