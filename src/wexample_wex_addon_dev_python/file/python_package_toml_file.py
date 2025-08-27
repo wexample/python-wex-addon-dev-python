@@ -9,6 +9,7 @@ from wexample_wex_core.workdir.mixin.as_suite_package_item import (
 
 if TYPE_CHECKING:
     from tomlkit import TOMLDocument
+    from wexample_wex_core.workdir.framework_package_workdir import FrameworkPackageWorkdir
 
 
 class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
@@ -184,3 +185,22 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         if len(filtered) != len(arr):
             arr.clear()
             arr.extend(filtered)
+
+    def find_package_workdir(self) -> FrameworkPackageWorkdir | None:
+        from wexample_wex_core.workdir.framework_package_workdir import FrameworkPackageWorkdir
+
+        return self.find_closest(FrameworkPackageWorkdir)
+
+    def writable(self, content: TOMLDocument | dict | None = None) -> str:
+        """Serialize a TOMLDocument (preferred) or a plain dict to TOML.
+        Using tomlkit.dumps preserves comments/formatting when content is a TOMLDocument.
+        """
+        from tomlkit import dumps
+
+        content = content or self.read()
+
+        package = self.find_package_workdir()
+        if package:
+            content['project']['name'] = package.get_package_name()
+
+        return dumps(content)

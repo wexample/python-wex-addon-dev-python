@@ -37,15 +37,11 @@ class PythonWorkdir(FrameworkPackageWorkdir):
         from wexample_filestate_python.options_provider.python_options_provider import (
             PythonOptionsProvider,
         )
-        from wexample_wex_addon_dev_python.options_provider.addon_dev_python_options_provider import (
-            AddonDevPythonOptionsProvider,
-        )
 
         return [
             DefaultOptionsProvider,
             GitOptionsProvider,
             PythonOptionsProvider,
-            AddonDevPythonOptionsProvider,
         ]
 
     def get_operations_providers(self) -> list[type[AbstractOperationsProvider]]:
@@ -58,15 +54,11 @@ class PythonWorkdir(FrameworkPackageWorkdir):
         from wexample_filestate_python.operations_provider.python_operations_provider import (
             PythonOperationsProvider,
         )
-        from wexample_wex_addon_dev_python.operations_provider.addon_dev_python_operations_provider import (
-            AddonDevPythonOperationsProvider,
-        )
 
         return [
             DefaultOperationsProvider,
             GitOperationsProvider,
             PythonOperationsProvider,
-            AddonDevPythonOperationsProvider,
         ]
 
     def _create_package_name_snake(self, option: ItemTreeConfigOptionMixin) -> str:
@@ -163,14 +155,14 @@ class PythonWorkdir(FrameworkPackageWorkdir):
                 "type": DiskItemType.FILE,
                 "python": [
                     # Configured for python >= 3.12
-                    PythonConfigOption.OPTION_NAME_ADD_FUTURE_ANNOTATIONS,
-                    PythonConfigOption.OPTION_NAME_REMOVE_UNUSED,
-                    PythonConfigOption.OPTION_NAME_SORT_IMPORTS,
-                    PythonConfigOption.OPTION_NAME_MODERNIZE_TYPING,
-                    PythonConfigOption.OPTION_NAME_FSTRINGIFY,
-                    PythonConfigOption.OPTION_NAME_ADD_RETURN_TYPES,
-                    PythonConfigOption.OPTION_NAME_UNQUOTE_ANNOTATIONS,
-                    PythonConfigOption.OPTION_NAME_FORMAT,
+                    # PythonConfigOption.OPTION_NAME_ADD_FUTURE_ANNOTATIONS,
+                    # PythonConfigOption.OPTION_NAME_REMOVE_UNUSED,
+                    # PythonConfigOption.OPTION_NAME_SORT_IMPORTS,
+                    # PythonConfigOption.OPTION_NAME_MODERNIZE_TYPING,
+                    # PythonConfigOption.OPTION_NAME_FSTRINGIFY,
+                    # PythonConfigOption.OPTION_NAME_ADD_RETURN_TYPES,
+                    # PythonConfigOption.OPTION_NAME_UNQUOTE_ANNOTATIONS,
+                    # PythonConfigOption.OPTION_NAME_FORMAT,
                 ],
             },
             recursive=True,

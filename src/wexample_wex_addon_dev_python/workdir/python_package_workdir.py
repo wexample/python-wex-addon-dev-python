@@ -129,7 +129,6 @@ class PythonPackageWorkdir(PythonWorkdir):
         )
 
     def prepare_value(self, raw_value: DictConfig | None = None) -> DictConfig:
-        from wexample_wex_addon_dev_python.config_option.format_python_package_toml_option import FormatPythonPackageTomlOption
         from wexample_config.config_value.callback_render_config_value import (
             CallbackRenderConfigValue,
         )
