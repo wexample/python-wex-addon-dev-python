@@ -105,7 +105,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         from wexample_helpers.helpers.shell import shell_run
 
         progress.update(total=3, current=0)
-        super().publish(progress=progress.create_range_handle())
+        super().publish(progress=progress.create_range_handle(to_step=1))
 
         progress.update(current=2, label="Publishing to Pipy")
         client = PipyGateway(parent_io_handler=self)
