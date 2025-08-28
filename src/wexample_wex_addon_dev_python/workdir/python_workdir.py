@@ -99,6 +99,9 @@ class PythonWorkdir(FrameworkPackageWorkdir):
                     "name": ".gitignore",
                     "type": DiskItemType.FILE,
                     "should_exist": True,
+                    "should_contain_lines": [
+                        ".pdm-python"
+                    ],
                 },
                 {
                     "name": "tests",
