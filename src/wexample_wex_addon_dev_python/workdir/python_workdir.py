@@ -77,6 +77,7 @@ class PythonWorkdir(FrameworkPackageWorkdir):
     def _create_package_name_snake(self, option: ItemTreeConfigOptionMixin) -> str:
         import os
 
+        # TODO make generic
         return "wexample_" + string_to_snake_case(
             os.path.basename(
                 os.path.dirname(os.path.realpath(option.get_parent_item().get_path()))
@@ -86,6 +87,9 @@ class PythonWorkdir(FrameworkPackageWorkdir):
     def prepare_value(self, raw_value: DictConfig | None = None) -> DictConfig:
         from wexample_filestate.config_option.children_filter_config_option import (
             ChildrenFilterConfigOption,
+        )
+        from wexample_config.config_value.callback_render_config_value import (
+            CallbackRenderConfigValue,
         )
         from wexample_filestate.const.disk import DiskItemType
 
@@ -100,7 +104,8 @@ class PythonWorkdir(FrameworkPackageWorkdir):
                     "type": DiskItemType.FILE,
                     "should_exist": True,
                     "should_contain_lines": [
-                        ".pdm-python"
+                        ".pdm-python",
+                        ".python-version",
                     ],
                 },
                 {
@@ -152,6 +157,29 @@ class PythonWorkdir(FrameworkPackageWorkdir):
                         "should_exist": False,
                     }
                 ),
+                {
+                    "name": "src",
+                    "type": DiskItemType.DIRECTORY,
+                    "should_exist": True,
+                    "children": [
+                        {
+                            "name": CallbackRenderConfigValue(
+                                raw=self._create_package_name_snake
+                            ),
+                            "type": DiskItemType.DIRECTORY,
+                            "should_exist": True,
+                            "children": [
+                                self._create_init_children_factory(),
+                                self._create_python_file_children_filter(),
+                                {
+                                    "name": "py.typed",
+                                    "type": DiskItemType.FILE,
+                                    "should_exist": True,
+                                },
+                            ],
+                        }
+                    ],
+                }
             ]
         )
 
@@ -171,14 +199,14 @@ class PythonWorkdir(FrameworkPackageWorkdir):
                 "type": DiskItemType.FILE,
                 "python": [
                     # Configured for python >= 3.12
-                    # PythonConfigOption.OPTION_NAME_ADD_FUTURE_ANNOTATIONS,
-                    # PythonConfigOption.OPTION_NAME_REMOVE_UNUSED,
-                    # PythonConfigOption.OPTION_NAME_SORT_IMPORTS,
-                    # PythonConfigOption.OPTION_NAME_MODERNIZE_TYPING,
-                    # PythonConfigOption.OPTION_NAME_FSTRINGIFY,
-                    # PythonConfigOption.OPTION_NAME_ADD_RETURN_TYPES,
-                    # PythonConfigOption.OPTION_NAME_UNQUOTE_ANNOTATIONS,
-                    # PythonConfigOption.OPTION_NAME_FORMAT,
+                    PythonConfigOption.OPTION_NAME_ADD_FUTURE_ANNOTATIONS,
+                    PythonConfigOption.OPTION_NAME_REMOVE_UNUSED,
+                    PythonConfigOption.OPTION_NAME_SORT_IMPORTS,
+                    PythonConfigOption.OPTION_NAME_MODERNIZE_TYPING,
+                    PythonConfigOption.OPTION_NAME_FSTRINGIFY,
+                    PythonConfigOption.OPTION_NAME_ADD_RETURN_TYPES,
+                    PythonConfigOption.OPTION_NAME_UNQUOTE_ANNOTATIONS,
+                    PythonConfigOption.OPTION_NAME_FORMAT,
                 ],
             },
             recursive=True,

@@ -124,9 +124,6 @@ class PythonPackageWorkdir(PythonWorkdir):
             shell_run(publish_cmd, inherit_stdio=True, cwd=self.get_path())
 
     def prepare_value(self, raw_value: DictConfig | None = None) -> DictConfig:
-        from wexample_config.config_value.callback_render_config_value import (
-            CallbackRenderConfigValue,
-        )
         from wexample_filestate.const.disk import DiskItemType
         from wexample_wex_addon_dev_python.file.python_package_toml_file import (
             PythonPackageTomlFile,
@@ -192,32 +189,6 @@ class PythonPackageWorkdir(PythonWorkdir):
                 "name": "pyproject.toml",
                 "type": DiskItemType.FILE,
                 "should_exist": True,
-            }
-        )
-
-        raw_value["children"].append(
-            {
-                "name": "src",
-                "type": DiskItemType.DIRECTORY,
-                "should_exist": True,
-                "children": [
-                    {
-                        "name": CallbackRenderConfigValue(
-                            raw=self._create_package_name_snake
-                        ),
-                        "type": DiskItemType.DIRECTORY,
-                        "should_exist": True,
-                        "children": [
-                            self._create_init_children_factory(),
-                            self._create_python_file_children_filter(),
-                            {
-                                "name": "py.typed",
-                                "type": DiskItemType.FILE,
-                                "should_exist": True,
-                            },
-                        ],
-                    }
-                ],
             }
         )
 
