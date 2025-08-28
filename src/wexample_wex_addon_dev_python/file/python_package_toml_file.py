@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from wexample_filestate.item.file.toml_file import TomlFile
-from wexample_helpers.helpers.debug import debug_trace_and_die
 from wexample_wex_core.workdir.mixin.as_suite_package_item import (
     AsSuitePackageItem,
 )
