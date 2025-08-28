@@ -9,6 +9,7 @@ from wexample_wex_core.workdir.framework_packages_suite_workdir import (
 )
 
 if TYPE_CHECKING:
+    from wexample_prompt.common.progress.progress_handle import ProgressHandle
     from wexample_wex_addon_dev_python.workdir.python_package_workdir import (
         PythonPackageWorkdir,
     )
@@ -48,16 +49,20 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
                                 pkg=package_name,
                                 dep=package_name_search,
                                 locations=imports_details
-                                or " - <no locations captured>",
+                                          or " - <no locations captured>",
                             )
                         )
 
-    def packages_propagate_versions(self) -> None:
+    def packages_propagate_versions(
+            self,
+            progress: ProgressHandle | None = None
+    ) -> None:
         ordered_packages = self.get_ordered_packages()
 
-        progress = self.io.progress(
+        progress = progress or self.io.progress(
             label=f"Starting...", total=len(ordered_packages)
         ).get_handle()
+
         for package in ordered_packages:
             progress.advance(
                 label=f'Propagating package "{package.get_package_name()}" version "{package.get_project_version()}"',
@@ -71,7 +76,7 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
         progress.finish()
 
     def get_dependents(
-        self, package: PythonPackageWorkdir
+            self, package: PythonPackageWorkdir
     ) -> list[PythonPackageWorkdir]:
         dependents = []
         for neighbor_package in self.get_packages():
@@ -80,10 +85,10 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
         return dependents
 
     def build_dependencies_stack(
-        self,
-        package: PythonPackageWorkdir,
-        dependency: PythonPackageWorkdir,
-        dependencies_map: dict[str, list[str]],
+            self,
+            package: PythonPackageWorkdir,
+            dependency: PythonPackageWorkdir,
+            dependencies_map: dict[str, list[str]],
     ) -> list[PythonPackageWorkdir]:
         """Return the declared dependency chain from `package` to `dependency`.
 
