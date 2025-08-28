@@ -53,30 +53,6 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
                             )
                         )
 
-    def packages_propagate_versions(
-        self, progress: ProgressHandle | None = None
-    ) -> None:
-        ordered_packages = self.get_ordered_packages()
-
-        progress = (
-            progress
-            or self.io.progress(
-                label=f"Starting...", total=len(ordered_packages)
-            ).get_handle()
-        )
-
-        for package in ordered_packages:
-            progress.advance(
-                label=f'Propagating package "{package.get_package_name()}" version "{package.get_project_version()}"',
-                step=1,
-            )
-            self.io.indentation_up()
-            for dependent in self.get_dependents(package):
-                self.io.log(f"Applying to {dependent.get_package_name()}")
-                dependent.save_dependency(package)
-            self.io.indentation_down()
-        progress.finish()
-
     def get_dependents(
         self, package: PythonPackageWorkdir
     ) -> list[PythonPackageWorkdir]:

@@ -16,6 +16,7 @@ from wexample_wex_addon_dev_python.workdir.python_workdir import PythonWorkdir
 if TYPE_CHECKING:
     from tomlkit import TOMLDocument
     from wexample_filestate.common.search_result import SearchResult
+    from wexample_prompt.common.progress.progress_handle import ProgressHandle
 
 
 class PythonPackageWorkdir(PythonWorkdir):
@@ -57,7 +58,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         config.write_parsed()
 
     def search_imports_in_codebase(
-        self, searched_package: PythonPackageWorkdir
+            self, searched_package: PythonPackageWorkdir
     ) -> list[SearchResult]:
         """Find import statements that reference the given package.
 
@@ -79,7 +80,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         return self.search_in_codebase(pattern, regex=True, flags=re.MULTILINE)
 
     def search_in_codebase(
-        self, string: str, *, regex: bool = False, flags: int = 0
+            self, string: str, *, regex: bool = False, flags: int = 0
     ) -> list[SearchResult]:
         found = []
         from wexample_filestate.common.search_result import SearchResult
@@ -96,10 +97,16 @@ class PythonPackageWorkdir(PythonWorkdir):
 
         return found
 
-    def publish(self) -> None:
+    def publish(self, commit_and_push: bool = False, progress: ProgressHandle | None = None, ) -> None:
         from wexample_filestate_python.common.pipy_gateway import PipyGateway
         from wexample_helpers.helpers.shell import shell_run
+        progress.update(total=3, current=0)
+        super().publish(
+            commit_and_push=commit_and_push,
+            progress=progress.create_range_handle()
+        )
 
+        progress.update(current=2, label="Publishing to Pipy")
         client = PipyGateway(parent_io_handler=self)
 
         package_name = self.get_package_name()
@@ -108,7 +115,6 @@ class PythonPackageWorkdir(PythonWorkdir):
             self.warning(
                 f'Trying to publish an existing release for package "{package_name}" version {version}'
             )
-
         else:
             # Map token to PyPI's token-based authentication if provided
             username = "__token__"
@@ -122,6 +128,7 @@ class PythonPackageWorkdir(PythonWorkdir):
                 publish_cmd += ["--password", password]
 
             shell_run(publish_cmd, inherit_stdio=True, cwd=self.get_path())
+        progress.finish()
 
     def prepare_value(self, raw_value: DictConfig | None = None) -> DictConfig:
         from wexample_filestate.const.disk import DiskItemType
