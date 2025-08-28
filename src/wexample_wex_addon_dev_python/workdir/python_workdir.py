@@ -27,6 +27,19 @@ if TYPE_CHECKING:
 
 
 class PythonWorkdir(FrameworkPackageWorkdir):
+    def get_package_name(self) -> str:
+        from wexample_helpers.helpers.string import string_to_kebab_case
+
+        return string_to_kebab_case(self.get_package_import_name())
+
+    def get_dependencies(self) -> list[str]:
+        from packaging.requirements import Requirement
+
+        dependencies = []
+        for dependency in self.get_project_config_file().list_dependency_names():
+            dependencies.append(Requirement(dependency).name)
+        return dependencies
+
     def get_options_providers(self) -> list[type[AbstractOptionsProvider]]:
         from wexample_filestate.options_provider.default_options_provider import (
             DefaultOptionsProvider,
@@ -155,14 +168,14 @@ class PythonWorkdir(FrameworkPackageWorkdir):
                 "type": DiskItemType.FILE,
                 "python": [
                     # Configured for python >= 3.12
-                    PythonConfigOption.OPTION_NAME_ADD_FUTURE_ANNOTATIONS,
-                    PythonConfigOption.OPTION_NAME_REMOVE_UNUSED,
-                    PythonConfigOption.OPTION_NAME_SORT_IMPORTS,
-                    PythonConfigOption.OPTION_NAME_MODERNIZE_TYPING,
-                    PythonConfigOption.OPTION_NAME_FSTRINGIFY,
-                    PythonConfigOption.OPTION_NAME_ADD_RETURN_TYPES,
-                    PythonConfigOption.OPTION_NAME_UNQUOTE_ANNOTATIONS,
-                    PythonConfigOption.OPTION_NAME_FORMAT,
+                    # PythonConfigOption.OPTION_NAME_ADD_FUTURE_ANNOTATIONS,
+                    # PythonConfigOption.OPTION_NAME_REMOVE_UNUSED,
+                    # PythonConfigOption.OPTION_NAME_SORT_IMPORTS,
+                    # PythonConfigOption.OPTION_NAME_MODERNIZE_TYPING,
+                    # PythonConfigOption.OPTION_NAME_FSTRINGIFY,
+                    # PythonConfigOption.OPTION_NAME_ADD_RETURN_TYPES,
+                    # PythonConfigOption.OPTION_NAME_UNQUOTE_ANNOTATIONS,
+                    # PythonConfigOption.OPTION_NAME_FORMAT,
                 ],
             },
             recursive=True,

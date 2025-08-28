@@ -21,14 +21,6 @@ if TYPE_CHECKING:
 class PythonPackageWorkdir(PythonWorkdir):
     _project_info_cache = None
 
-    def get_dependencies(self) -> list[str]:
-        from packaging.requirements import Requirement
-
-        dependencies = []
-        for dependency in self.get_project_config_file().list_dependency_names():
-            dependencies.append(Requirement(dependency).name)
-        return dependencies
-
     def get_project_config_file(self, reload: bool = True) -> PythonPackageTomlFile:
         config_file = self.find_by_name("pyproject.toml")
         assert isinstance(config_file, PythonPackageTomlFile)
@@ -45,11 +37,6 @@ class PythonPackageWorkdir(PythonWorkdir):
         Fetch the data from the pyproject.toml file.
         """
         return self.get_project_config_file(reload=reload).read_parsed()
-
-    def get_package_name(self) -> str:
-        from wexample_helpers.helpers.string import string_to_kebab_case
-
-        return string_to_kebab_case(self.get_package_import_name())
 
     def get_package_import_name(self) -> str:
         # TODO concat suite name prefix.
