@@ -85,11 +85,11 @@ class PythonWorkdir(FrameworkPackageWorkdir):
         )
 
     def prepare_value(self, raw_value: DictConfig | None = None) -> DictConfig:
-        from wexample_filestate.config_option.children_filter_config_option import (
-            ChildrenFilterConfigOption,
-        )
         from wexample_config.config_value.callback_render_config_value import (
             CallbackRenderConfigValue,
+        )
+        from wexample_filestate.config_option.children_filter_config_option import (
+            ChildrenFilterConfigOption,
         )
         from wexample_filestate.const.disk import DiskItemType
 
@@ -106,6 +106,7 @@ class PythonWorkdir(FrameworkPackageWorkdir):
                     "should_contain_lines": [
                         ".pdm-python",
                         ".python-version",
+                        ".venv"
                     ],
                 },
                 {
@@ -116,6 +117,11 @@ class PythonWorkdir(FrameworkPackageWorkdir):
                         self._create_init_children_factory(),
                         self._create_python_file_children_filter(),
                     ],
+                },
+                {
+                    "name": ".venv",
+                    "type": DiskItemType.DIRECTORY,
+                    "should_exist": True,
                 },
                 # Replaced by pdm
                 {
