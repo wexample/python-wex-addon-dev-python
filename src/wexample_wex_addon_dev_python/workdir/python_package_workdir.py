@@ -58,7 +58,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         config.write_parsed()
 
     def search_imports_in_codebase(
-        self, searched_package: PythonPackageWorkdir
+            self, searched_package: PythonPackageWorkdir
     ) -> list[SearchResult]:
         """Find import statements that reference the given package.
 
@@ -80,7 +80,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         return self.search_in_codebase(pattern, regex=True, flags=re.MULTILINE)
 
     def search_in_codebase(
-        self, string: str, *, regex: bool = False, flags: int = 0
+            self, string: str, *, regex: bool = False, flags: int = 0
     ) -> list[SearchResult]:
         found = []
         from wexample_filestate.common.search_result import SearchResult
@@ -98,16 +98,15 @@ class PythonPackageWorkdir(PythonWorkdir):
         return found
 
     def publish(
-        self,
-        commit_and_push: bool = False,
-        progress: ProgressHandle | None = None,
+            self,
+            progress: ProgressHandle | None = None,
     ) -> None:
         from wexample_filestate_python.common.pipy_gateway import PipyGateway
         from wexample_helpers.helpers.shell import shell_run
 
         progress.update(total=3, current=0)
         super().publish(
-            commit_and_push=commit_and_push, progress=progress.create_range_handle()
+            progress=progress.create_range_handle()
         )
 
         progress.update(current=2, label="Publishing to Pipy")
