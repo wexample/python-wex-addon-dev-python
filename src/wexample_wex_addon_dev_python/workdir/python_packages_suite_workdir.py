@@ -9,7 +9,6 @@ from wexample_wex_core.workdir.framework_packages_suite_workdir import (
 )
 
 if TYPE_CHECKING:
-    from wexample_prompt.common.progress.progress_handle import ProgressHandle
     from wexample_wex_addon_dev_python.workdir.python_package_workdir import (
         PythonPackageWorkdir,
     )

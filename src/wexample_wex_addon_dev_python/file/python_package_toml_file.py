@@ -58,16 +58,16 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         )
 
     def list_dependencies(
-            self, optional: bool = False, group: str = "dev"
+        self, optional: bool = False, group: str = "dev"
     ) -> list[str]:
         deps = self._get_deps_array(optional=optional, group=group)
         return [str(x) for x in list(deps)]
 
     def list_dependency_names(
-            self,
-            canonicalize_names: bool = True,
-            optional: bool = False,
-            group: str = "dev",
+        self,
+        canonicalize_names: bool = True,
+        optional: bool = False,
+        group: str = "dev",
     ) -> list[str]:
         """Return dependency package names derived from list_dependencies().
 
@@ -88,7 +88,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         return names
 
     def add_dependency(
-            self, spec: str, optional: bool = False, group: str = "dev"
+        self, spec: str, optional: bool = False, group: str = "dev"
     ) -> bool:
         from packaging.requirements import Requirement
         from packaging.utils import canonicalize_name
@@ -97,7 +97,9 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         deps = self._get_deps_array(optional=optional, group=group)
         # Remove existing entries for the same package name before adding the new spec.
         new_name = canonicalize_name(Requirement(spec).name)
-        removed = self.remove_dependency_by_name(new_name, optional=optional, group=group)
+        removed = self.remove_dependency_by_name(
+            new_name, optional=optional, group=group
+        )
 
         # Append (or re-append) the new spec if it is not already present verbatim
         if spec not in deps:
@@ -108,7 +110,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         return removed
 
     def remove_dependency_by_name(
-            self, package_name: str, optional: bool = False, group: str = "dev"
+        self, package_name: str, optional: bool = False, group: str = "dev"
     ) -> bool:
         """Remove all dependency entries that match the given package name.
 
@@ -294,7 +296,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         )
         dev_values = [toml_get_string_value(it) for it in list(dev_arr)]
         if not runtime_has_pytest and not any(
-                v.strip() == "pytest" for v in dev_values
+            v.strip() == "pytest" for v in dev_values
         ):
             dev_arr.append("pytest")
             toml_sort_string_array(dev_arr)
