@@ -49,18 +49,26 @@ class PythonWorkdir(CodeBaseWorkdir):
             PythonOptionsProvider,
         )
 
-        return super().extend([
+        options = super().get_options_providers()
+
+        options.extend([
             PythonOptionsProvider,
         ])
+
+        return options
 
     def get_operations_providers(self) -> list[type[AbstractOperationsProvider]]:
         from wexample_filestate_python.operations_provider.python_operations_provider import (
             PythonOperationsProvider,
         )
 
-        return super().extend([
+        operations = super().get_operations_providers()
+
+        operations.extend([
             PythonOperationsProvider,
         ])
+
+        return operations
 
     def _create_package_name_snake(self, option: ItemTreeConfigOptionMixin) -> str:
         import os
