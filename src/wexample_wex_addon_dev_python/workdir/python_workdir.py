@@ -27,6 +27,10 @@ if TYPE_CHECKING:
 
 
 class PythonWorkdir(CodeBaseWorkdir):
+    def get_package_import_name(self) -> str:
+        # TODO concat suite name prefix.
+        return f"wexample_{self.get_project_name()}"
+
     def get_package_name(self) -> str:
         from wexample_helpers.helpers.string import string_to_kebab_case
 

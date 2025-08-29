@@ -39,10 +39,6 @@ class PythonPackageWorkdir(PythonWorkdir):
         """
         return self.get_project_config_file(reload=reload).read_parsed()
 
-    def get_package_import_name(self) -> str:
-        # TODO concat suite name prefix.
-        return f"wexample_{self.get_project_name()}"
-
     def depends_from(self, package: PythonPackageWorkdir) -> bool:
         for dependence_name in self.get_dependencies():
             if package.get_package_name() == dependence_name:
