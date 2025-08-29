@@ -230,10 +230,10 @@ class PythonWorkdir(FrameworkPackageWorkdir):
                 "class": PythonFile,
                 "name": "__init__.py",
                 "type": DiskItemType.FILE,
-                "recursive": True,
                 "name_pattern": [
                     NAME_PATTERN_PYTHON_NOT_PYCACHE,
                     NAME_PATTERN_NO_LEADING_DOT,
                 ],
-            }
+            },
+            recursive=True,
         )
