@@ -47,12 +47,12 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
                                 pkg=package_name,
                                 dep=package_name_search,
                                 locations=imports_details
-                                          or " - <no locations captured>",
+                                or " - <no locations captured>",
                             )
                         )
 
     def get_dependents(
-            self, package: PythonPackageWorkdir
+        self, package: PythonPackageWorkdir
     ) -> list[PythonPackageWorkdir]:
         dependents = []
         for neighbor_package in self.get_packages():
@@ -61,10 +61,10 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
         return dependents
 
     def build_dependencies_stack(
-            self,
-            package: PythonPackageWorkdir,
-            dependency: PythonPackageWorkdir,
-            dependencies_map: dict[str, list[str]],
+        self,
+        package: PythonPackageWorkdir,
+        dependency: PythonPackageWorkdir,
+        dependencies_map: dict[str, list[str]],
     ) -> list[PythonPackageWorkdir]:
         """Return the declared dependency chain from `package` to `dependency`.
 

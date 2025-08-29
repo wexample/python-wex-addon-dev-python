@@ -51,9 +51,11 @@ class PythonWorkdir(CodeBaseWorkdir):
 
         options = super().get_options_providers()
 
-        options.extend([
-            PythonOptionsProvider,
-        ])
+        options.extend(
+            [
+                PythonOptionsProvider,
+            ]
+        )
 
         return options
 
@@ -64,9 +66,11 @@ class PythonWorkdir(CodeBaseWorkdir):
 
         operations = super().get_operations_providers()
 
-        operations.extend([
-            PythonOperationsProvider,
-        ])
+        operations.extend(
+            [
+                PythonOperationsProvider,
+            ]
+        )
 
         return operations
 
