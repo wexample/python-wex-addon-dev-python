@@ -3,7 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from wexample_config.const.types import DictConfig
 from wexample_wex_core.workdir.framework_packages_suite_workdir import (
     FrameworkPackageSuiteWorkdir,
 )
@@ -48,12 +47,12 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
                                 pkg=package_name,
                                 dep=package_name_search,
                                 locations=imports_details
-                                or " - <no locations captured>",
+                                          or " - <no locations captured>",
                             )
                         )
 
     def get_dependents(
-        self, package: PythonPackageWorkdir
+            self, package: PythonPackageWorkdir
     ) -> list[PythonPackageWorkdir]:
         dependents = []
         for neighbor_package in self.get_packages():
@@ -62,10 +61,10 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
         return dependents
 
     def build_dependencies_stack(
-        self,
-        package: PythonPackageWorkdir,
-        dependency: PythonPackageWorkdir,
-        dependencies_map: dict[str, list[str]],
+            self,
+            package: PythonPackageWorkdir,
+            dependency: PythonPackageWorkdir,
+            dependencies_map: dict[str, list[str]],
     ) -> list[PythonPackageWorkdir]:
         """Return the declared dependency chain from `package` to `dependency`.
 
@@ -152,41 +151,15 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
         by_name = {p.get_package_name(): p for p in self.get_packages()}
         return [by_name[n] for n in order]
 
-    def prepare_value(self, raw_value: DictConfig | None = None) -> DictConfig:
-        from wexample_filestate.config_option.children_filter_config_option import (
-            ChildrenFilterConfigOption,
-        )
-        from wexample_filestate.const.disk import DiskItemType
-
-        raw_value = super().prepare_value(raw_value=raw_value)
-
-        children = raw_value["children"]
-
-        # By default, consider each sub folder as a pip package
-        children.append(
-            {
-                "name": "pip",
-                "type": DiskItemType.DIRECTORY,
-                "children": [
-                    ChildrenFilterConfigOption(
-                        filter=self._has_pyproject,
-                        pattern={
-                            "class": self._get_children_default_workdir_class(),
-                            "type": DiskItemType.DIRECTORY,
-                        },
-                    )
-                ],
-            }
-        )
-
-        return raw_value
-
-    def _get_children_default_workdir_class(self) -> type[CodeBaseWorkdir]:
+    def _get_children_package_workdir_class(self) -> type[CodeBaseWorkdir]:
         from wexample_wex_addon_dev_python.workdir.python_package_workdir import (
             PythonPackageWorkdir,
         )
 
         return PythonPackageWorkdir
 
-    def _has_pyproject(self, entry: Path) -> bool:
+    def _child_is_package_directory(self, entry: Path) -> bool:
         return entry.is_dir() and (entry / "pyproject.toml").is_file()
+
+    def _get_children_package_directory_name(self) -> str:
+        return "pip"
