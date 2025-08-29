@@ -2,7 +2,7 @@
 
 Python dev addon for wex
 
-Version: 0.0.41
+Version: 0.0.43
 
 ## Requirements
 
@@ -13,9 +13,9 @@ Version: 0.0.41
 - pydantic>=2,<3
 - pylint
 - pyright
-- wexample-filestate-python==0.0.37
-- wexample-wex-addon-app==0.0.39
-- wexample-wex-core==6.0.41
+- wexample-filestate-python==0.0.39
+- wexample-wex-addon-app==0.0.41
+- wexample-wex-core==6.0.43
 
 ## Installation
 
