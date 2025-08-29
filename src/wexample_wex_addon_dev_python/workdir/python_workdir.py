@@ -10,8 +10,8 @@ from wexample_filestate_python.config_option.python_config_option import (
     PythonConfigOption,
 )
 from wexample_helpers.helpers.string import string_to_snake_case
-from wexample_wex_core.workdir.framework_package_workdir import (
-    FrameworkPackageWorkdir,
+from wexample_wex_core.workdir.code_base_workdir import (
+    CodeBaseWorkdir,
 )
 
 if TYPE_CHECKING:
@@ -26,7 +26,7 @@ if TYPE_CHECKING:
     )
 
 
-class PythonWorkdir(FrameworkPackageWorkdir):
+class PythonWorkdir(CodeBaseWorkdir):
     def get_package_name(self) -> str:
         from wexample_helpers.helpers.string import string_to_kebab_case
 

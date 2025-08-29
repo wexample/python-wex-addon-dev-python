@@ -12,8 +12,8 @@ if TYPE_CHECKING:
     from wexample_wex_addon_dev_python.workdir.python_package_workdir import (
         PythonPackageWorkdir,
     )
-    from wexample_wex_core.workdir.framework_package_workdir import (
-        FrameworkPackageWorkdir,
+    from wexample_wex_core.workdir.code_base_workdir import (
+        CodeBaseWorkdir,
     )
 
 
@@ -171,7 +171,7 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
                     ChildrenFilterConfigOption(
                         filter=self._has_pyproject,
                         pattern={
-                            "class": self._get_framework_workdir_class(),
+                            "class": self._get_code_base_workdir_class(),
                             "type": DiskItemType.DIRECTORY,
                         },
                     )
@@ -181,7 +181,7 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
 
         return raw_value
 
-    def _get_framework_workdir_class(self) -> type[FrameworkPackageWorkdir]:
+    def _get_code_base_workdir_class(self) -> type[CodeBaseWorkdir]:
         from wexample_wex_addon_dev_python.workdir.python_package_workdir import (
             PythonPackageWorkdir,
         )

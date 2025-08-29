@@ -9,8 +9,8 @@ from wexample_wex_core.workdir.mixin.as_suite_package_item import (
 
 if TYPE_CHECKING:
     from tomlkit import TOMLDocument
-    from wexample_wex_core.workdir.framework_package_workdir import (
-        FrameworkPackageWorkdir,
+    from wexample_wex_core.workdir.code_base_workdir import (
+        CodeBaseWorkdir,
     )
 
 
@@ -140,12 +140,12 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             return True
         return False
 
-    def find_package_workdir(self) -> FrameworkPackageWorkdir | None:
-        from wexample_wex_core.workdir.framework_package_workdir import (
-            FrameworkPackageWorkdir,
+    def find_package_workdir(self) -> CodeBaseWorkdir | None:
+        from wexample_wex_core.workdir.code_base_workdir import (
+            CodeBaseWorkdir,
         )
 
-        return self.find_closest(FrameworkPackageWorkdir)
+        return self.find_closest(CodeBaseWorkdir)
 
     def dumps(self, content: TOMLDocument | dict | None = None) -> str:
         """Serialize a TOMLDocument (preferred) or a plain dict to TOML.
