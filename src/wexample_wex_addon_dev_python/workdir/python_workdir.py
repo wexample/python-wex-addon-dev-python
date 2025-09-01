@@ -97,14 +97,15 @@ class PythonWorkdir(CodeBaseWorkdir):
 
         children = raw_value["children"]
 
+        from wexample_helpers.helpers.array import array_dict_get_by
+
+        # Add rules to .gitignore
+        array_dict_get_by("name", ".gitignore", raw_value["children"]).setdefault(
+            "should_contain_lines", []
+        ).extend([".pdm-python", ".python-version", ".venv"])
+
         children.extend(
             [
-                {
-                    "name": ".gitignore",
-                    "type": DiskItemType.FILE,
-                    "should_exist": True,
-                    "should_contain_lines": [".pdm-python", ".python-version", ".venv"],
-                },
                 {
                     "name": "tests",
                     "type": DiskItemType.DIRECTORY,
