@@ -4,7 +4,7 @@ build-backend = "pdm.backend"
 
 [project]
 name = "wexample-wex-addon-dev-python"
-version = "0.0.43"
+version = "0.0.44"
 description = "Python dev addon for wex"
 authors = [
     { name = "weeger", email = "contact@wexample.com" },
@@ -19,9 +19,9 @@ dependencies = [
     "pydantic>=2,<3",
     "pylint",
     "pyright",
-    "wexample-filestate-python==0.0.39",
-    "wexample-wex-addon-app==0.0.41",
-    "wexample-wex-core==6.0.43",
+    "wexample-filestate-python==0.0.40",
+    "wexample-wex-addon-app==0.0.42",
+    "wexample-wex-core==6.0.44",
 ]
 
 [project.readme]
