@@ -202,7 +202,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             desired_pkgs = [{"include": import_name, "from": "src"}]
             if build_pdm_tbl.get("packages") != desired_pkgs:
                 build_pdm_tbl["packages"] = desired_pkgs
-            desired_includes = [f"src/{import_name}/py.typed"]
+            desired_includes = [f"src/{import_name}/*"]
             current_includes = [str(x) for x in list(includes_arr)]
             if current_includes != desired_includes:
                 toml_set_array_multiline(build_pdm_tbl, "includes", desired_includes)
