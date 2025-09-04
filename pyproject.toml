@@ -44,7 +44,7 @@ distribution = true
 
 [tool.pdm.build]
 includes = [
-    "src/wexample_wex_addon_dev_python/py.typed",
+    'src/wexample_wex_addon_dev_python/*',
 ]
 package-dir = "src"
 
