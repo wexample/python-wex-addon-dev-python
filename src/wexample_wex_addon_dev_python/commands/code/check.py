@@ -43,7 +43,6 @@ def python__code__check(
     parallel: bool = True,
 ) -> bool:
     """Check a Python file using various code quality tools."""
-    from wexample_helpers.helpers.cli import cli_make_clickable_path
     from wexample_wex_addon_dev_python.commands.code.check.mypy import _code_check_mypy
     from wexample_wex_addon_dev_python.commands.code.check.pylint import (
         _code_check_pylint,
@@ -80,7 +79,7 @@ def python__code__check(
         context.io.log_indent_up()
 
         context.io.log(
-            f"🐍 Python: {cli_make_clickable_path(context.kernel.host_workdir.get_resolved_target(file))}"
+            f"🐍 Python: {context.kernel.host_workdir.render_display_path(file)}"
         )
 
         check_result = check_function(context, file)
