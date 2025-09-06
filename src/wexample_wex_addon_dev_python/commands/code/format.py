@@ -1,9 +1,10 @@
 from __future__ import annotations
-
-from wexample_wex_core.common.kernel import Kernel
 from wexample_wex_core.decorator.command import command
 from wexample_wex_core.decorator.middleware import middleware
 from wexample_wex_core.decorator.option import option
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from wexample_wex_core.common.kernel import Kernel
 
 
 @option(
@@ -30,12 +31,8 @@ def python__code__format(
     stop_on_failure: bool = True,
 ) -> bool:
     """Format a Python file using various code formatting tools."""
-    from wexample_wex_addon_dev_python.commands.code.format.black import (
-        _code_format_black,
-    )
-    from wexample_wex_addon_dev_python.commands.code.format.isort import (
-        _code_format_isort,
-    )
+    from wexample_wex_addon_dev_python.commands.code.format.black import _code_format_black
+    from wexample_wex_addon_dev_python.commands.code.format.isort import _code_format_isort
 
     # Map tool names to their format functions
     tool_map = {

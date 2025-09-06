@@ -43,13 +43,10 @@ def python__code__check(
     parallel: bool = True,
 ) -> bool:
     """Check a Python file using various code quality tools."""
+    from wexample_app.response.failure_response import FailureResponse
     from wexample_wex_addon_dev_python.commands.code.check.mypy import _code_check_mypy
-    from wexample_wex_addon_dev_python.commands.code.check.pylint import (
-        _code_check_pylint,
-    )
-    from wexample_wex_addon_dev_python.commands.code.check.pyright import (
-        _code_check_pyright,
-    )
+    from wexample_wex_addon_dev_python.commands.code.check.pylint import _code_check_pylint
+    from wexample_wex_addon_dev_python.commands.code.check.pyright import _code_check_pyright
 
     # Map tool names to their check functions
     tool_map = {
@@ -93,8 +90,6 @@ def python__code__check(
         # Stop if a check fails and stop_on_failure is True
         if not check_result and stop_on_failure:
             context.io.error("One check failed")
-
-            from wexample_app.response.failure_response import FailureResponse
 
             context.io.log_indent_down()
 
