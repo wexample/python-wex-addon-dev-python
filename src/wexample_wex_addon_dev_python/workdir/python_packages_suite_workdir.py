@@ -1,6 +1,4 @@
 from __future__ import annotations
-
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from wexample_wex_core.workdir.framework_packages_suite_workdir import (
@@ -14,6 +12,7 @@ if TYPE_CHECKING:
     from wexample_wex_core.workdir.code_base_workdir import (
         CodeBaseWorkdir,
     )
+    from pathlib import Path
 
 
 class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
