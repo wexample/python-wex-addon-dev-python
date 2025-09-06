@@ -56,16 +56,16 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         )
 
     def list_dependencies(
-        self, optional: bool = False, group: str = "dev"
+            self, optional: bool = False, group: str = "dev"
     ) -> list[str]:
         deps = self._get_deps_array(optional=optional, group=group)
         return [str(x) for x in list(deps)]
 
     def list_dependency_names(
-        self,
-        canonicalize_names: bool = True,
-        optional: bool = False,
-        group: str = "dev",
+            self,
+            canonicalize_names: bool = True,
+            optional: bool = False,
+            group: str = "dev",
     ) -> list[str]:
         """Return dependency package names derived from list_dependencies().
 
@@ -86,7 +86,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         return names
 
     def add_dependency(
-        self, spec: str, optional: bool = False, group: str = "dev"
+            self, spec: str, optional: bool = False, group: str = "dev"
     ) -> bool:
         from packaging.requirements import Requirement
         from packaging.utils import canonicalize_name
@@ -108,7 +108,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         return removed
 
     def remove_dependency_by_name(
-        self, package_name: str, optional: bool = False, group: str = "dev"
+            self, package_name: str, optional: bool = False, group: str = "dev"
     ) -> bool:
         """Remove all dependency entries that match the given package name.
 
@@ -232,7 +232,6 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         if isinstance(tool_tbl, dict):
             filestate_tbl = tool_tbl.get("filestate")
         keep_names: set[str] = set()
-        exclude_add: set[str] = set()
         if isinstance(filestate_tbl, dict):
             keep_list = filestate_tbl.get("keep")
             if isinstance(keep_list, list):
@@ -248,7 +247,8 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             if name in keep_names:
                 return False
             if name == "typing-extensions":
-                # Safe to drop when python >= 3.10 and we manage deps
+                # Safe to drop when py
+                # thon >= 3.10 and we manage deps
                 return True
             return name in RUNTIME_DEPENDENCY_REMOVE_NAMES
 
@@ -261,30 +261,6 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             deps_arr.extend(to_keep)
             toml_sort_string_array(deps_arr)
 
-        # Normalize any pydantic spec to pydantic>=2,<3
-        normalized = False
-        new_deps = []
-        for it in list(deps_arr):
-            val = toml_get_string_value(it).strip()
-            base = package_normalize_name(val)
-            if base == "pydantic":
-                new_deps.append("pydantic>=2,<3")
-                normalized = True
-            else:
-                new_deps.append(it)
-        if normalized:
-            deps_arr.clear()
-            deps_arr.extend(new_deps)
-            toml_sort_string_array(deps_arr)
-
-        # Ensure pydantic>=2,<3 present unless excluded
-        existing_norm = {
-            package_normalize_name(toml_get_string_value(it)) for it in list(deps_arr)
-        }
-        if "pydantic" not in exclude_add and "pydantic" not in existing_norm:
-            deps_arr.append("pydantic>=2,<3")
-            toml_sort_string_array(deps_arr)
-
         # Ensure optional dev group contains pytest unless already in runtime deps
         runtime_has_pytest = any(
             package_normalize_name(toml_get_string_value(it)) == "pytest"
@@ -292,7 +268,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         )
         dev_values = [toml_get_string_value(it) for it in list(dev_arr)]
         if not runtime_has_pytest and not any(
-            v.strip() == "pytest" for v in dev_values
+                v.strip() == "pytest" for v in dev_values
         ):
             dev_arr.append("pytest")
             toml_sort_string_array(dev_arr)
