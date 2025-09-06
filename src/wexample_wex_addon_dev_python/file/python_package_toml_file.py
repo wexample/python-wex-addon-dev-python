@@ -35,7 +35,10 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
 
     def _optional_group_array(self, group: str):
         """Ensure and return project.optional-dependencies[group] as multi-line array."""
-        from wexample_filestate_python.helpers.toml import toml_ensure_array, toml_ensure_table
+        from wexample_filestate_python.helpers.toml import (
+            toml_ensure_array,
+            toml_ensure_table,
+        )
 
         project = self._project_table()
         opt, _ = toml_ensure_table(project, ["optional-dependencies"])
@@ -144,10 +147,18 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         """Serialize a TOMLDocument (preferred) or a plain dict to TOML.
         Using tomlkit.dumps preserves comments/formatting when content is a TOMLDocument.
         """
-        from wexample_wex_addon_dev_python.const.package import RUNTIME_DEPENDENCY_REMOVE_NAMES
         from tomlkit import dumps, table
         from wexample_filestate_python.helpers.package import package_normalize_name
-        from wexample_filestate_python.helpers.toml import toml_ensure_array_multiline, toml_ensure_table, toml_get_string_value, toml_set_array_multiline, toml_sort_string_array
+        from wexample_filestate_python.helpers.toml import (
+            toml_ensure_array_multiline,
+            toml_ensure_table,
+            toml_get_string_value,
+            toml_set_array_multiline,
+            toml_sort_string_array,
+        )
+        from wexample_wex_addon_dev_python.const.package import (
+            RUNTIME_DEPENDENCY_REMOVE_NAMES,
+        )
 
         # Obtain the current TOML document (preserving formatting) if not provided
         content = content or self.read_parsed()

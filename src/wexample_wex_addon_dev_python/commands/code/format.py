@@ -34,8 +34,12 @@ def python__code__format(
     stop_on_failure: bool = True,
 ) -> bool:
     """Format a Python file using various code formatting tools."""
-    from wexample_wex_addon_dev_python.commands.code.format.black import _code_format_black
-    from wexample_wex_addon_dev_python.commands.code.format.isort import _code_format_isort
+    from wexample_wex_addon_dev_python.commands.code.format.black import (
+        _code_format_black,
+    )
+    from wexample_wex_addon_dev_python.commands.code.format.isort import (
+        _code_format_isort,
+    )
 
     # Map tool names to their format functions
     tool_map = {

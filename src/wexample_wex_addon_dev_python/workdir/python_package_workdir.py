@@ -13,7 +13,6 @@ if TYPE_CHECKING:
     from wexample_config.const.types import DictConfig
     from wexample_wex_addon_dev_python.file.python_package_toml_file import PythonPackageTomlFile
     from wexample_helpers.const.types import StructuredData
-    from wexample_filestate_python.file.python_file import PythonFile
 
 
 class PythonPackageWorkdir(PythonWorkdir):

@@ -45,8 +45,12 @@ def python__code__check(
     """Check a Python file using various code quality tools."""
     from wexample_app.response.failure_response import FailureResponse
     from wexample_wex_addon_dev_python.commands.code.check.mypy import _code_check_mypy
-    from wexample_wex_addon_dev_python.commands.code.check.pylint import _code_check_pylint
-    from wexample_wex_addon_dev_python.commands.code.check.pyright import _code_check_pyright
+    from wexample_wex_addon_dev_python.commands.code.check.pylint import (
+        _code_check_pylint,
+    )
+    from wexample_wex_addon_dev_python.commands.code.check.pyright import (
+        _code_check_pyright,
+    )
 
     # Map tool names to their check functions
     tool_map = {

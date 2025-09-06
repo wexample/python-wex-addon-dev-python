@@ -10,7 +10,9 @@ if TYPE_CHECKING:
 
 class PythonAddonManager(AbstractAddonManager):
     def get_middlewares_classes(self) -> list[type[AbstractMiddleware]]:
-        from wexample_wex_addon_dev_python.middleware.each_python_file_middleware import EachPythonFileMiddleware
+        from wexample_wex_addon_dev_python.middleware.each_python_file_middleware import (
+            EachPythonFileMiddleware,
+        )
 
         return [
             EachPythonFileMiddleware,

@@ -16,10 +16,11 @@ def _code_check_mypy(kernel: Kernel, file_path: str) -> bool:
     Returns:
         bool: True if check passes, False otherwise
     """
+    import sys
+
+    from mypy import build
     from mypy.modulefinder import BuildSource
     from mypy.options import Options
-    from mypy import build
-    import sys
 
     # Configure mypy options
     options = Options()
