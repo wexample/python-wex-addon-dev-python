@@ -11,9 +11,9 @@ if TYPE_CHECKING:
     from wexample_filestate.common.search_result import SearchResult
     from wexample_prompt.common.progress.progress_handle import ProgressHandle
     from wexample_config.const.types import DictConfig
-    from wexample_filestate_python.file.python_file import PythonFile
     from wexample_wex_addon_dev_python.file.python_package_toml_file import PythonPackageTomlFile
     from wexample_helpers.const.types import StructuredData
+    from wexample_filestate_python.file.python_file import PythonFile
 
 
 class PythonPackageWorkdir(PythonWorkdir):
