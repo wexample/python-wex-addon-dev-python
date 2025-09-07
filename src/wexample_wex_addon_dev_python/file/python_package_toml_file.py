@@ -188,20 +188,18 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         tool_tbl, _ = toml_ensure_table(content, ["tool"])
         pdm_tbl, _ = toml_ensure_table(tool_tbl, ["pdm"])
         build_pdm_tbl, _ = toml_ensure_table(pdm_tbl, ["build"])
-        includes_arr, _ = toml_ensure_array_multiline(build_pdm_tbl, "includes")
 
         pdm_tbl["distribution"] = True
-        # Enforce src layout, packages, and includes (py.typed)
+        # Enforce src layout and packages (remove includes to avoid conflicts)
         if build_pdm_tbl.get("package-dir") != "src":
             build_pdm_tbl["package-dir"] = "src"
         if import_name:
             desired_pkgs = [{"include": import_name, "from": "src"}]
             if build_pdm_tbl.get("packages") != desired_pkgs:
                 build_pdm_tbl["packages"] = desired_pkgs
-            desired_includes = [f"src/{import_name}/*"]
-            current_includes = [str(x) for x in list(includes_arr)]
-            if current_includes != desired_includes:
-                toml_set_array_multiline(build_pdm_tbl, "includes", desired_includes)
+            # Remove includes to avoid conflicts with packages declaration
+            if "includes" in build_pdm_tbl:
+                del build_pdm_tbl["includes"]
 
         # --- [project] table and basic fields ---
         project_tbl, _ = toml_ensure_table(content, ["project"])
