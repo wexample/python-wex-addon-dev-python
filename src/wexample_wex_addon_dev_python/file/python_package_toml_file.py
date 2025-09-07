@@ -261,6 +261,36 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             deps_arr.extend(to_keep)
             toml_sort_string_array(deps_arr)
 
+        # Normalize attrs/cattrs dependencies
+        normalized = False
+        new_deps = []
+        for it in list(deps_arr):
+            val = toml_get_string_value(it).strip()
+            base = package_normalize_name(val)
+            if base == "attrs":
+                new_deps.append("attrs>=23.1.0")
+                normalized = True
+            elif base == "cattrs":
+                new_deps.append("cattrs>=23.1.0")
+                normalized = True
+            else:
+                new_deps.append(it)
+        if normalized:
+            deps_arr.clear()
+            deps_arr.extend(new_deps)
+            toml_sort_string_array(deps_arr)
+
+        # Ensure attrs and cattrs are present unless excluded
+        existing_norm = {
+            package_normalize_name(toml_get_string_value(it)) for it in list(deps_arr)
+        }
+        if "attrs" not in exclude_add and "attrs" not in existing_norm:
+            deps_arr.append("attrs>=23.1.0")
+            toml_sort_string_array(deps_arr)
+        if "cattrs" not in exclude_add and "cattrs" not in existing_norm:
+            deps_arr.append("cattrs>=23.1.0")
+            toml_sort_string_array(deps_arr)
+
         # Ensure optional dev group contains pytest unless already in runtime deps
         runtime_has_pytest = any(
             package_normalize_name(toml_get_string_value(it)) == "pytest"
