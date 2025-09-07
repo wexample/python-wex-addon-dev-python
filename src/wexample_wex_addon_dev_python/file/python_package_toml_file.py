@@ -150,10 +150,8 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         from tomlkit import dumps, table
         from wexample_filestate_python.helpers.package import package_normalize_name
         from wexample_filestate_python.helpers.toml import (
-            toml_ensure_array_multiline,
             toml_ensure_table,
             toml_get_string_value,
-            toml_set_array_multiline,
             toml_sort_string_array,
         )
         from wexample_wex_addon_dev_python.const.package import (
