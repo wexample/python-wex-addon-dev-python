@@ -232,6 +232,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         if isinstance(tool_tbl, dict):
             filestate_tbl = tool_tbl.get("filestate")
         keep_names: set[str] = set()
+        exclude_add: set[str] = set()
         if isinstance(filestate_tbl, dict):
             keep_list = filestate_tbl.get("keep")
             if isinstance(keep_list, list):
