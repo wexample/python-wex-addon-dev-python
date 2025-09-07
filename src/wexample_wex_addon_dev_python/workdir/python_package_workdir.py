@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+
 from wexample_filestate.config_value.readme_content_config_value import (
     ReadmeContentConfigValue,
 )
@@ -8,18 +9,22 @@ from wexample_wex_addon_dev_python.workdir.python_workdir import PythonWorkdir
 
 if TYPE_CHECKING:
     from tomlkit import TOMLDocument
-    from wexample_filestate.common.search_result import SearchResult
-    from wexample_prompt.common.progress.progress_handle import ProgressHandle
     from wexample_config.const.types import DictConfig
-    from wexample_wex_addon_dev_python.file.python_package_toml_file import PythonPackageTomlFile
+    from wexample_filestate.common.search_result import SearchResult
     from wexample_helpers.const.types import StructuredData
+    from wexample_prompt.common.progress.progress_handle import ProgressHandle
+    from wexample_wex_addon_dev_python.file.python_package_toml_file import (
+        PythonPackageTomlFile,
+    )
 
 
 class PythonPackageWorkdir(PythonWorkdir):
     _project_info_cache = None
 
     def get_project_config_file(self, reload: bool = True) -> PythonPackageTomlFile:
-        from wexample_wex_addon_dev_python.file.python_package_toml_file import PythonPackageTomlFile
+        from wexample_wex_addon_dev_python.file.python_package_toml_file import (
+            PythonPackageTomlFile,
+        )
         config_file = self.find_by_name("pyproject.toml")
         assert isinstance(config_file, PythonPackageTomlFile)
         # Read once to populate content with file source.
@@ -75,8 +80,8 @@ class PythonPackageWorkdir(PythonWorkdir):
     def search_in_codebase(
         self, string: str, *, regex: bool = False, flags: int = 0
     ) -> list[SearchResult]:
-        from wexample_filestate_python.file.python_file import PythonFile
         from wexample_filestate.common.search_result import SearchResult
+        from wexample_filestate_python.file.python_file import PythonFile
         found = []
 
         def _search(item: PythonFile) -> None:
@@ -126,8 +131,10 @@ class PythonPackageWorkdir(PythonWorkdir):
 
     def prepare_value(self, raw_value: DictConfig | None = None) -> DictConfig:
         from wexample_filestate.const.disk import DiskItemType
-        from wexample_wex_addon_dev_python.file.python_package_toml_file import PythonPackageTomlFile
         from wexample_helpers.helpers.array import array_dict_get_by
+        from wexample_wex_addon_dev_python.file.python_package_toml_file import (
+            PythonPackageTomlFile,
+        )
 
         raw_value = super().prepare_value(raw_value=raw_value)
 
@@ -195,6 +202,8 @@ class PythonPackageWorkdir(PythonWorkdir):
         return raw_value
 
     def _get_readme_content(self) -> ReadmeContentConfigValue | None:
-        from wexample_wex_addon_dev_python.config_value.python_package_readme_config_value import PythonPackageReadmeContentConfigValue
+        from wexample_wex_addon_dev_python.config_value.python_package_readme_config_value import (
+            PythonPackageReadmeContentConfigValue,
+        )
 
         return PythonPackageReadmeContentConfigValue(workdir=self)

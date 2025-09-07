@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from wexample_wex_core.middleware.each_file_middleware import EachFileMiddleware
