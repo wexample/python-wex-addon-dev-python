@@ -25,6 +25,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         from wexample_wex_addon_dev_python.file.python_package_toml_file import (
             PythonPackageTomlFile,
         )
+
         config_file = self.find_by_name("pyproject.toml")
         assert isinstance(config_file, PythonPackageTomlFile)
         # Read once to populate content with file source.
@@ -82,6 +83,7 @@ class PythonPackageWorkdir(PythonWorkdir):
     ) -> list[SearchResult]:
         from wexample_filestate.common.search_result import SearchResult
         from wexample_filestate_python.file.python_file import PythonFile
+
         found = []
 
         def _search(item: PythonFile) -> None:
