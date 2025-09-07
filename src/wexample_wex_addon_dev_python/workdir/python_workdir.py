@@ -202,15 +202,52 @@ class PythonWorkdir(CodeBaseWorkdir):
                 "type": DiskItemType.FILE,
                 "python": [
                     # Configured for python >= 3.12
-                    PythonConfigOption.OPTION_NAME_ADD_FUTURE_ANNOTATIONS,
-                    PythonConfigOption.OPTION_NAME_REMOVE_UNUSED,
-                    PythonConfigOption.OPTION_NAME_RELOCATE_IMPORTS,
-                    PythonConfigOption.OPTION_NAME_SORT_IMPORTS,
-                    PythonConfigOption.OPTION_NAME_MODERNIZE_TYPING,
-                    PythonConfigOption.OPTION_NAME_FSTRINGIFY,
-                    PythonConfigOption.OPTION_NAME_ADD_RETURN_TYPES,
-                    PythonConfigOption.OPTION_NAME_UNQUOTE_ANNOTATIONS,
-                    PythonConfigOption.OPTION_NAME_FORMAT,
+                    # filestate: python-iter able-sort
+                    # PythonConfigOption.OPTION_NAME_ADD_FUTURE_ANNOTATIONS,
+                    # PythonConfigOption.OPTION_NAME_REMOVE_UNUSED,
+                    # PythonConfigOption.OPTION_NAME_RELOCATE_IMPORTS,
+                    # PythonConfigOption.OPTION_NAME_SORT_IMPORTS,
+                    # PythonConfigOption.OPTION_NAME_MODERNIZE_TYPING,
+                    # PythonConfigOption.OPTION_NAME_FSTRINGIFY,
+                    # PythonConfigOption.OPTION_NAME_ADD_RETURN_TYPES,
+                    # PythonConfigOption.OPTION_NAME_UNQUOTE_ANNOTATIONS,
+                    # PythonConfigOption.OPTION_NAME_FORMAT,
+                    # PythonConfigOption.OPTION_NAME_ORDER_TYPE_CHECKING_BLOCK,
+                    # PythonConfigOption.OPTION_NAME_ORDER_MODULE_DOCSTRING,
+                    # PythonConfigOption.OPTION_NAME_ORDER_MODULE_METADATA,
+                    # PythonConfigOption.OPTION_NAME_ORDER_CONSTANTS,
+                    # PythonConfigOption.OPTION_NAME_ORDER_ITERABLE_ITEMS,
+                    # PythonConfigOption.OPTION_NAME_ORDER_MODULE_FUNCTIONS,
+
+                    # CLASS-LEVEL REORDERING:
+                    # 11. Preserve class header, decorators, and docstring at top
+                    # 12. Sort class attributes: special ones first (__slots__, __match_args__, Config),
+                    #     then public A-Z, then private/protected A-Z
+                    # 13. Order special methods (__dunder__) in logical sequence:
+                    #     - Construction: __new__, __init__
+                    #     - Representation: __repr__, __str__
+                    #     - Comparison/hash: __lt__, __le__, __eq__, __ne__, __gt__, __ge__, __hash__
+                    #     - Truthiness: __bool__
+                    #     - Attribute access: __getattribute__, __getattr__, __setattr__, __delattr__
+                    #     - Container/iteration: __len__, __iter__, __getitem__, __setitem__, __delitem__
+                    #     - Callable: __call__
+                    #     - Context managers: __enter__, __exit__, __aenter__, __aexit__
+                    #     - Async protocols: __await__, __aiter__, __anext__
+                    #     - Descriptors/pickling: __get__, __set__, __delete__, __getstate__, __setstate__
+                    # 14. Sort class methods (@classmethod): public A-Z, then private A-Z
+                    # 15. Sort static methods (@staticmethod): public A-Z, then private A-Z
+                    # 16. Group properties by name (getter + setter + deleter together), sort groups A-Z
+                    # 17. Sort instance methods: public A-Z, then private/protected A-Z
+                    # 18. Sort nested classes A-Z by name
+                    #
+                    # PRESERVATION RULES:
+                    # 19. Never split @overload series from their implementation
+                    # 20. Keep property getter/setter/deleter groups together
+                    # 21. Preserve Enum member order (may be semantically relevant)
+                    # 22. Preserve dataclass field order (affects __init__ generation)
+                    # 23. Handle async variants to follow their sync counterparts
+                    # 24. Use case-insensitive A-Z sorting with _ after letters: a < b < z < _a < __a
+                    # 25. Preserve all docstrings for modules, classes, functions, and methods
                 ],
             },
             recursive=True,
