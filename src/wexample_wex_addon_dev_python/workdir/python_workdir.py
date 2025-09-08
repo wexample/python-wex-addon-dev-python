@@ -231,7 +231,7 @@ class PythonWorkdir(CodeBaseWorkdir):
                     # PythonConfigOption.OPTION_NAME_REMOVE_UNUSED,
                     # PythonConfigOption.OPTION_NAME_RELOCATE_IMPORTS,
                     # PythonConfigOption.OPTION_NAME_SORT_IMPORTS,
-                    PythonConfigOption.OPTION_NAME_MODERNIZE_TYPING,
+                    # PythonConfigOption.OPTION_NAME_MODERNIZE_TYPING,
                     # PythonConfigOption.OPTION_NAME_FSTRINGIFY,
                     # PythonConfigOption.OPTION_NAME_ADD_RETURN_TYPES,
                     # PythonConfigOption.OPTION_NAME_UNQUOTE_ANNOTATIONS,
@@ -239,24 +239,15 @@ class PythonWorkdir(CodeBaseWorkdir):
                     # PythonConfigOption.OPTION_NAME_ORDER_TYPE_CHECKING_BLOCK,
                     # PythonConfigOption.OPTION_NAME_ORDER_MODULE_DOCSTRING,
                     # PythonConfigOption.OPTION_NAME_ORDER_MODULE_METADATA,
-                    # PythonConfigOption.OPTION_NAME_ORDER_CONSTANTS,
-                    # PythonConfigOption.OPTION_NAME_ORDER_ITERABLE_ITEMS,
-                    # PythonConfigOption.OPTION_NAME_ORDER_MODULE_FUNCTIONS,
-                    # PythonConfigOption.OPTION_NAME_ORDER_MAIN_GUARD,
-                    # PythonConfigOption.OPTION_NAME_ORDER_CLASS_DOCSTRING,
-                    # PythonConfigOption.OPTION_NAME_ORDER_CLASS_ATTRIBUTES,
+                    PythonConfigOption.OPTION_NAME_ORDER_CONSTANTS,
+                    PythonConfigOption.OPTION_NAME_ORDER_ITERABLE_ITEMS,
+                    PythonConfigOption.OPTION_NAME_ORDER_MODULE_FUNCTIONS,
+                    PythonConfigOption.OPTION_NAME_ORDER_MAIN_GUARD,
+                    PythonConfigOption.OPTION_NAME_ORDER_CLASS_DOCSTRING,
+                    PythonConfigOption.OPTION_NAME_ORDER_CLASS_ATTRIBUTES,
                     PythonConfigOption.OPTION_NAME_ORDER_CLASS_METHODS,
-
-
-                    # CLASS-LEVEL REORDERING:
-                    # PRESERVATION RULES:
-                    # 19. Never split @overload series from their implementation
-                    # 20. Keep property getter/setter/deleter groups together
-                    # 21. Preserve Enum member order (may be semantically relevant)
-                    # 22. Preserve dataclass field order (affects __init__ generation)
-                    # 23. Handle async variants to follow their sync counterparts
-                    # 24. Use case-insensitive A-Z sorting with _ after letters: a < b < z < _a < __a
-                    # 25. Preserve all docstrings for modules, classes, functions, and methods
+                    PythonConfigOption.OPTION_NAME_FIX_BLANK_LINES,
+                    PythonConfigOption.OPTION_NAME_FORMAT,
                 ],
             },
             recursive=True,

@@ -130,7 +130,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             ex_list = filestate_tbl.get("exclude-add")
             if isinstance(ex_list, list):
                 exclude_add = {str(x).strip().lower() for x in ex_list}
-        
+
         # Remove unwanted dev/build tools from runtime deps (unless kept)
         def _should_remove(item: object) -> bool:
             name = package_normalize_name(toml_get_string_value(item))

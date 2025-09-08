@@ -14,8 +14,6 @@ class EachPythonFileMiddleware(EachFileMiddleware):
     - Filters files by .py extension by default
     - Ignores special directories like __pycache__ during recursion
     """
-    # Default extension to filter
-    python_extension_only: bool = True
     # Default list of directories to ignore during recursion
     ignored_directories: set[str] = {
         "__pycache__",
@@ -29,6 +27,8 @@ class EachPythonFileMiddleware(EachFileMiddleware):
         ".mypy_cache",
         ".ruff_cache",
     }
+    # Default extension to filter
+    python_extension_only: bool = True
 
     def __init__(self, **kwargs) -> None:
         # Allow overriding the default settings
