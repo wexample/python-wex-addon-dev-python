@@ -18,7 +18,6 @@ if TYPE_CHECKING:
 
 
 class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
-
     def build_dependencies_stack(
         self,
         package: PythonPackageWorkdir,

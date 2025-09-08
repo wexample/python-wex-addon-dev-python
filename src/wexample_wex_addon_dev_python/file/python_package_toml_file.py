@@ -15,7 +15,6 @@ if TYPE_CHECKING:
 
 
 class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
-
     def add_dependency(
         self, spec: str, optional: bool = False, group: str = "dev"
     ) -> bool:

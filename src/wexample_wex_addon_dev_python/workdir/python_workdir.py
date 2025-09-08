@@ -23,7 +23,6 @@ if TYPE_CHECKING:
 
 
 class PythonWorkdir(CodeBaseWorkdir):
-
     def get_dependencies(self) -> list[str]:
         from packaging.requirements import Requirement
 
