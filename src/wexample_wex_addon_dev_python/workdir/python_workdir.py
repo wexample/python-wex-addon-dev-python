@@ -227,11 +227,11 @@ class PythonWorkdir(CodeBaseWorkdir):
                 "python": [
                     # Configured for python >= 3.12
                     # Order matters.
-                    PythonConfigOption.OPTION_NAME_ADD_FUTURE_ANNOTATIONS,
-                    PythonConfigOption.OPTION_NAME_REMOVE_UNUSED,
-                    PythonConfigOption.OPTION_NAME_RELOCATE_IMPORTS,
+                    # PythonConfigOption.OPTION_NAME_ADD_FUTURE_ANNOTATIONS,
+                    # PythonConfigOption.OPTION_NAME_REMOVE_UNUSED,
+                    # PythonConfigOption.OPTION_NAME_RELOCATE_IMPORTS,
                     # PythonConfigOption.OPTION_NAME_SORT_IMPORTS,
-                    # PythonConfigOption.OPTION_NAME_MODERNIZE_TYPING,
+                    PythonConfigOption.OPTION_NAME_MODERNIZE_TYPING,
                     # PythonConfigOption.OPTION_NAME_FSTRINGIFY,
                     # PythonConfigOption.OPTION_NAME_ADD_RETURN_TYPES,
                     # PythonConfigOption.OPTION_NAME_UNQUOTE_ANNOTATIONS,
