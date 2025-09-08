@@ -14,7 +14,6 @@ class EachPythonFileMiddleware(EachFileMiddleware):
     - Filters files by .py extension by default
     - Ignores special directories like __pycache__ during recursion
     """
-
     # Default list of directories to ignore during recursion
     ignored_directories: set[str] = {
         "__pycache__",
