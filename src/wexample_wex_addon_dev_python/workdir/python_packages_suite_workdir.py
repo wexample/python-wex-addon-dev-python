@@ -109,18 +109,11 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
                             for res in imports
                         )
                         raise AssertionError(
-                            (
-                                'Dependency violation: package "{pkg}" imports code from "{dep}" '
-                                "but there is no declared local dependency path. "
-                                'Add "{dep}" to the \'project.dependencies\' of "{pkg}" in its pyproject.toml, '
-                                'or declare an intermediate local package that depends on "{dep}".\n\n'
-                                "Detected import locations:\n{locations}"
-                            ).format(
-                                pkg=package_name,
-                                dep=package_name_search,
-                                locations=imports_details
-                                or " - <no locations captured>",
-                            )
+                            f'Dependency violation: package "{pkg}" imports code from "{package_name_search}" '
+                            f"but there is no declared local dependency path. "
+                            f'Add "{package_name_search}" to the \'project.dependencies\' of "{pkg}" in its pyproject.toml, '
+                            f'or declare an intermediate local package that depends on "{package_name_search}".\n\n'
+                            f"Detected import locations:\n{locations}"
                         )
 
     def topological_order(self, dep_map: dict[str, list[str]]) -> list[str]:
