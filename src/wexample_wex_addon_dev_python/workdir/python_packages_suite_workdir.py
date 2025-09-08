@@ -90,6 +90,7 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
         order = self.build_ordered_dependencies()
         by_name = {p.get_package_name(): p for p in self.get_packages()}
         return [by_name[n] for n in order]
+
     def packages_validate_internal_dependencies_declarations(self) -> None:
         dependencies_map = self.build_dependencies_map()
         for package_name in dependencies_map:
