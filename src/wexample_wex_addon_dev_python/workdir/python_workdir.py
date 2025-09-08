@@ -60,6 +60,7 @@ class PythonWorkdir(CodeBaseWorkdir):
         )
 
         return options
+
     def get_package_import_name(self) -> str:
         # TODO concat suite name prefix.
         return f"wexample_{self.get_project_name()}"
@@ -225,7 +226,7 @@ class PythonWorkdir(CodeBaseWorkdir):
                 "type": DiskItemType.FILE,
                 "python": [
                     # Configured for python >= 3.12
-                    # filestate: python-iter able-sort
+                    # Order matters.
                     # PythonConfigOption.OPTION_NAME_ADD_FUTURE_ANNOTATIONS,
                     # PythonConfigOption.OPTION_NAME_REMOVE_UNUSED,
                     # PythonConfigOption.OPTION_NAME_RELOCATE_IMPORTS,
