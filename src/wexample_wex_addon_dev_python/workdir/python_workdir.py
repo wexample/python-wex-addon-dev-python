@@ -235,6 +235,7 @@ class PythonWorkdir(CodeBaseWorkdir):
                     PythonConfigOption.OPTION_NAME_FSTRINGIFY,
                     PythonConfigOption.OPTION_NAME_ADD_RETURN_TYPES,
                     PythonConfigOption.OPTION_NAME_UNQUOTE_ANNOTATIONS,
+                    PythonConfigOption.OPTION_NAME_FIX_ATTRS,
                     PythonConfigOption.OPTION_NAME_ORDER_TYPE_CHECKING_BLOCK,
                     PythonConfigOption.OPTION_NAME_ORDER_MODULE_DOCSTRING,
                     PythonConfigOption.OPTION_NAME_ORDER_MODULE_METADATA,
