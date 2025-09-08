@@ -16,75 +16,6 @@ if TYPE_CHECKING:
 
 class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
 
-    def _project_table(self):
-        """Ensure and return the [project] table."""
-        from wexample_filestate_python.helpers.toml import toml_ensure_table
-
-        doc = self.read_parsed()
-        project, _ = toml_ensure_table(doc, ["project"])
-        return project
-
-    def _dependencies_array(self):
-        """Ensure and return project.dependencies as a multi-line TOML array."""
-        from wexample_filestate_python.helpers.toml import toml_ensure_array
-
-        project = self._project_table()
-        deps, _ = toml_ensure_array(project, "dependencies")
-        deps.multiline(True)
-        return deps
-
-    def _optional_group_array(self, group: str):
-        """Ensure and return project.optional-dependencies[group] as multi-line array."""
-        from wexample_filestate_python.helpers.toml import (
-            toml_ensure_array,
-            toml_ensure_table,
-        )
-
-        project = self._project_table()
-        opt, _ = toml_ensure_table(project, ["optional-dependencies"])
-        arr, _ = toml_ensure_array(opt, group)
-        arr.multiline(True)
-        return arr
-
-    # --- Unified dependency accessors (runtime vs optional) ---
-    def _get_deps_array(self, optional: bool = False, group: str = "dev"):
-        """Return TOML array for runtime deps or optional group (multiline)."""
-        return (
-            self._optional_group_array(group)
-            if optional
-            else self._dependencies_array()
-        )
-
-    def list_dependencies(
-        self, optional: bool = False, group: str = "dev"
-    ) -> list[str]:
-        deps = self._get_deps_array(optional=optional, group=group)
-        return [str(x) for x in list(deps)]
-
-    def list_dependency_names(
-        self,
-        canonicalize_names: bool = True,
-        optional: bool = False,
-        group: str = "dev",
-    ) -> list[str]:
-        """Return dependency package names derived from list_dependencies().
-
-        If canonicalize_names is True, names are normalized using packaging's
-        canonicalize_name for robust comparisons (dash/underscore, case, etc.).
-        """
-        from packaging.requirements import Requirement
-        from packaging.utils import canonicalize_name
-
-        names: list[str] = []
-        for spec in self.list_dependencies(optional=optional, group=group):
-            try:
-                name = Requirement(spec).name
-                names.append(canonicalize_name(name) if canonicalize_names else name)
-            except Exception:
-                # Skip unparsable entries when deriving names
-                continue
-        return names
-
     def add_dependency(
         self, spec: str, optional: bool = False, group: str = "dev"
     ) -> bool:
@@ -106,42 +37,6 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             return True
 
         return removed
-
-    def remove_dependency_by_name(
-        self, package_name: str, optional: bool = False, group: str = "dev"
-    ) -> bool:
-        """Remove all dependency entries that match the given package name.
-
-        The provided package_name can be raw; it will be canonicalized to ensure
-        consistent matching against entries parsed from list_dependencies().
-        """
-        from packaging.requirements import Requirement
-        from packaging.utils import canonicalize_name
-
-        deps = self._get_deps_array(optional=optional, group=group)
-
-        target = canonicalize_name(package_name)
-        filtered: list[str] = []
-        for existing in list(deps):
-            try:
-                existing_name = canonicalize_name(Requirement(str(existing)).name)
-            except Exception:
-                # Keep unparsable entries untouched
-                filtered.append(existing)
-                continue
-            if existing_name != target:
-                filtered.append(existing)
-
-        if len(filtered) != len(deps):
-            deps.clear()
-            deps.extend(filtered)
-            return True
-        return False
-
-    def find_package_workdir(self) -> CodeBaseWorkdir | None:
-        from wexample_wex_core.workdir.code_base_workdir import CodeBaseWorkdir
-
-        return self.find_closest(CodeBaseWorkdir)
 
     def dumps(self, content: TOMLDocument | dict | None = None) -> str:
         """Serialize a TOMLDocument (preferred) or a plain dict to TOML.
@@ -301,3 +196,108 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             toml_sort_string_array(dev_arr)
 
         return dumps(content)
+
+    def find_package_workdir(self) -> CodeBaseWorkdir | None:
+        from wexample_wex_core.workdir.code_base_workdir import CodeBaseWorkdir
+
+        return self.find_closest(CodeBaseWorkdir)
+
+    def list_dependencies(
+        self, optional: bool = False, group: str = "dev"
+    ) -> list[str]:
+        deps = self._get_deps_array(optional=optional, group=group)
+        return [str(x) for x in list(deps)]
+
+    def list_dependency_names(
+        self,
+        canonicalize_names: bool = True,
+        optional: bool = False,
+        group: str = "dev",
+    ) -> list[str]:
+        """Return dependency package names derived from list_dependencies().
+
+        If canonicalize_names is True, names are normalized using packaging's
+        canonicalize_name for robust comparisons (dash/underscore, case, etc.).
+        """
+        from packaging.requirements import Requirement
+        from packaging.utils import canonicalize_name
+
+        names: list[str] = []
+        for spec in self.list_dependencies(optional=optional, group=group):
+            try:
+                name = Requirement(spec).name
+                names.append(canonicalize_name(name) if canonicalize_names else name)
+            except Exception:
+                # Skip unparsable entries when deriving names
+                continue
+        return names
+
+    def remove_dependency_by_name(
+        self, package_name: str, optional: bool = False, group: str = "dev"
+    ) -> bool:
+        """Remove all dependency entries that match the given package name.
+
+        The provided package_name can be raw; it will be canonicalized to ensure
+        consistent matching against entries parsed from list_dependencies().
+        """
+        from packaging.requirements import Requirement
+        from packaging.utils import canonicalize_name
+
+        deps = self._get_deps_array(optional=optional, group=group)
+
+        target = canonicalize_name(package_name)
+        filtered: list[str] = []
+        for existing in list(deps):
+            try:
+                existing_name = canonicalize_name(Requirement(str(existing)).name)
+            except Exception:
+                # Keep unparsable entries untouched
+                filtered.append(existing)
+                continue
+            if existing_name != target:
+                filtered.append(existing)
+
+        if len(filtered) != len(deps):
+            deps.clear()
+            deps.extend(filtered)
+            return True
+        return False
+
+    def _dependencies_array(self):
+        """Ensure and return project.dependencies as a multi-line TOML array."""
+        from wexample_filestate_python.helpers.toml import toml_ensure_array
+
+        project = self._project_table()
+        deps, _ = toml_ensure_array(project, "dependencies")
+        deps.multiline(True)
+        return deps
+
+    # --- Unified dependency accessors (runtime vs optional) ---
+    def _get_deps_array(self, optional: bool = False, group: str = "dev"):
+        """Return TOML array for runtime deps or optional group (multiline)."""
+        return (
+            self._optional_group_array(group)
+            if optional
+            else self._dependencies_array()
+        )
+
+    def _optional_group_array(self, group: str):
+        """Ensure and return project.optional-dependencies[group] as multi-line array."""
+        from wexample_filestate_python.helpers.toml import (
+            toml_ensure_array,
+            toml_ensure_table,
+        )
+
+        project = self._project_table()
+        opt, _ = toml_ensure_table(project, ["optional-dependencies"])
+        arr, _ = toml_ensure_array(opt, group)
+        arr.multiline(True)
+        return arr
+
+    def _project_table(self):
+        """Ensure and return the [project] table."""
+        from wexample_filestate_python.helpers.toml import toml_ensure_table
+
+        doc = self.read_parsed()
+        project, _ = toml_ensure_table(doc, ["project"])
+        return project

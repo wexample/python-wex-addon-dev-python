@@ -42,6 +42,20 @@ class EachPythonFileMiddleware(EachFileMiddleware):
 
         super().__init__(**kwargs)
 
+    def _should_explore_directory(
+        self, request: CommandRequest, directory_name: str
+    ) -> bool:
+        """
+        Skip directories that are in the ignored_directories list.
+
+        Args:
+            directory_name: Name of the directory to check
+
+        Returns:
+            False if the directory is in the ignored list, True otherwise
+        """
+        return directory_name not in self.ignored_directories
+
     def _should_process_item(self, request: CommandRequest, item_path: str) -> bool:
         """
         Only process Python files based on extension.
@@ -62,17 +76,3 @@ class EachPythonFileMiddleware(EachFileMiddleware):
 
         # Otherwise, accept all files
         return True
-
-    def _should_explore_directory(
-        self, request: CommandRequest, directory_name: str
-    ) -> bool:
-        """
-        Skip directories that are in the ignored_directories list.
-
-        Args:
-            directory_name: Name of the directory to check
-
-        Returns:
-            False if the directory is in the ignored list, True otherwise
-        """
-        return directory_name not in self.ignored_directories

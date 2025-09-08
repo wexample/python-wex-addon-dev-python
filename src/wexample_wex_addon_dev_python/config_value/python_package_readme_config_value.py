@@ -13,27 +13,6 @@ from wexample_wex_addon_dev_python.workdir.python_package_workdir import (
 class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
     workdir: PythonPackageWorkdir
 
-    def _get_doc_path(self, section: str) -> str:
-        """
-        Returns the path to a documentation section file
-        """
-        return os.path.join(
-            self.workdir.get_path(), ".wex", "doc", "readme", f"{section}.md"
-        )
-
-    def _add_section_if_exists(self, section: str) -> str:
-        """
-        Returns section content if the documentation file exists
-        """
-        doc_path = self._get_doc_path(section)
-
-        if os.path.exists(doc_path):
-            with open(doc_path, encoding="utf-8") as file:
-                content = file.read()
-                return f"## {section.title()}\n\n{content}\n\n"
-
-        return ""
-
     def get_templates(self) -> list[str] | None:
         # Use TOMLDocument from the workdir
         doc = self.workdir.get_project_config()
@@ -79,3 +58,24 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
             "## License\n\n"
             f"{license_info}"
         ]
+
+    def _add_section_if_exists(self, section: str) -> str:
+        """
+        Returns section content if the documentation file exists
+        """
+        doc_path = self._get_doc_path(section)
+
+        if os.path.exists(doc_path):
+            with open(doc_path, encoding="utf-8") as file:
+                content = file.read()
+                return f"## {section.title()}\n\n{content}\n\n"
+
+        return ""
+
+    def _get_doc_path(self, section: str) -> str:
+        """
+        Returns the path to a documentation section file
+        """
+        return os.path.join(
+            self.workdir.get_path(), ".wex", "doc", "readme", f"{section}.md"
+        )

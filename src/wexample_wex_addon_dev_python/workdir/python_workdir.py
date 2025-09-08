@@ -23,14 +23,6 @@ if TYPE_CHECKING:
 
 
 class PythonWorkdir(CodeBaseWorkdir):
-    def get_package_import_name(self) -> str:
-        # TODO concat suite name prefix.
-        return f"wexample_{self.get_project_name()}"
-
-    def get_package_name(self) -> str:
-        from wexample_helpers.helpers.string import string_to_kebab_case
-
-        return string_to_kebab_case(self.get_package_import_name())
 
     def get_dependencies(self) -> list[str]:
         from packaging.requirements import Requirement
@@ -39,21 +31,6 @@ class PythonWorkdir(CodeBaseWorkdir):
         for dependency in self.get_project_config_file().list_dependency_names():
             dependencies.append(Requirement(dependency).name)
         return dependencies
-
-    def get_options_providers(self) -> list[type[AbstractOptionsProvider]]:
-        from wexample_filestate_python.options_provider.python_options_provider import (
-            PythonOptionsProvider,
-        )
-
-        options = super().get_options_providers()
-
-        options.extend(
-            [
-                PythonOptionsProvider,
-            ]
-        )
-
-        return options
 
     def get_operations_providers(self) -> list[type[AbstractOperationsProvider]]:
         from wexample_filestate_python.operations_provider.python_operations_provider import (
@@ -70,17 +47,28 @@ class PythonWorkdir(CodeBaseWorkdir):
 
         return operations
 
-    def _create_package_name_snake(self, option: ItemTreeConfigOptionMixin) -> str:
-        import os
-
-        from wexample_helpers.helpers.string import string_to_snake_case
-
-        # TODO make generic
-        return "wexample_" + string_to_snake_case(
-            os.path.basename(
-                os.path.dirname(os.path.realpath(option.get_parent_item().get_path()))
-            )
+    def get_options_providers(self) -> list[type[AbstractOptionsProvider]]:
+        from wexample_filestate_python.options_provider.python_options_provider import (
+            PythonOptionsProvider,
         )
+
+        options = super().get_options_providers()
+
+        options.extend(
+            [
+                PythonOptionsProvider,
+            ]
+        )
+
+        return options
+    def get_package_import_name(self) -> str:
+        # TODO concat suite name prefix.
+        return f"wexample_{self.get_project_name()}"
+
+    def get_package_name(self) -> str:
+        from wexample_helpers.helpers.string import string_to_kebab_case
+
+        return string_to_kebab_case(self.get_package_import_name())
 
     def prepare_value(self, raw_value: DictConfig | None = None) -> DictConfig:
         from wexample_config.config_value.callback_render_config_value import (
@@ -185,6 +173,42 @@ class PythonWorkdir(CodeBaseWorkdir):
 
         return raw_value
 
+    def _create_init_children_factory(self) -> ChildrenFileFactoryConfigOption:
+        from wexample_filestate.config_option.children_file_factory_config_option import (
+            ChildrenFileFactoryConfigOption,
+        )
+        from wexample_filestate.const.disk import DiskItemType
+        from wexample_filestate.const.globals import NAME_PATTERN_NO_LEADING_DOT
+        from wexample_filestate_python.const.name_pattern import (
+            NAME_PATTERN_PYTHON_NOT_PYCACHE,
+        )
+        from wexample_filestate_python.file.python_file import PythonFile
+
+        return ChildrenFileFactoryConfigOption(
+            pattern={
+                "class": PythonFile,
+                "name": "__init__.py",
+                "type": DiskItemType.FILE,
+                "name_pattern": [
+                    NAME_PATTERN_PYTHON_NOT_PYCACHE,
+                    NAME_PATTERN_NO_LEADING_DOT,
+                ],
+            },
+            recursive=True,
+        )
+
+    def _create_package_name_snake(self, option: ItemTreeConfigOptionMixin) -> str:
+        import os
+
+        from wexample_helpers.helpers.string import string_to_snake_case
+
+        # TODO make generic
+        return "wexample_" + string_to_snake_case(
+            os.path.basename(
+                os.path.dirname(os.path.realpath(option.get_parent_item().get_path()))
+            )
+        )
+
     def _create_python_file_children_filter(self) -> ChildrenFileFactoryConfigOption:
         from wexample_filestate.config_option.children_filter_config_option import (
             ChildrenFilterConfigOption,
@@ -218,28 +242,13 @@ class PythonWorkdir(CodeBaseWorkdir):
                     # PythonConfigOption.OPTION_NAME_ORDER_CONSTANTS,
                     # PythonConfigOption.OPTION_NAME_ORDER_ITERABLE_ITEMS,
                     # PythonConfigOption.OPTION_NAME_ORDER_MODULE_FUNCTIONS,
+                    # PythonConfigOption.OPTION_NAME_ORDER_MAIN_GUARD,
+                    # PythonConfigOption.OPTION_NAME_ORDER_CLASS_DOCSTRING,
+                    # PythonConfigOption.OPTION_NAME_ORDER_CLASS_ATTRIBUTES,
+                    PythonConfigOption.OPTION_NAME_ORDER_CLASS_METHODS,
+
 
                     # CLASS-LEVEL REORDERING:
-                    # 11. Preserve class header, decorators, and docstring at top
-                    # 12. Sort class attributes: special ones first (__slots__, __match_args__, Config),
-                    #     then public A-Z, then private/protected A-Z
-                    # 13. Order special methods (__dunder__) in logical sequence:
-                    #     - Construction: __new__, __init__
-                    #     - Representation: __repr__, __str__
-                    #     - Comparison/hash: __lt__, __le__, __eq__, __ne__, __gt__, __ge__, __hash__
-                    #     - Truthiness: __bool__
-                    #     - Attribute access: __getattribute__, __getattr__, __setattr__, __delattr__
-                    #     - Container/iteration: __len__, __iter__, __getitem__, __setitem__, __delitem__
-                    #     - Callable: __call__
-                    #     - Context managers: __enter__, __exit__, __aenter__, __aexit__
-                    #     - Async protocols: __await__, __aiter__, __anext__
-                    #     - Descriptors/pickling: __get__, __set__, __delete__, __getstate__, __setstate__
-                    # 14. Sort class methods (@classmethod): public A-Z, then private A-Z
-                    # 15. Sort static methods (@staticmethod): public A-Z, then private A-Z
-                    # 16. Group properties by name (getter + setter + deleter together), sort groups A-Z
-                    # 17. Sort instance methods: public A-Z, then private/protected A-Z
-                    # 18. Sort nested classes A-Z by name
-                    #
                     # PRESERVATION RULES:
                     # 19. Never split @overload series from their implementation
                     # 20. Keep property getter/setter/deleter groups together
@@ -248,30 +257,6 @@ class PythonWorkdir(CodeBaseWorkdir):
                     # 23. Handle async variants to follow their sync counterparts
                     # 24. Use case-insensitive A-Z sorting with _ after letters: a < b < z < _a < __a
                     # 25. Preserve all docstrings for modules, classes, functions, and methods
-                ],
-            },
-            recursive=True,
-        )
-
-    def _create_init_children_factory(self) -> ChildrenFileFactoryConfigOption:
-        from wexample_filestate.config_option.children_file_factory_config_option import (
-            ChildrenFileFactoryConfigOption,
-        )
-        from wexample_filestate.const.disk import DiskItemType
-        from wexample_filestate.const.globals import NAME_PATTERN_NO_LEADING_DOT
-        from wexample_filestate_python.const.name_pattern import (
-            NAME_PATTERN_PYTHON_NOT_PYCACHE,
-        )
-        from wexample_filestate_python.file.python_file import PythonFile
-
-        return ChildrenFileFactoryConfigOption(
-            pattern={
-                "class": PythonFile,
-                "name": "__init__.py",
-                "type": DiskItemType.FILE,
-                "name_pattern": [
-                    NAME_PATTERN_PYTHON_NOT_PYCACHE,
-                    NAME_PATTERN_NO_LEADING_DOT,
                 ],
             },
             recursive=True,

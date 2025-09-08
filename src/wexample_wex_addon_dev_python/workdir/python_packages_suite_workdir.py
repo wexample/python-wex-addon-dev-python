@@ -18,48 +18,6 @@ if TYPE_CHECKING:
 
 
 class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
-    def packages_validate_internal_dependencies_declarations(self) -> None:
-        dependencies_map = self.build_dependencies_map()
-        for package_name in dependencies_map:
-            package = self.get_package(package_name)
-
-            for package_name_search in dependencies_map:
-                searched_package = self.get_package(package_name_search)
-                imports = package.search_imports_in_codebase(searched_package)
-                if len(imports) > 0:
-                    dependencies_stack = self.build_dependencies_stack(
-                        package, searched_package, dependencies_map
-                    )
-
-                    if len(dependencies_stack) == 0:
-                        # Build a readable list of import locations to help debugging
-                        imports_details = "\n".join(
-                            f" - {res.item.get_path()}:{res.line}:{res.column}"
-                            for res in imports
-                        )
-                        raise AssertionError(
-                            (
-                                'Dependency violation: package "{pkg}" imports code from "{dep}" '
-                                "but there is no declared local dependency path. "
-                                'Add "{dep}" to the \'project.dependencies\' of "{pkg}" in its pyproject.toml, '
-                                'or declare an intermediate local package that depends on "{dep}".\n\n'
-                                "Detected import locations:\n{locations}"
-                            ).format(
-                                pkg=package_name,
-                                dep=package_name_search,
-                                locations=imports_details
-                                or " - <no locations captured>",
-                            )
-                        )
-
-    def get_dependents(
-        self, package: PythonPackageWorkdir
-    ) -> list[PythonPackageWorkdir]:
-        dependents = []
-        for neighbor_package in self.get_packages():
-            if neighbor_package.depends_from(package):
-                dependents.append(neighbor_package)
-        return dependents
 
     def build_dependencies_stack(
         self,
@@ -118,6 +76,54 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
         # Build and validate the dependency map, then compute a stable topological order
         return self.topological_order(self.build_dependencies_map())
 
+    def get_dependents(
+        self, package: PythonPackageWorkdir
+    ) -> list[PythonPackageWorkdir]:
+        dependents = []
+        for neighbor_package in self.get_packages():
+            if neighbor_package.depends_from(package):
+                dependents.append(neighbor_package)
+        return dependents
+
+    def get_ordered_packages(self) -> list[PythonPackageWorkdir]:
+        """Return package objects ordered leaves -> trunk."""
+        order = self.build_ordered_dependencies()
+        by_name = {p.get_package_name(): p for p in self.get_packages()}
+        return [by_name[n] for n in order]
+    def packages_validate_internal_dependencies_declarations(self) -> None:
+        dependencies_map = self.build_dependencies_map()
+        for package_name in dependencies_map:
+            package = self.get_package(package_name)
+
+            for package_name_search in dependencies_map:
+                searched_package = self.get_package(package_name_search)
+                imports = package.search_imports_in_codebase(searched_package)
+                if len(imports) > 0:
+                    dependencies_stack = self.build_dependencies_stack(
+                        package, searched_package, dependencies_map
+                    )
+
+                    if len(dependencies_stack) == 0:
+                        # Build a readable list of import locations to help debugging
+                        imports_details = "\n".join(
+                            f" - {res.item.get_path()}:{res.line}:{res.column}"
+                            for res in imports
+                        )
+                        raise AssertionError(
+                            (
+                                'Dependency violation: package "{pkg}" imports code from "{dep}" '
+                                "but there is no declared local dependency path. "
+                                'Add "{dep}" to the \'project.dependencies\' of "{pkg}" in its pyproject.toml, '
+                                'or declare an intermediate local package that depends on "{dep}".\n\n'
+                                "Detected import locations:\n{locations}"
+                            ).format(
+                                pkg=package_name,
+                                dep=package_name_search,
+                                locations=imports_details
+                                or " - <no locations captured>",
+                            )
+                        )
+
     def topological_order(self, dep_map: dict[str, list[str]]) -> list[str]:
         """Deterministic topological order using graphlib.TopologicalSorter.
         Returns a leaves -> trunk order (dependencies before dependents).
@@ -146,11 +152,11 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
         # Return only local packages (original keys of dep_map)
         return [n for n in order if n in dep_map]
 
-    def get_ordered_packages(self) -> list[PythonPackageWorkdir]:
-        """Return package objects ordered leaves -> trunk."""
-        order = self.build_ordered_dependencies()
-        by_name = {p.get_package_name(): p for p in self.get_packages()}
-        return [by_name[n] for n in order]
+    def _child_is_package_directory(self, entry: Path) -> bool:
+        return entry.is_dir() and (entry / "pyproject.toml").is_file()
+
+    def _get_children_package_directory_name(self) -> str:
+        return "pip"
 
     def _get_children_package_workdir_class(self) -> type[CodeBaseWorkdir]:
         from wexample_wex_addon_dev_python.workdir.python_package_workdir import (
@@ -158,9 +164,3 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
         )
 
         return PythonPackageWorkdir
-
-    def _child_is_package_directory(self, entry: Path) -> bool:
-        return entry.is_dir() and (entry / "pyproject.toml").is_file()
-
-    def _get_children_package_directory_name(self) -> str:
-        return "pip"

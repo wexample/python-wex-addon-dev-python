@@ -21,6 +21,18 @@ if TYPE_CHECKING:
 class PythonPackageWorkdir(PythonWorkdir):
     _project_info_cache = None
 
+    def depends_from(self, package: PythonPackageWorkdir) -> bool:
+        for dependence_name in self.get_dependencies():
+            if package.get_package_name() == dependence_name:
+                return True
+        return False
+
+    def get_project_config(self, reload: bool = True) -> TOMLDocument:
+        """
+        Fetch the data from the pyproject.toml file.
+        """
+        return self.get_project_config_file(reload=reload).read_parsed()
+
     def get_project_config_file(self, reload: bool = True) -> PythonPackageTomlFile:
         from wexample_wex_addon_dev_python.file.python_package_toml_file import (
             PythonPackageTomlFile,
@@ -31,105 +43,6 @@ class PythonPackageWorkdir(PythonWorkdir):
         # Read once to populate content with file source.
         config_file.read_text(reload=reload)
         return config_file
-
-    def save_project_config_file(self, config: StructuredData) -> None:
-        config_file = self.get_project_config_file()
-        config_file.write(config)
-
-    def get_project_config(self, reload: bool = True) -> TOMLDocument:
-        """
-        Fetch the data from the pyproject.toml file.
-        """
-        return self.get_project_config_file(reload=reload).read_parsed()
-
-    def depends_from(self, package: PythonPackageWorkdir) -> bool:
-        for dependence_name in self.get_dependencies():
-            if package.get_package_name() == dependence_name:
-                return True
-        return False
-
-    def save_dependency(self, package: PythonPackageWorkdir) -> None:
-        """Add a dependency, use strict version as this is the intended internal management."""
-        config = self.get_project_config_file()
-        config.add_dependency(
-            f"{package.get_package_name()}=={package.get_project_version()}"
-        )
-        config.write_parsed()
-
-    def search_imports_in_codebase(
-        self, searched_package: PythonPackageWorkdir
-    ) -> list[SearchResult]:
-        """Find import statements that reference the given package.
-
-        Supports common Python forms:
-        - from <pkg>(.<sub>)* import ...
-        - import <pkg>(.<sub>)* [as alias]
-
-        Returns a list of SearchResult with file, line and column for each match.
-        """
-        import re
-
-        pkg = searched_package.get_package_import_name()
-        pattern = (
-            rf"(?m)^\s*(?:"
-            rf"from\s+{re.escape(pkg)}(?:\.[\w\.]+)?\s+import\s+"
-            rf"|import\s+{re.escape(pkg)}(?:\.[\w\.]+)?(?:\s+as\s+\w+)?\b"
-            rf")"
-        )
-        return self.search_in_codebase(pattern, regex=True, flags=re.MULTILINE)
-
-    def search_in_codebase(
-        self, string: str, *, regex: bool = False, flags: int = 0
-    ) -> list[SearchResult]:
-        from wexample_filestate.common.search_result import SearchResult
-        from wexample_filestate_python.file.python_file import PythonFile
-
-        found = []
-
-        def _search(item: PythonFile) -> None:
-            found.extend(
-                SearchResult.create_for_all_matches(
-                    string, item, regex=regex, flags=flags
-                )
-            )
-
-        self.for_each_child_of_type_recursive(callback=_search, class_type=PythonFile)
-
-        return found
-
-    def publish(
-        self,
-        progress: ProgressHandle | None = None,
-    ) -> None:
-        from wexample_filestate_python.common.pipy_gateway import PipyGateway
-        from wexample_helpers.helpers.shell import shell_run
-
-        progress.update(total=3, current=0)
-        super().publish(progress=progress.create_range_handle(to_step=1))
-
-        progress.update(current=2, label="Publishing to Pipy")
-        client = PipyGateway(parent_io_handler=self)
-
-        package_name = self.get_package_name()
-        version = self.get_project_version()
-        if client.package_release_exists(package_name=package_name, version=version):
-            self.warning(
-                f'Trying to publish an existing release for package "{package_name}" version {version}'
-            )
-        else:
-            # Map token to PyPI's token-based authentication if provided
-            username = "__token__"
-            password = self.get_env_parameter("PIPY_TOKEN")
-
-            # Build the publish command, adding credentials only when given
-            publish_cmd = ["pdm", "publish"]
-            if username is not None:
-                publish_cmd += ["--username", username]
-            if password is not None:
-                publish_cmd += ["--password", password]
-
-            shell_run(publish_cmd, inherit_stdio=True, cwd=self.get_path())
-        progress.finish()
 
     def prepare_value(self, raw_value: DictConfig | None = None) -> DictConfig:
         from wexample_filestate.const.disk import DiskItemType
@@ -202,6 +115,93 @@ class PythonPackageWorkdir(PythonWorkdir):
         )
 
         return raw_value
+
+    def publish(
+        self,
+        progress: ProgressHandle | None = None,
+    ) -> None:
+        from wexample_filestate_python.common.pipy_gateway import PipyGateway
+        from wexample_helpers.helpers.shell import shell_run
+
+        progress.update(total=3, current=0)
+        super().publish(progress=progress.create_range_handle(to_step=1))
+
+        progress.update(current=2, label="Publishing to Pipy")
+        client = PipyGateway(parent_io_handler=self)
+
+        package_name = self.get_package_name()
+        version = self.get_project_version()
+        if client.package_release_exists(package_name=package_name, version=version):
+            self.warning(
+                f'Trying to publish an existing release for package "{package_name}" version {version}'
+            )
+        else:
+            # Map token to PyPI's token-based authentication if provided
+            username = "__token__"
+            password = self.get_env_parameter("PIPY_TOKEN")
+
+            # Build the publish command, adding credentials only when given
+            publish_cmd = ["pdm", "publish"]
+            if username is not None:
+                publish_cmd += ["--username", username]
+            if password is not None:
+                publish_cmd += ["--password", password]
+
+            shell_run(publish_cmd, inherit_stdio=True, cwd=self.get_path())
+        progress.finish()
+
+    def save_dependency(self, package: PythonPackageWorkdir) -> None:
+        """Add a dependency, use strict version as this is the intended internal management."""
+        config = self.get_project_config_file()
+        config.add_dependency(
+            f"{package.get_package_name()}=={package.get_project_version()}"
+        )
+        config.write_parsed()
+
+    def save_project_config_file(self, config: StructuredData) -> None:
+        config_file = self.get_project_config_file()
+        config_file.write(config)
+
+    def search_imports_in_codebase(
+        self, searched_package: PythonPackageWorkdir
+    ) -> list[SearchResult]:
+        """Find import statements that reference the given package.
+
+        Supports common Python forms:
+        - from <pkg>(.<sub>)* import ...
+        - import <pkg>(.<sub>)* [as alias]
+
+        Returns a list of SearchResult with file, line and column for each match.
+        """
+        import re
+
+        pkg = searched_package.get_package_import_name()
+        pattern = (
+            rf"(?m)^\s*(?:"
+            rf"from\s+{re.escape(pkg)}(?:\.[\w\.]+)?\s+import\s+"
+            rf"|import\s+{re.escape(pkg)}(?:\.[\w\.]+)?(?:\s+as\s+\w+)?\b"
+            rf")"
+        )
+        return self.search_in_codebase(pattern, regex=True, flags=re.MULTILINE)
+
+    def search_in_codebase(
+        self, string: str, *, regex: bool = False, flags: int = 0
+    ) -> list[SearchResult]:
+        from wexample_filestate.common.search_result import SearchResult
+        from wexample_filestate_python.file.python_file import PythonFile
+
+        found = []
+
+        def _search(item: PythonFile) -> None:
+            found.extend(
+                SearchResult.create_for_all_matches(
+                    string, item, regex=regex, flags=flags
+                )
+            )
+
+        self.for_each_child_of_type_recursive(callback=_search, class_type=PythonFile)
+
+        return found
 
     def _get_readme_content(self) -> ReadmeContentConfigValue | None:
         from wexample_wex_addon_dev_python.config_value.python_package_readme_config_value import (
