@@ -33,7 +33,6 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
         Returns a list of PythonPackageWorkdir objects [package, ..., dependency],
         or an empty list if no path exists.
         """
-
         start = package.get_package_name()
         target = dependency.get_package_name()
 
