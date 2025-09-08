@@ -16,7 +16,6 @@ class EachPythonFileMiddleware(EachFileMiddleware):
     """
     # Default extension to filter
     python_extension_only: bool = True
-
     # Default list of directories to ignore during recursion
     ignored_directories: set[str] = {
         "__pycache__",
