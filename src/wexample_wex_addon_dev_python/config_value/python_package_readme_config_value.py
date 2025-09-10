@@ -5,13 +5,18 @@ import os
 from wexample_filestate.config_value.readme_content_config_value import (
     ReadmeContentConfigValue,
 )
+from wexample_helpers.classes.field import public_field
+from wexample_helpers.decorator.base_class import base_class
 from wexample_wex_addon_dev_python.workdir.python_package_workdir import (
     PythonPackageWorkdir,
 )
 
 
+@base_class
 class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
-    workdir: PythonPackageWorkdir
+    workdir: PythonPackageWorkdir = public_field(
+        description="The python package workdir"
+    )
 
     def get_templates(self) -> list[str] | None:
         # Use TOMLDocument from the workdir
