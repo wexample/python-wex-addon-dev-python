@@ -7,13 +7,12 @@ from wexample_wex_core.workdir.mixin.as_suite_package_item import (
     AsSuitePackageItem,
 )
 
+from wexample_helpers.decorator.base_class import base_class
 if TYPE_CHECKING:
     from tomlkit import TOMLDocument
     from wexample_wex_core.workdir.code_base_workdir import (
         CodeBaseWorkdir,
     )
-
-from wexample_helpers.decorator.base_class import base_class
 
 
 @base_class

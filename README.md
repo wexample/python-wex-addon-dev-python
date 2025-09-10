@@ -12,7 +12,6 @@ Version: 0.0.45
 
 - attrs>=23.1.0
 - cattrs>=23.1.0
-- pydantic>=2,<3
 - pylint
 - pyright
 - wexample-filestate-python==0.0.41
