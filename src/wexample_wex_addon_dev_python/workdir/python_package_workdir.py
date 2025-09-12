@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from wexample_wex_addon_dev_python.file.python_package_toml_file import (
         PythonPackageTomlFile,
     )
+    from wexample_filestate.config_value.readme_content_config_value import ReadmeContentConfigValue
 
 
 class PythonPackageWorkdir(PythonWorkdir):

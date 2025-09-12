@@ -10,6 +10,9 @@ from wexample_helpers.decorator.base_class import base_class
 from wexample_wex_addon_dev_python.workdir.python_package_workdir import (
     PythonPackageWorkdir,
 )
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from wexample_wex_addon_dev_python.workdir.python_package_workdir import PythonPackageWorkdir
 
 
 @base_class
