@@ -89,8 +89,6 @@ class PythonWorkdir(CodeBaseWorkdir):
             "should_contain_lines", []
         ).extend(
             [
-                "/__pypackages__",
-                "/.pdm-build",
                 ".pdm-python",
                 ".python-version",
                 ".venv",
