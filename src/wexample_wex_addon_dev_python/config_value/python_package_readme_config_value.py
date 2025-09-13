@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from typing import TYPE_CHECKING
 
 from wexample_filestate.config_value.readme_content_config_value import (
     ReadmeContentConfigValue,
@@ -10,9 +11,11 @@ from wexample_helpers.decorator.base_class import base_class
 from wexample_wex_addon_dev_python.workdir.python_package_workdir import (
     PythonPackageWorkdir,
 )
-from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
-    from wexample_wex_addon_dev_python.workdir.python_package_workdir import PythonPackageWorkdir
+    from wexample_wex_addon_dev_python.workdir.python_package_workdir import (
+        PythonPackageWorkdir,
+    )
 
 
 @base_class

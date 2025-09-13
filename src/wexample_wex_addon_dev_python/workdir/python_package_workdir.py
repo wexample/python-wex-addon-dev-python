@@ -11,12 +11,14 @@ if TYPE_CHECKING:
     from tomlkit import TOMLDocument
     from wexample_config.const.types import DictConfig
     from wexample_filestate.common.search_result import SearchResult
+    from wexample_filestate.config_value.readme_content_config_value import (
+        ReadmeContentConfigValue,
+    )
     from wexample_helpers.const.types import StructuredData
     from wexample_prompt.common.progress.progress_handle import ProgressHandle
     from wexample_wex_addon_dev_python.file.python_package_toml_file import (
         PythonPackageTomlFile,
     )
-    from wexample_filestate.config_value.readme_content_config_value import ReadmeContentConfigValue
 
 
 class PythonPackageWorkdir(PythonWorkdir):
