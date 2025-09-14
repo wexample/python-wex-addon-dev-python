@@ -12,7 +12,7 @@ if TYPE_CHECKING:
         AbstractOptionsProvider,
     )
     from wexample_filestate.option.children_file_factory_option import (
-        ChildrenFileFactoryConfigOption,
+        ChildrenFileFactoryOption,
     )
     from wexample_filestate.config_option.mixin.item_config_option_mixin import (
         ItemTreeConfigOptionMixin,
@@ -75,7 +75,7 @@ class PythonWorkdir(CodeBaseWorkdir):
             CallbackRenderConfigValue,
         )
         from wexample_filestate.option.children_filter_option import (
-            ChildrenFilterConfigOption,
+            ChildrenFilterOption,
         )
         from wexample_filestate.const.disk import DiskItemType
         from wexample_helpers.helpers.array import array_dict_get_by
@@ -144,7 +144,7 @@ class PythonWorkdir(CodeBaseWorkdir):
                     "type": DiskItemType.DIRECTORY,
                     "should_exist": False,
                 },
-                ChildrenFilterConfigOption(
+                ChildrenFilterOption(
                     pattern={
                         "name_pattern": r"^.*\.egg-info$",
                         "type": DiskItemType.DIRECTORY,
@@ -179,9 +179,9 @@ class PythonWorkdir(CodeBaseWorkdir):
 
         return raw_value
 
-    def _create_init_children_factory(self) -> ChildrenFileFactoryConfigOption:
+    def _create_init_children_factory(self) -> ChildrenFileFactoryOption:
         from wexample_filestate.option.children_file_factory_option import (
-            ChildrenFileFactoryConfigOption,
+            ChildrenFileFactoryOption,
         )
         from wexample_filestate.const.disk import DiskItemType
         from wexample_filestate.const.globals import NAME_PATTERN_NO_LEADING_DOT
@@ -190,7 +190,7 @@ class PythonWorkdir(CodeBaseWorkdir):
         )
         from wexample_filestate_python.file.python_file import PythonFile
 
-        return ChildrenFileFactoryConfigOption(
+        return ChildrenFileFactoryOption(
             pattern={
                 "class": PythonFile,
                 "name": "__init__.py",
@@ -215,9 +215,9 @@ class PythonWorkdir(CodeBaseWorkdir):
             )
         )
 
-    def _create_python_file_children_filter(self) -> ChildrenFileFactoryConfigOption:
+    def _create_python_file_children_filter(self) -> ChildrenFileFactoryOption:
         from wexample_filestate.option.children_filter_option import (
-            ChildrenFilterConfigOption,
+            ChildrenFilterOption,
         )
         from wexample_filestate.const.disk import DiskItemType
         from wexample_filestate_python.config_option.python_config_option import (
@@ -225,7 +225,7 @@ class PythonWorkdir(CodeBaseWorkdir):
         )
         from wexample_filestate_python.file.python_file import PythonFile
 
-        return ChildrenFilterConfigOption(
+        return ChildrenFilterOption(
             pattern={
                 "class": PythonFile,
                 "name_pattern": r"^.*\.py$",
