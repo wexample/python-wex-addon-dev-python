@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from wexample_config.options_provider.abstract_options_provider import (
         AbstractOptionsProvider,
     )
-    from wexample_filestate.config_option.children_file_factory_config_option import (
+    from wexample_filestate.option.children_file_factory_config_option import (
         ChildrenFileFactoryConfigOption,
     )
     from wexample_filestate.config_option.mixin.item_config_option_mixin import (
@@ -74,7 +74,7 @@ class PythonWorkdir(CodeBaseWorkdir):
         from wexample_config.config_value.callback_render_config_value import (
             CallbackRenderConfigValue,
         )
-        from wexample_filestate.config_option.children_filter_config_option import (
+        from wexample_filestate.option.children_filter_config_option import (
             ChildrenFilterConfigOption,
         )
         from wexample_filestate.const.disk import DiskItemType
@@ -180,7 +180,7 @@ class PythonWorkdir(CodeBaseWorkdir):
         return raw_value
 
     def _create_init_children_factory(self) -> ChildrenFileFactoryConfigOption:
-        from wexample_filestate.config_option.children_file_factory_config_option import (
+        from wexample_filestate.option.children_file_factory_config_option import (
             ChildrenFileFactoryConfigOption,
         )
         from wexample_filestate.const.disk import DiskItemType
@@ -216,7 +216,7 @@ class PythonWorkdir(CodeBaseWorkdir):
         )
 
     def _create_python_file_children_filter(self) -> ChildrenFileFactoryConfigOption:
-        from wexample_filestate.config_option.children_filter_config_option import (
+        from wexample_filestate.option.children_filter_config_option import (
             ChildrenFilterConfigOption,
         )
         from wexample_filestate.const.disk import DiskItemType
