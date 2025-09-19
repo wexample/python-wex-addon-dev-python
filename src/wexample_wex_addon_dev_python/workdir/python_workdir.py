@@ -215,7 +215,9 @@ class PythonWorkdir(CodeBaseWorkdir):
         )
 
     def _create_python_file_children_filter(self) -> ChildrenFileFactoryOption:
-        from wexample_filestate.option.children_filter_option import ChildrenFilterOption
+        from wexample_filestate.option.children_filter_option import (
+            ChildrenFilterOption,
+        )
         from wexample_filestate.const.disk import DiskItemType
         from wexample_filestate_python.file.python_file import PythonFile
         from wexample_filestate_python.option.python_option import PythonOption
