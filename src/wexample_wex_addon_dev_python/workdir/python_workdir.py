@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from wexample_filestate_python.option.python_option import PythonOption
 from wexample_wex_core.workdir.code_base_workdir import (
     CodeBaseWorkdir,
 )
@@ -220,9 +221,6 @@ class PythonWorkdir(CodeBaseWorkdir):
             ChildrenFilterOption,
         )
         from wexample_filestate.const.disk import DiskItemType
-        from wexample_filestate_python.config_option.python_config_option import (
-            PythonConfigOption,
-        )
         from wexample_filestate_python.file.python_file import PythonFile
 
         return ChildrenFilterOption(
@@ -230,31 +228,30 @@ class PythonWorkdir(CodeBaseWorkdir):
                 "class": PythonFile,
                 "name_pattern": r"^.*\.py$",
                 "type": DiskItemType.FILE,
-                "python": [
+                "python": {
                     # Configured for python >= 3.12
-                    # Order matters.
-                    PythonConfigOption.OPTION_NAME_ADD_FUTURE_ANNOTATIONS,
-                    PythonConfigOption.OPTION_NAME_RELOCATE_IMPORTS,
-                    PythonConfigOption.OPTION_NAME_REMOVE_UNUSED,
-                    PythonConfigOption.OPTION_NAME_SORT_IMPORTS,
-                    PythonConfigOption.OPTION_NAME_MODERNIZE_TYPING,
-                    PythonConfigOption.OPTION_NAME_FSTRINGIFY,
-                    PythonConfigOption.OPTION_NAME_ADD_RETURN_TYPES,
-                    PythonConfigOption.OPTION_NAME_UNQUOTE_ANNOTATIONS,
-                    PythonConfigOption.OPTION_NAME_FIX_ATTRS,
-                    PythonConfigOption.OPTION_NAME_ORDER_TYPE_CHECKING_BLOCK,
-                    PythonConfigOption.OPTION_NAME_ORDER_MODULE_DOCSTRING,
-                    PythonConfigOption.OPTION_NAME_ORDER_MODULE_METADATA,
-                    PythonConfigOption.OPTION_NAME_ORDER_CONSTANTS,
-                    PythonConfigOption.OPTION_NAME_ORDER_ITERABLE_ITEMS,
-                    PythonConfigOption.OPTION_NAME_ORDER_MODULE_FUNCTIONS,
-                    PythonConfigOption.OPTION_NAME_ORDER_MAIN_GUARD,
-                    PythonConfigOption.OPTION_NAME_ORDER_CLASS_DOCSTRING,
-                    PythonConfigOption.OPTION_NAME_ORDER_CLASS_ATTRIBUTES,
-                    PythonConfigOption.OPTION_NAME_ORDER_CLASS_METHODS,
-                    PythonConfigOption.OPTION_NAME_FIX_BLANK_LINES,
-                    PythonConfigOption.OPTION_NAME_FORMAT,
-                ],
+                    PythonOption.OPTION_NAME_ADD_FUTURE_ANNOTATIONS: True,
+                    PythonOption.OPTION_NAME_RELOCATE_IMPORTS: True,
+                    PythonOption.OPTION_NAME_REMOVE_UNUSED: True,
+                    PythonOption.OPTION_NAME_SORT_IMPORTS: True,
+                    PythonOption.OPTION_NAME_MODERNIZE_TYPING: True,
+                    PythonOption.OPTION_NAME_FSTRINGIFY: True,
+                    PythonOption.OPTION_NAME_ADD_RETURN_TYPES: True,
+                    PythonOption.OPTION_NAME_UNQUOTE_ANNOTATIONS: True,
+                    PythonOption.OPTION_NAME_FIX_ATTRS: True,
+                    PythonOption.OPTION_NAME_ORDER_TYPE_CHECKING_BLOCK: True,
+                    PythonOption.OPTION_NAME_ORDER_MODULE_DOCSTRING: True,
+                    PythonOption.OPTION_NAME_ORDER_MODULE_METADATA: True,
+                    PythonOption.OPTION_NAME_ORDER_CONSTANTS: True,
+                    PythonOption.OPTION_NAME_ORDER_ITERABLE_ITEMS: True,
+                    PythonOption.OPTION_NAME_ORDER_MODULE_FUNCTIONS: True,
+                    PythonOption.OPTION_NAME_ORDER_MAIN_GUARD: True,
+                    PythonOption.OPTION_NAME_ORDER_CLASS_DOCSTRING: True,
+                    PythonOption.OPTION_NAME_ORDER_CLASS_ATTRIBUTES: True,
+                    PythonOption.OPTION_NAME_ORDER_CLASS_METHODS: True,
+                    PythonOption.OPTION_NAME_FIX_BLANK_LINES: True,
+                    PythonOption.OPTION_NAME_FORMAT: True,
+                },
             },
             recursive=True,
         )
