@@ -154,7 +154,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         }
         dev_values = [toml_get_string_value(it).strip() for it in list(dev_arr)]
 
-        for pkg in ["pytest", "pytest-cov"]:
+        for pkg in ["pytest", "pytest-cov", "pytest-datadir"]:
             if pkg not in runtime_pkgs and pkg not in dev_values:
                 dev_arr.append(pkg)
 
