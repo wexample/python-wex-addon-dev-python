@@ -183,17 +183,20 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             deps_arr.append("cattrs>=23.1.0")
             toml_sort_string_array(deps_arr)
 
-        # Ensure optional dev group contains pytest unless already in runtime deps
-        runtime_has_pytest = any(
-            package_normalize_name(toml_get_string_value(it)) == "pytest"
+        # Ensure optional dev group contains required test tools unless already in runtime deps
+        required_test_deps = ["pytest", "pytest-cov"]
+
+        runtime_pkgs = {
+            package_normalize_name(toml_get_string_value(it))
             for it in list(deps_arr)
-        )
-        dev_values = [toml_get_string_value(it) for it in list(dev_arr)]
-        if not runtime_has_pytest and not any(
-            v.strip() == "pytest" for v in dev_values
-        ):
-            dev_arr.append("pytest")
-            toml_sort_string_array(dev_arr)
+        }
+        dev_values = [toml_get_string_value(it).strip() for it in list(dev_arr)]
+
+        for pkg in required_test_deps:
+            if pkg not in runtime_pkgs and pkg not in dev_values:
+                dev_arr.append(pkg)
+
+        toml_sort_string_array(dev_arr)
 
         return dumps(content)
 
