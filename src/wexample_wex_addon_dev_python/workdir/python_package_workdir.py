@@ -10,7 +10,7 @@ from wexample_wex_addon_dev_python.workdir.python_workdir import PythonWorkdir
 if TYPE_CHECKING:
     from tomlkit import TOMLDocument
     from wexample_config.const.types import DictConfig
-    from wexample_filestate.common.search_result import SearchResult
+    from wexample_filestate.utils.search_result import SearchResult
     from wexample_filestate.config_value.readme_content_config_value import (
         ReadmeContentConfigValue,
     )
@@ -190,7 +190,7 @@ class PythonPackageWorkdir(PythonWorkdir):
     def search_in_codebase(
         self, string: str, *, regex: bool = False, flags: int = 0
     ) -> list[SearchResult]:
-        from wexample_filestate.common.search_result import SearchResult
+        from wexample_filestate.utils.search_result import SearchResult
         from wexample_filestate_python.file.python_file import PythonFile
 
         found = []
