@@ -14,9 +14,6 @@ if TYPE_CHECKING:
     from wexample_filestate.config_option.mixin.item_config_option_mixin import (
         ItemTreeConfigOptionMixin,
     )
-    from wexample_filestate.operations_provider.abstract_operations_provider import (
-        AbstractOperationsProvider,
-    )
     from wexample_filestate.option.children_file_factory_option import (
         ChildrenFileFactoryOption,
     )
@@ -30,21 +27,6 @@ class PythonWorkdir(CodeBaseWorkdir):
         for dependency in self.get_project_config_file().list_dependency_names():
             dependencies.append(Requirement(dependency).name)
         return dependencies
-
-    def get_operations_providers(self) -> list[type[AbstractOperationsProvider]]:
-        from wexample_filestate_python.operations_provider.python_operations_provider import (
-            PythonOperationsProvider,
-        )
-
-        operations = super().get_operations_providers()
-
-        operations.extend(
-            [
-                PythonOperationsProvider,
-            ]
-        )
-
-        return operations
 
     def get_options_providers(self) -> list[type[AbstractOptionsProvider]]:
         from wexample_filestate_python.options_provider.python_options_provider import (
