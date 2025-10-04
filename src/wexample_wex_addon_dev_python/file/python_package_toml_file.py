@@ -4,13 +4,13 @@ from typing import TYPE_CHECKING
 
 from wexample_filestate.item.file.toml_file import TomlFile
 from wexample_helpers.decorator.base_class import base_class
-from wexample_wex_core.workdir.mixin.as_suite_package_item import (
+from wexample_wex_addon_app.workdir.mixin.as_suite_package_item import (
     AsSuitePackageItem,
 )
 
 if TYPE_CHECKING:
     from tomlkit import TOMLDocument
-    from wexample_wex_core.workdir.code_base_workdir import (
+    from wexample_wex_addon_app.workdir.code_base_workdir import (
         CodeBaseWorkdir,
     )
 
@@ -162,7 +162,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
 
 
     def find_package_workdir(self) -> CodeBaseWorkdir | None:
-        from wexample_wex_core.workdir.code_base_workdir import CodeBaseWorkdir
+        from wexample_wex_addon_app.workdir.code_base_workdir import CodeBaseWorkdir
 
         return self.find_closest(CodeBaseWorkdir)
 

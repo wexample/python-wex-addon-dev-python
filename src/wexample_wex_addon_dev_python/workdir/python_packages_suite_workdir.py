@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from wexample_wex_core.workdir.framework_packages_suite_workdir import (
+from wexample_wex_addon_app.workdir.framework_packages_suite_workdir import (
     FrameworkPackageSuiteWorkdir,
 )
 
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from wexample_wex_addon_dev_python.workdir.python_package_workdir import (
         PythonPackageWorkdir,
     )
-    from wexample_wex_core.workdir.code_base_workdir import (
+    from wexample_wex_addon_app.workdir.code_base_workdir import (
         CodeBaseWorkdir,
     )
 
