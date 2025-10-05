@@ -52,44 +52,29 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
 
         workdir_path = self.workdir.get_path()
         env = Environment(loader=FileSystemLoader(workdir_path / WORKDIR_SETUP_DIR / "doc" / "readme"))
-        template = env.get_template("introduction.md.j2")
         context = {}
+
+        rendered_content = ''
+        for name in self.workdir.get_ordered_readme_files_names():
+            template = env.get_template(f"{name}.md.j2")
+            rendered_content += f"{template.render(context)}\n\n"
 
         package_name = self.workdir.get_package_name()
         return [
             f"# {package_name}\n\n"
-            f"{description}\n\n"
             f"Version: {self.workdir.get_project_version()}\n\n"
-            f'{self._add_section_if_exists("features")}'
-            "## Introduction\n"
-            f"{template.render(context)}\n\n"
-            "## Requirements\n\n"
-            f"- Python {python_version}\n\n"
-            "## Dependencies\n\n"
-            f"{deps_list}\n\n"
+            f"{description}\n\n"
             "## Installation\n\n"
             "```bash\n"
             f"pip install {package_name}\n"
             "```\n\n"
-            f'{self._add_section_if_exists("usage")}'
+            # Rendered
+            f"{rendered_content}"
             "## Links\n\n"
             f"- Homepage: {homepage}\n\n"
             "## License\n\n"
             f"{license_info}\n"
         ]
-
-    def _add_section_if_exists(self, section: str) -> str:
-        """
-        Returns section content if the documentation file exists
-        """
-        doc_path = self._get_doc_path(section)
-
-        if os.path.exists(doc_path):
-            with open(doc_path, encoding="utf-8") as file:
-                content = file.read()
-                return f"## {section.title()}\n\n{content}\n\n"
-
-        return ""
 
     def _get_doc_path(self, section: str) -> str:
         """
