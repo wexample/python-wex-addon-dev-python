@@ -208,7 +208,6 @@ class PythonWorkdir(CodeBaseWorkdir):
         return ChildrenFilterOption(
             pattern={
                 "class": PythonFile,
-                "name_pattern": r"^.*\.py$",
                 "type": DiskItemType.FILE,
                 "python": {
                     # Configured for python >= 3.12
@@ -235,5 +234,6 @@ class PythonWorkdir(CodeBaseWorkdir):
                     PythonOption.OPTION_NAME_FORMAT: True,
                 },
             },
+            name_pattern=r"^.*\.py$",
             recursive=True,
         )
