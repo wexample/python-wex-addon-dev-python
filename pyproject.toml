@@ -20,6 +20,7 @@ dependencies = [
     "cattrs>=23.1.0",
     "pylint",
     "pyright",
+    "jinja2",
     "wexample-filestate-python==0.0.44",
     "wexample-wex-addon-app==0.0.46",
     "wexample-wex-core==6.0.48",
