@@ -58,9 +58,23 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
             "license_info": license_info,
         }
 
+        # Define fixed order of README sections
+        section_names = [
+            "introduction",
+            "quickstart",
+            "basic-usage",
+            "configuration",
+            "api-reference",
+            "examples",
+            "tests",
+            "troubleshooting",
+            "contribution-guidelines",
+            "suite-signature",
+        ]
+        
         # Render ordered sections (supports both .md and .md.j2)
         rendered_content = ''
-        for section_name in self.workdir.get_ordered_readme_files_names():
+        for section_name in section_names:
             section_content = self._render_readme_section(section_name, context)
             if section_content:
                 rendered_content += f"{section_content}\n\n"
