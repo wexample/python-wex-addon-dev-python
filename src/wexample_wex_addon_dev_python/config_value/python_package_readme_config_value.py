@@ -9,6 +9,7 @@ from wexample_filestate.config_value.readme_content_config_value import (
 )
 from wexample_helpers.classes.field import public_field
 from wexample_helpers.decorator.base_class import base_class
+from wexample_helpers.helpers.shell import shell_run
 from wexample_wex_core.const.globals import WORKDIR_SETUP_DIR
 
 if TYPE_CHECKING:
@@ -58,6 +59,16 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
         for name in self.workdir.get_ordered_readme_files_names():
             template = env.get_template(f"{name}.md.j2")
             rendered_content += f"{template.render(context)}\n\n"
+
+        suite_workdir_path = self.workdir.find_suite_workdir_path()
+
+        # Ask parent suite to generate the info registry that contains packages readme informations
+        shell_run(
+            # TODO Generate path and command name dynamically.
+            cmd='.wex/bin/app-manager app::registry/write',
+            cwd=suite_workdir_path,
+            inherit_stdio=True,
+        )
 
         package_name = self.workdir.get_package_name()
         return [
