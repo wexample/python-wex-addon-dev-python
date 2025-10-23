@@ -62,7 +62,7 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
 
         suite_workdir_path = self.workdir.find_suite_workdir_path()
 
-        # Ask parent suite to generate the info registry that contains packages readme informations
+        # Ask parent suite to generate the info registry that contains packages readme information
         shell_run(
             # TODO Generate path and command name dynamically.
             cmd='.wex/bin/app-manager app::registry/write',
