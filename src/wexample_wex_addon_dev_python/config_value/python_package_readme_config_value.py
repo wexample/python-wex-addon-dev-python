@@ -109,7 +109,7 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
         
         search_paths = [
             workdir_path / WORKDIR_SETUP_DIR / "knowledge" / "readme",  # Package-level
-            suite_path / WORKDIR_SETUP_DIR / "knowledge" / "readme",  # Suite-level
+            suite_path / WORKDIR_SETUP_DIR / "knowledge" / "package-readme",  # Suite-level
         ]
         
         # Try .md.j2 first (Jinja2 template)
