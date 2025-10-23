@@ -60,15 +60,36 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
 
         # Define fixed order of README sections
         section_names = [
-            "introduction",
+            "title",
+            "table-of-contents",
+            "status-compatibility",
+            "prerequisites",
+            "installation",
             "quickstart",
             "basic-usage",
             "configuration",
+            "logging",
             "api-reference",
             "examples",
             "tests",
+            "code-quality",
+            "versioning",
+            "changelog",
+            "migration-notes",
+            "roadmap",
             "troubleshooting",
+            "security",
+            "privacy",
+            "support",
             "contribution-guidelines",
+            "maintainers",
+            "license",
+            "useful-links",
+            "suite-integration",
+            "compatibility-matrix",
+            "requirements",
+            "dependencies",
+            "links",
             "suite-signature",
         ]
         
@@ -79,28 +100,7 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
             if section_content:
                 rendered_content += f"{section_content}\n\n"
 
-        package_name = self.workdir.get_package_name()
-        templates = [
-            f"# {package_name}\n\n"
-            f"Version: {self.workdir.get_project_version()}\n\n"
-            f"{description}\n\n"
-            "## Installation\n\n"
-            "```bash\n"
-            f"pip install {package_name}\n"
-            "```\n\n"
-            # Rendered
-            f"{rendered_content}"
-            "## Links\n\n"
-            f"- Homepage: {homepage}\n\n"
-            "## Requirements\n\n"
-            f"- Python {python_version}\n\n"
-            "## Dependencies\n\n"
-            f"{deps_list}\n\n"
-            "## License\n\n"
-            f"{license_info}\n\n"
-        ]
-
-        return templates
+        return [rendered_content]
 
     def _render_readme_section(self, section_name: str, context: dict) -> str | None:
         """
