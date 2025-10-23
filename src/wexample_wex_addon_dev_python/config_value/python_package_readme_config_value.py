@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import os
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from wexample_filestate.config_value.readme_content_config_value import (
@@ -9,8 +7,6 @@ from wexample_filestate.config_value.readme_content_config_value import (
 )
 from wexample_helpers.classes.field import public_field
 from wexample_helpers.decorator.base_class import base_class
-from wexample_helpers.helpers.file import file_read
-from wexample_wex_addon_app.workdir.mixin.app_workdir_mixin import AppWorkdirMixin
 from wexample_wex_core.const.globals import WORKDIR_SETUP_DIR
 
 if TYPE_CHECKING:
@@ -69,19 +65,6 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
             if section_content:
                 rendered_content += f"{section_content}\n\n"
 
-        suite_path = self.workdir.find_suite_workdir_path()
-
-        # Rebuild suite registry.
-        self.workdir.shell_run_from_path(
-            path=suite_path,
-            cmd="app::registry/write"
-        )
-
-        suite_registry = AppWorkdirMixin.get_registry_from_path(
-            path=suite_path,
-            io=self.workdir.io
-        )
-
         package_name = self.workdir.get_package_name()
         templates = [
             f"# {package_name}\n\n"
@@ -102,14 +85,6 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
             "## License\n\n"
             f"{license_info}\n\n"
         ]
-
-        suite_signature = suite_registry.read_config().search('suite.readme.suite_signature')
-        if not suite_signature.is_none():
-            suite_readme_sections = Path(suite_signature.get_str())
-            if suite_readme_sections.exists():
-                templates.append(
-                    file_read(suite_readme_sections)
-                )
 
         return templates
 
@@ -134,7 +109,7 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
         
         search_paths = [
             workdir_path / WORKDIR_SETUP_DIR / "knowledge" / "readme",  # Package-level
-            suite_path / WORKDIR_SETUP_DIR / "knowledge" / "package-readme",  # Suite-level
+            suite_path / WORKDIR_SETUP_DIR / "knowledge" / "readme",  # Suite-level
         ]
         
         # Try .md.j2 first (Jinja2 template)
