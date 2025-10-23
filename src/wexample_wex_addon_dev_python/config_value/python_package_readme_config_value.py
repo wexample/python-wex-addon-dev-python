@@ -93,6 +93,21 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
             "suite-signature",
         ]
         
+        # First pass: collect available sections (excluding title and table-of-contents)
+        available_sections = []
+        for section_name in section_names:
+            if section_name not in ["title", "table-of-contents"]:
+                # Check if section exists
+                if self._section_exists(section_name):
+                    available_sections.append({
+                        "name": section_name,
+                        "title": self._section_name_to_title(section_name),
+                        "anchor": section_name.replace("_", "-")
+                    })
+        
+        # Add available sections to context for table-of-contents
+        context["available_sections"] = available_sections
+        
         # Render ordered sections (supports both .md and .md.j2)
         rendered_content = ''
         for section_name in section_names:
@@ -148,3 +163,41 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
                 return template.render(context)
         
         return None
+
+    def _section_exists(self, section_name: str) -> bool:
+        """
+        Check if a section file exists (.md or .md.j2).
+        
+        Args:
+            section_name: Name of the section (without extension)
+            
+        Returns:
+            True if section file exists, False otherwise
+        """
+        workdir_path = self.workdir.get_path()
+        suite_path = self.workdir.find_suite_workdir_path()
+        
+        search_paths = [
+            workdir_path / WORKDIR_SETUP_DIR / "knowledge" / "readme",
+            suite_path / WORKDIR_SETUP_DIR / "knowledge" / "package-readme",
+        ]
+        
+        for search_path in search_paths:
+            if (search_path / f"{section_name}.md.j2").exists():
+                return True
+            if (search_path / f"{section_name}.md").exists():
+                return True
+        
+        return False
+
+    def _section_name_to_title(self, section_name: str) -> str:
+        """
+        Convert section name to human-readable title.
+        
+        Args:
+            section_name: Section name (e.g., "basic-usage")
+            
+        Returns:
+            Human-readable title (e.g., "Basic Usage")
+        """
+        return section_name.replace("-", " ").replace("_", " ").title()
