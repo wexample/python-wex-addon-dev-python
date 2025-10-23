@@ -100,7 +100,7 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
             "## Dependencies\n\n"
             f"{deps_list}\n\n"
             "## License\n\n"
-            f"{license_info}\n"
+            f"{license_info}\n\n"
         ]
 
         suite_readme_sections = Path(suite_registry.read_config().search('suite.readme.suite_signature').get_str())
@@ -131,8 +131,8 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
         suite_path = self.workdir.find_suite_workdir_path()
         
         search_paths = [
-            workdir_path / WORKDIR_SETUP_DIR / "doc" / "readme",  # Package-level
-            suite_path / WORKDIR_SETUP_DIR / "knowledge" / "readme",  # Suite-level
+            workdir_path / WORKDIR_SETUP_DIR / "knowledge" / "readme",  # Package-level
+            suite_path / WORKDIR_SETUP_DIR / "knowledge" / "package-readme",  # Suite-level
         ]
         
         # Try .md.j2 first (Jinja2 template)
@@ -157,11 +157,3 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
                 return template.render(context)
         
         return None
-
-    def _get_doc_path(self, section: str) -> str:
-        """
-        Returns the path to a documentation section file
-        """
-        return os.path.join(
-            self.workdir.get_path(), ".wex", "doc", "readme", f"{section}.md"
-        )
