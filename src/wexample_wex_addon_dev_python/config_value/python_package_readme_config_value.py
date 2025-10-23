@@ -103,11 +103,13 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
             f"{license_info}\n\n"
         ]
 
-        suite_readme_sections = Path(suite_registry.read_config().search('suite.readme.suite_signature').get_str())
-        if suite_readme_sections.exists():
-            templates.append(
-                file_read(suite_readme_sections)
-            )
+        suite_signature = suite_registry.read_config().search('suite.readme.suite_signature')
+        if not suite_signature.is_none():
+            suite_readme_sections = Path(suite_signature.get_str())
+            if suite_readme_sections.exists():
+                templates.append(
+                    file_read(suite_readme_sections)
+                )
 
         return templates
 
