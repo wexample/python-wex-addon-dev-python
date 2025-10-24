@@ -92,24 +92,26 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
             "links",
             "suite-signature",
         ]
-        
+
         # First pass: collect available sections (excluding title and table-of-contents)
         available_sections = []
         for section_name in section_names:
             if section_name not in ["title", "table-of-contents"]:
                 # Check if section exists
                 if self._section_exists(section_name):
-                    available_sections.append({
-                        "name": section_name,
-                        "title": self._section_name_to_title(section_name),
-                        "anchor": section_name.replace("_", "-")
-                    })
-        
+                    available_sections.append(
+                        {
+                            "name": section_name,
+                            "title": self._section_name_to_title(section_name),
+                            "anchor": section_name.replace("_", "-"),
+                        }
+                    )
+
         # Add available sections to context for table-of-contents
         context["available_sections"] = available_sections
-        
+
         # Render ordered sections (supports both .md and .md.j2)
-        rendered_content = ''
+        rendered_content = ""
         for section_name in section_names:
             section_content = self._render_readme_section(section_name, context)
             if section_content:
@@ -120,39 +122,42 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
     def _render_readme_section(self, section_name: str, context: dict) -> str | None:
         """
         Render a README section from .md or .md.j2 file with Jinja2 support.
-        
+
         Searches in both package-level and suite-level directories.
         Tries .md.j2 first, then .md. Both formats support Jinja2 variables.
-        
+
         Args:
             section_name: Name of the section (without extension)
             context: Jinja2 context variables for rendering
-            
+
         Returns:
             Rendered content or None if section file not found
         """
         from jinja2 import Environment, FileSystemLoader, TemplateNotFound
-        
+
         workdir_path = self.workdir.get_path()
         suite_path = self.workdir.find_suite_workdir_path()
-        
+
         search_paths = [
             workdir_path / WORKDIR_SETUP_DIR / "knowledge" / "readme",  # Package-level
-            suite_path / WORKDIR_SETUP_DIR / "knowledge" / "package-readme",  # Suite-level
+            suite_path
+            / WORKDIR_SETUP_DIR
+            / "knowledge"
+            / "package-readme",  # Suite-level
         ]
-        
+
         # Try .md.j2 first (Jinja2 template)
         for search_path in search_paths:
             if not search_path.exists():
                 continue
-                
+
             env = Environment(loader=FileSystemLoader(str(search_path)))
             try:
                 template = env.get_template(f"{section_name}.md.j2")
                 return template.render(context)
             except TemplateNotFound:
                 pass
-        
+
         # Try .md (static markdown, still rendered with Jinja2)
         for search_path in search_paths:
             md_path = search_path / f"{section_name}.md"
@@ -161,42 +166,42 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
                 env = Environment(loader=FileSystemLoader(str(search_path)))
                 template = env.from_string(content)
                 return template.render(context)
-        
+
         return None
 
     def _section_exists(self, section_name: str) -> bool:
         """
         Check if a section file exists (.md or .md.j2).
-        
+
         Args:
             section_name: Name of the section (without extension)
-            
+
         Returns:
             True if section file exists, False otherwise
         """
         workdir_path = self.workdir.get_path()
         suite_path = self.workdir.find_suite_workdir_path()
-        
+
         search_paths = [
             workdir_path / WORKDIR_SETUP_DIR / "knowledge" / "readme",
             suite_path / WORKDIR_SETUP_DIR / "knowledge" / "package-readme",
         ]
-        
+
         for search_path in search_paths:
             if (search_path / f"{section_name}.md.j2").exists():
                 return True
             if (search_path / f"{section_name}.md").exists():
                 return True
-        
+
         return False
 
     def _section_name_to_title(self, section_name: str) -> str:
         """
         Convert section name to human-readable title.
-        
+
         Args:
             section_name: Section name (e.g., "basic-usage")
-            
+
         Returns:
             Human-readable title (e.g., "Basic Usage")
         """

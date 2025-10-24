@@ -18,104 +18,99 @@ if TYPE_CHECKING:
 
 
 class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
-    def build_dependencies_stack(
-        self,
-        package: PythonPackageWorkdir,
-        dependency: PythonPackageWorkdir,
-        dependencies_map: dict[str, list[str]],
-    ) -> list[PythonPackageWorkdir]:
-        """Return the declared dependency chain from `package` to `dependency`.
-
-        Uses NetworkX (if available) to build a directed graph of local declared
-        dependencies and compute a shortest path from `package` to `dependency`.
-        Falls back to an internal deterministic DFS if NetworkX is not installed.
-        Returns a list of PythonPackageWorkdir objects [package, ..., dependency],
-        or an empty list if no path exists.
-        """
-        start = package.get_package_name()
-        target = dependency.get_package_name()
-
-        # Trivial case
-        if start == target:
-            return [package]
-
-        import networkx as nx
-
-        # Build a deterministic DiGraph: add nodes/edges in sorted order
-        nodes = set(dependencies_map.keys()) | {
-            d for deps in dependencies_map.values() for d in deps
-        }
-        G = nx.DiGraph()
-        for n in sorted(nodes):
-            G.add_node(n)
-        for src in sorted(dependencies_map.keys()):
-            for dst in sorted(dependencies_map.get(src, [])):
-                if dst in nodes:
-                    G.add_edge(src, dst)
-
-        if not (G.has_node(start) and G.has_node(target)):
-            return []
-
-        try:
-            name_path = nx.shortest_path(G, source=start, target=target)
-        except nx.NetworkXNoPath:
-            return []
-
-        # Convert path of names to concrete package objects
-        stack: list[PythonPackageWorkdir] = []
-        for name in name_path:
-            pkg = self.get_package(name)
-            if pkg is not None:
-                stack.append(pkg)
-
-        return stack if stack and stack[-1].get_package_name() == target else []
-
-    def build_ordered_dependencies(self) -> list[str]:
-        # Build and validate the dependency map, then compute a stable topological order
-        return self.topological_order(self.build_dependencies_map())
-
-    def get_dependents(
-        self, package: PythonPackageWorkdir
-    ) -> list[PythonPackageWorkdir]:
-        dependents = []
-        for neighbor_package in self.get_packages():
-            if neighbor_package.depends_from(package):
-                dependents.append(neighbor_package)
-        return dependents
-
-    def get_ordered_packages(self) -> list[PythonPackageWorkdir]:
-        """Return package objects ordered leaves -> trunk."""
-        order = self.build_ordered_dependencies()
-        by_name = {p.get_package_name(): p for p in self.get_packages()}
-        return [by_name[n] for n in order]
-
-    def packages_validate_internal_dependencies_declarations(self) -> None:
-        dependencies_map = self.build_dependencies_map()
-        for package_name in dependencies_map:
-            package = self.get_package(package_name)
-
-            for package_name_search in dependencies_map:
-                searched_package = self.get_package(package_name_search)
-                imports = package.search_imports_in_codebase(searched_package)
-                if len(imports) > 0:
-                    dependencies_stack = self.build_dependencies_stack(
-                        package, searched_package, dependencies_map
-                    )
-
-                    if len(dependencies_stack) == 0:
-                        # Build a readable list of import locations to help debugging
-                        imports_details = "\n".join(
-                            f" - {res.item.get_path()}:{res.line}:{res.column}"
-                            for res in imports
-                        )
-                        raise AssertionError(
-                            f'Dependency violation: package "{package_name}" imports code from "{package_name_search}" '
-                            f"but there is no declared local dependency path. "
-                            f'Add "{package_name_search}" to the \'project.dependencies\' of "{package_name}" in its pyproject.toml, '
-                            f'or declare an intermediate local package that depends on "{package_name_search}".\n\n'
-                            f"Detected import locations:\n{imports_details}"
-                        )
-
+    # def build_dependencies_stack(
+    #     self,
+    #     package: PythonPackageWorkdir,
+    #     dependency: PythonPackageWorkdir,
+    #     dependencies_map: dict[str, list[str]],
+    # ) -> list[PythonPackageWorkdir]:
+    #     """Return the declared dependency chain from `package` to `dependency`.
+    #
+    #     Uses NetworkX (if available) to build a directed graph of local declared
+    #     dependencies and compute a shortest path from `package` to `dependency`.
+    #     Falls back to an internal deterministic DFS if NetworkX is not installed.
+    #     Returns a list of PythonPackageWorkdir objects [package, ..., dependency],
+    #     or an empty list if no path exists.
+    #     """
+    #     start = package.get_package_name()
+    #     target = dependency.get_package_name()
+    #
+    #     # Trivial case
+    #     if start == target:
+    #         return [package]
+    #
+    #     import networkx as nx
+    #
+    #     # Build a deterministic DiGraph: add nodes/edges in sorted order
+    #     nodes = set(dependencies_map.keys()) | {
+    #         d for deps in dependencies_map.values() for d in deps
+    #     }
+    #     G = nx.DiGraph()
+    #     for n in sorted(nodes):
+    #         G.add_node(n)
+    #     for src in sorted(dependencies_map.keys()):
+    #         for dst in sorted(dependencies_map.get(src, [])):
+    #             if dst in nodes:
+    #                 G.add_edge(src, dst)
+    #
+    #     if not (G.has_node(start) and G.has_node(target)):
+    #         return []
+    #
+    #     try:
+    #         name_path = nx.shortest_path(G, source=start, target=target)
+    #     except nx.NetworkXNoPath:
+    #         return []
+    #
+    #     # Convert path of names to concrete package objects
+    #     stack: list[PythonPackageWorkdir] = []
+    #     for name in name_path:
+    #         pkg = self.get_package(name)
+    #         if pkg is not None:
+    #             stack.append(pkg)
+    #
+    #     return stack if stack and stack[-1].get_package_name() == target else []
+    # def build_ordered_dependencies(self) -> list[str]:
+    #     # Build and validate the dependency map, then compute a stable topological order
+    #     return self.topological_order(self.build_dependencies_map())
+    # def get_dependents(
+    #     self, package: PythonPackageWorkdir
+    # ) -> list[PythonPackageWorkdir]:
+    #     dependents = []
+    #     for neighbor_package in self.get_packages():
+    #         if neighbor_package.depends_from(package):
+    #             dependents.append(neighbor_package)
+    #     return dependents
+    # def get_ordered_packages(self) -> list[PythonPackageWorkdir]:
+    #     """Return package objects ordered leaves -> trunk."""
+    #     order = self.build_ordered_dependencies()
+    #     by_name = {p.get_package_name(): p for p in self.get_packages()}
+    #     return [by_name[n] for n in order]
+    # def packages_validate_internal_dependencies_declarations(self) -> None:
+    #     dependencies_map = self.build_dependencies_map()
+    #     for package_name in dependencies_map:
+    #         package = self.get_package(package_name)
+    #
+    #         for package_name_search in dependencies_map:
+    #             searched_package = self.get_package(package_name_search)
+    #             imports = package.search_imports_in_codebase(searched_package)
+    #             if len(imports) > 0:
+    #                 dependencies_stack = self.build_dependencies_stack(
+    #                     package, searched_package, dependencies_map
+    #                 )
+    #
+    #                 if len(dependencies_stack) == 0:
+    #                     # Build a readable list of import locations to help debugging
+    #                     imports_details = "\n".join(
+    #                         f" - {res.item.get_path()}:{res.line}:{res.column}"
+    #                         for res in imports
+    #                     )
+    #                     raise AssertionError(
+    #                         f'Dependency violation: package "{package_name}" imports code from "{package_name_search}" '
+    #                         f"but there is no declared local dependency path. "
+    #                         f'Add "{package_name_search}" to the \'project.dependencies\' of "{package_name}" in its pyproject.toml, '
+    #                         f'or declare an intermediate local package that depends on "{package_name_search}".\n\n'
+    #                         f"Detected import locations:\n{imports_details}"
+    #                     )
     def topological_order(self, dep_map: dict[str, list[str]]) -> list[str]:
         """Deterministic topological order using graphlib.TopologicalSorter.
         Returns a leaves -> trunk order (dependencies before dependents).

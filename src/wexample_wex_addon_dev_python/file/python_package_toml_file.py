@@ -159,8 +159,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
                 dev_arr.append(pkg)
 
         toml_sort_string_array(dev_arr)
-
-
+    
     def find_package_workdir(self) -> CodeBaseWorkdir | None:
         from wexample_wex_addon_app.workdir.code_base_workdir import CodeBaseWorkdir
 
