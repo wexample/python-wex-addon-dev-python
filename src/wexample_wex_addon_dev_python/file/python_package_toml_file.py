@@ -44,6 +44,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         Using tomlkit.dumps preserves comments/formatting when content is a TOMLDocument.
         """
         from tomlkit import dumps
+
         content = content or self.read_parsed()
 
         package = self.find_package_workdir()
@@ -61,6 +62,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
 
     def _enforce_build_system(self, content: dict) -> None:
         from tomlkit import table
+
         build_tbl = content.get("build-system")
         if not isinstance(build_tbl, dict):
             build_tbl = table()
@@ -70,6 +72,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
 
     def _enforce_pdm_build(self, content: dict, import_name: str | None) -> None:
         from wexample_filestate_python.helpers.toml import toml_ensure_table
+
         tool_tbl, _ = toml_ensure_table(content, ["tool"])
         pdm_tbl, _ = toml_ensure_table(tool_tbl, ["pdm"])
         build_pdm_tbl, _ = toml_ensure_table(pdm_tbl, ["build"])
@@ -87,9 +90,10 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         find_tbl["exclude"] = [f"{import_name}.testing*"]
 
     def _enforce_project_metadata(
-            self, content: dict, project_name: str | None, project_version: str | None
+        self, content: dict, project_name: str | None, project_version: str | None
     ) -> None:
         from wexample_filestate_python.helpers.toml import toml_ensure_table
+
         project_tbl, _ = toml_ensure_table(content, ["project"])
         if project_name:
             project_tbl["name"] = project_name
@@ -103,7 +107,9 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             toml_get_string_value,
             toml_sort_string_array,
         )
-        from wexample_wex_addon_dev_python.const.package import RUNTIME_DEPENDENCY_REMOVE_NAMES
+        from wexample_wex_addon_dev_python.const.package import (
+            RUNTIME_DEPENDENCY_REMOVE_NAMES,
+        )
 
         deps_arr = self._dependencies_array()
         toml_sort_string_array(deps_arr)
@@ -112,7 +118,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         def _should_remove(item: object) -> bool:
             name = package_normalize_name(toml_get_string_value(item))
             return name in RUNTIME_DEPENDENCY_REMOVE_NAMES or (
-                    name == "typing-extensions"
+                name == "typing-extensions"
             )
 
         deps_arr[:] = [it for it in deps_arr if not _should_remove(it)]
@@ -146,6 +152,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             toml_get_string_value,
             toml_sort_string_array,
         )
+
         dev_arr = self._optional_group_array("dev")
         deps_arr = self._dependencies_array()
 
@@ -159,7 +166,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
                 dev_arr.append(pkg)
 
         toml_sort_string_array(dev_arr)
-    
+
     def find_package_workdir(self) -> CodeBaseWorkdir | None:
         from wexample_wex_addon_app.workdir.code_base_workdir import CodeBaseWorkdir
 

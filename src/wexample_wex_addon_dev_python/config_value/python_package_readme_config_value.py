@@ -7,7 +7,6 @@ from wexample_filestate.config_value.readme_content_config_value import (
 )
 from wexample_helpers.classes.field import public_field
 from wexample_helpers.decorator.base_class import base_class
-from wexample_wex_core.const.globals import WORKDIR_SETUP_DIR
 
 if TYPE_CHECKING:
     from wexample_wex_addon_dev_python.workdir.python_package_workdir import (
@@ -134,6 +133,7 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
             Rendered content or None if section file not found
         """
         from jinja2 import Environment, FileSystemLoader, TemplateNotFound
+        from wexample_wex_core.const.globals import WORKDIR_SETUP_DIR
 
         workdir_path = self.workdir.get_path()
         suite_path = self.workdir.find_suite_workdir_path()
@@ -179,6 +179,7 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
         Returns:
             True if section file exists, False otherwise
         """
+        from wexample_wex_core.const.globals import WORKDIR_SETUP_DIR
         workdir_path = self.workdir.get_path()
         suite_path = self.workdir.find_suite_workdir_path()
 
