@@ -60,113 +60,6 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
 
         return dumps(content)
 
-    def _enforce_build_system(self, content: dict) -> None:
-        from tomlkit import table
-
-        build_tbl = content.get("build-system")
-        if not isinstance(build_tbl, dict):
-            build_tbl = table()
-            content["build-system"] = build_tbl
-        build_tbl["requires"] = ["pdm-backend"]
-        build_tbl["build-backend"] = "pdm.backend"
-
-    def _enforce_pdm_build(self, content: dict, import_name: str | None) -> None:
-        from wexample_filestate_python.helpers.toml import toml_ensure_table
-
-        tool_tbl, _ = toml_ensure_table(content, ["tool"])
-        pdm_tbl, _ = toml_ensure_table(tool_tbl, ["pdm"])
-        build_pdm_tbl, _ = toml_ensure_table(pdm_tbl, ["build"])
-
-        pdm_tbl["distribution"] = True
-        build_pdm_tbl["package-dir"] = "src"
-        if import_name:
-            build_pdm_tbl["packages"] = [{"include": import_name, "from": "src"}]
-            build_pdm_tbl.pop("includes", None)
-
-        # 🔹 Add setuptools exclusion of testing package
-        setuptools_tbl, _ = toml_ensure_table(tool_tbl, ["setuptools"])
-        find_tbl, _ = toml_ensure_table(setuptools_tbl, ["packages", "find"])
-        find_tbl["include"] = ["*"]
-        find_tbl["exclude"] = [f"{import_name}.testing*"]
-
-    def _enforce_project_metadata(
-        self, content: dict, project_name: str | None, project_version: str | None
-    ) -> None:
-        from wexample_filestate_python.helpers.toml import toml_ensure_table
-
-        project_tbl, _ = toml_ensure_table(content, ["project"])
-        if project_name:
-            project_tbl["name"] = project_name
-        if project_version:
-            project_tbl["version"] = project_version
-        project_tbl["requires-python"] = ">=3.10"
-
-    def _normalize_dependencies(self, content: dict) -> None:
-        from wexample_filestate_python.helpers.package import package_normalize_name
-        from wexample_filestate_python.helpers.toml import (
-            toml_get_string_value,
-            toml_sort_string_array,
-        )
-        from wexample_wex_addon_dev_python.const.package import (
-            RUNTIME_DEPENDENCY_REMOVE_NAMES,
-        )
-
-        deps_arr = self._dependencies_array()
-        toml_sort_string_array(deps_arr)
-
-        # filter unwanted deps
-        def _should_remove(item: object) -> bool:
-            name = package_normalize_name(toml_get_string_value(item))
-            return name in RUNTIME_DEPENDENCY_REMOVE_NAMES or (
-                name == "typing-extensions"
-            )
-
-        deps_arr[:] = [it for it in deps_arr if not _should_remove(it)]
-        toml_sort_string_array(deps_arr)
-
-        # normalize attrs/cattrs
-        normalized = []
-        for it in list(deps_arr):
-            base = package_normalize_name(toml_get_string_value(it).strip())
-            if base == "attrs":
-                normalized.append("attrs>=23.1.0")
-            elif base == "cattrs":
-                normalized.append("cattrs>=23.1.0")
-            else:
-                normalized.append(it)
-        if normalized:
-            deps_arr[:] = normalized
-            toml_sort_string_array(deps_arr)
-
-        # ensure they are present
-        names = {package_normalize_name(toml_get_string_value(it)) for it in deps_arr}
-        if "attrs" not in names:
-            deps_arr.append("attrs>=23.1.0")
-        if "cattrs" not in names:
-            deps_arr.append("cattrs>=23.1.0")
-        toml_sort_string_array(deps_arr)
-
-    def _ensure_dev_dependencies(self, content: dict) -> None:
-        from wexample_filestate_python.helpers.package import package_normalize_name
-        from wexample_filestate_python.helpers.toml import (
-            toml_get_string_value,
-            toml_sort_string_array,
-        )
-
-        dev_arr = self._optional_group_array("dev")
-        deps_arr = self._dependencies_array()
-
-        runtime_pkgs = {
-            package_normalize_name(toml_get_string_value(it)) for it in list(deps_arr)
-        }
-        dev_values = [toml_get_string_value(it).strip() for it in list(dev_arr)]
-
-        for pkg in ["pytest", "pytest-cov"]:
-            if pkg not in runtime_pkgs and pkg not in dev_values:
-                dev_arr.append(pkg)
-
-        toml_sort_string_array(dev_arr)
-
     def find_package_workdir(self) -> CodeBaseWorkdir | None:
         from wexample_wex_addon_app.workdir.code_base_workdir import CodeBaseWorkdir
 
@@ -242,6 +135,68 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         deps.multiline(True)
         return deps
 
+    def _enforce_build_system(self, content: dict) -> None:
+        from tomlkit import table
+
+        build_tbl = content.get("build-system")
+        if not isinstance(build_tbl, dict):
+            build_tbl = table()
+            content["build-system"] = build_tbl
+        build_tbl["requires"] = ["pdm-backend"]
+        build_tbl["build-backend"] = "pdm.backend"
+
+    def _enforce_pdm_build(self, content: dict, import_name: str | None) -> None:
+        from wexample_filestate_python.helpers.toml import toml_ensure_table
+
+        tool_tbl, _ = toml_ensure_table(content, ["tool"])
+        pdm_tbl, _ = toml_ensure_table(tool_tbl, ["pdm"])
+        build_pdm_tbl, _ = toml_ensure_table(pdm_tbl, ["build"])
+
+        pdm_tbl["distribution"] = True
+        build_pdm_tbl["package-dir"] = "src"
+        if import_name:
+            build_pdm_tbl["packages"] = [{"include": import_name, "from": "src"}]
+            build_pdm_tbl.pop("includes", None)
+
+        # 🔹 Add setuptools exclusion of testing package
+        setuptools_tbl, _ = toml_ensure_table(tool_tbl, ["setuptools"])
+        find_tbl, _ = toml_ensure_table(setuptools_tbl, ["packages", "find"])
+        find_tbl["include"] = ["*"]
+        find_tbl["exclude"] = [f"{import_name}.testing*"]
+
+    def _enforce_project_metadata(
+        self, content: dict, project_name: str | None, project_version: str | None
+    ) -> None:
+        from wexample_filestate_python.helpers.toml import toml_ensure_table
+
+        project_tbl, _ = toml_ensure_table(content, ["project"])
+        if project_name:
+            project_tbl["name"] = project_name
+        if project_version:
+            project_tbl["version"] = project_version
+        project_tbl["requires-python"] = ">=3.10"
+
+    def _ensure_dev_dependencies(self, content: dict) -> None:
+        from wexample_filestate_python.helpers.package import package_normalize_name
+        from wexample_filestate_python.helpers.toml import (
+            toml_get_string_value,
+            toml_sort_string_array,
+        )
+
+        dev_arr = self._optional_group_array("dev")
+        deps_arr = self._dependencies_array()
+
+        runtime_pkgs = {
+            package_normalize_name(toml_get_string_value(it)) for it in list(deps_arr)
+        }
+        dev_values = [toml_get_string_value(it).strip() for it in list(dev_arr)]
+
+        for pkg in ["pytest", "pytest-cov"]:
+            if pkg not in runtime_pkgs and pkg not in dev_values:
+                dev_arr.append(pkg)
+
+        toml_sort_string_array(dev_arr)
+
     # --- Unified dependency accessors (runtime vs optional) ---
     def _get_deps_array(self, optional: bool = False, group: str = "dev"):
         """Return TOML array for runtime deps or optional group (multiline)."""
@@ -250,6 +205,51 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             if optional
             else self._dependencies_array()
         )
+
+    def _normalize_dependencies(self, content: dict) -> None:
+        from wexample_filestate_python.helpers.package import package_normalize_name
+        from wexample_filestate_python.helpers.toml import (
+            toml_get_string_value,
+            toml_sort_string_array,
+        )
+        from wexample_wex_addon_dev_python.const.package import (
+            RUNTIME_DEPENDENCY_REMOVE_NAMES,
+        )
+
+        deps_arr = self._dependencies_array()
+        toml_sort_string_array(deps_arr)
+
+        # filter unwanted deps
+        def _should_remove(item: object) -> bool:
+            name = package_normalize_name(toml_get_string_value(item))
+            return name in RUNTIME_DEPENDENCY_REMOVE_NAMES or (
+                name == "typing-extensions"
+            )
+
+        deps_arr[:] = [it for it in deps_arr if not _should_remove(it)]
+        toml_sort_string_array(deps_arr)
+
+        # normalize attrs/cattrs
+        normalized = []
+        for it in list(deps_arr):
+            base = package_normalize_name(toml_get_string_value(it).strip())
+            if base == "attrs":
+                normalized.append("attrs>=23.1.0")
+            elif base == "cattrs":
+                normalized.append("cattrs>=23.1.0")
+            else:
+                normalized.append(it)
+        if normalized:
+            deps_arr[:] = normalized
+            toml_sort_string_array(deps_arr)
+
+        # ensure they are present
+        names = {package_normalize_name(toml_get_string_value(it)) for it in deps_arr}
+        if "attrs" not in names:
+            deps_arr.append("attrs>=23.1.0")
+        if "cattrs" not in names:
+            deps_arr.append("cattrs>=23.1.0")
+        toml_sort_string_array(deps_arr)
 
     def _optional_group_array(self, group: str):
         """Ensure and return project.optional-dependencies[group] as multi-line array."""
