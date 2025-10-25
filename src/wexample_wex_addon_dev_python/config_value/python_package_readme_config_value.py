@@ -182,12 +182,17 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
         from wexample_wex_core.const.globals import WORKDIR_SETUP_DIR
 
         workdir_path = self.workdir.get_path()
-        suite_path = self.workdir.find_suite_workdir_path()
 
         search_paths = [
             workdir_path / WORKDIR_SETUP_DIR / "knowledge" / "readme",
-            suite_path / WORKDIR_SETUP_DIR / "knowledge" / "package-readme",
         ]
+
+        # Package may have a suite.
+        suite_path = self.workdir.find_suite_workdir_path()
+        if suite_path:
+            search_paths.append(
+                suite_path / WORKDIR_SETUP_DIR / "knowledge" / "package-readme",
+            )
 
         for search_path in search_paths:
             if (search_path / f"{section_name}.md.j2").exists():
