@@ -140,11 +140,17 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
 
         search_paths = [
             workdir_path / WORKDIR_SETUP_DIR / "knowledge" / "readme",  # Package-level
-            suite_path
-            / WORKDIR_SETUP_DIR
-            / "knowledge"
-            / "package-readme",  # Suite-level
         ]
+
+        # Package may have a suite.
+        suite_path = self.workdir.find_suite_workdir_path()
+        if suite_path is not None:
+            search_paths.append(
+                suite_path
+                / WORKDIR_SETUP_DIR
+                / "knowledge"
+                / "package-readme",  # Suite-level
+            )
 
         # Try .md.j2 first (Jinja2 template)
         for search_path in search_paths:
@@ -189,7 +195,7 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
 
         # Package may have a suite.
         suite_path = self.workdir.find_suite_workdir_path()
-        if suite_path:
+        if suite_path is not None:
             search_paths.append(
                 suite_path / WORKDIR_SETUP_DIR / "knowledge" / "package-readme",
             )
