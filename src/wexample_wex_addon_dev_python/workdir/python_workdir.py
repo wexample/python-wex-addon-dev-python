@@ -177,11 +177,11 @@ class PythonWorkdir(CodeBaseWorkdir):
                 "class": PythonFile,
                 "name": "__init__.py",
                 "type": DiskItemType.FILE,
-                "name_pattern": [
-                    NAME_PATTERN_PYTHON_NOT_PYCACHE,
-                    NAME_PATTERN_NO_LEADING_DOT,
-                ],
             },
+            name_pattern=[
+                NAME_PATTERN_PYTHON_NOT_PYCACHE,
+                NAME_PATTERN_NO_LEADING_DOT,
+            ],
             recursive=True,
         )
 
