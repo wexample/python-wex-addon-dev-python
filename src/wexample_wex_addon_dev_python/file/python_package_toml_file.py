@@ -227,7 +227,9 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
                 name == "typing-extensions"
             )
 
-        deps_arr[:] = [it for it in deps_arr if not _should_remove(it)]
+        filtered = [it for it in deps_arr if not _should_remove(it)]
+        deps_arr.clear()
+        deps_arr.extend(filtered)
         toml_sort_string_array(deps_arr)
 
         # normalize attrs/cattrs
@@ -241,7 +243,8 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             else:
                 normalized.append(it)
         if normalized:
-            deps_arr[:] = normalized
+            deps_arr.clear()
+            deps_arr.extend(normalized)
             toml_sort_string_array(deps_arr)
 
         # ensure they are present
