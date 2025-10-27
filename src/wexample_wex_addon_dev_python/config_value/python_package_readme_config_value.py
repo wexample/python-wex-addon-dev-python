@@ -133,7 +133,7 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
             Rendered content or None if section file not found
         """
         from jinja2 import Environment, FileSystemLoader, TemplateNotFound
-        from wexample_wex_core.const.globals import WORKDIR_SETUP_DIR
+        from wexample_app.const.globals import WORKDIR_SETUP_DIR
 
         workdir_path = self.workdir.get_path()
         suite_path = self.workdir.find_suite_workdir_path()
@@ -185,7 +185,7 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
         Returns:
             True if section file exists, False otherwise
         """
-        from wexample_wex_core.const.globals import WORKDIR_SETUP_DIR
+        from wexample_app.const.globals import WORKDIR_SETUP_DIR
 
         workdir_path = self.workdir.get_path()
 
