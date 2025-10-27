@@ -136,7 +136,6 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
         from wexample_app.const.globals import WORKDIR_SETUP_DIR
 
         workdir_path = self.workdir.get_path()
-        suite_path = self.workdir.find_suite_workdir_path()
 
         search_paths = [
             workdir_path / WORKDIR_SETUP_DIR / "knowledge" / "readme",  # Package-level
