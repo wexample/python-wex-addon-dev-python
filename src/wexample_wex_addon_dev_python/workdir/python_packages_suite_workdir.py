@@ -5,7 +5,9 @@ from typing import TYPE_CHECKING
 from wexample_wex_addon_app.workdir.framework_packages_suite_workdir import (
     FrameworkPackageSuiteWorkdir,
 )
-from wexample_wex_addon_dev_python.workdir.python_package_workdir import PythonPackageWorkdir
+from wexample_wex_addon_dev_python.workdir.python_package_workdir import (
+    PythonPackageWorkdir,
+)
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -67,9 +69,11 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
                 stack.append(pkg)
 
         return stack if stack and stack[-1].get_package_name() == target else []
+
     def build_ordered_dependencies(self) -> list[str]:
         # Build and validate the dependency map, then compute a stable topological order
         return self.topological_order(self.build_dependencies_map())
+
     def get_dependents(
         self, package: PythonPackageWorkdir
     ) -> list[PythonPackageWorkdir]:
@@ -78,11 +82,13 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
             if neighbor_package.depends_from(package):
                 dependents.append(neighbor_package)
         return dependents
+
     def get_ordered_packages(self) -> list[PythonPackageWorkdir]:
         """Return package objects ordered leaves -> trunk."""
         order = self.build_ordered_dependencies()
         by_name = {p.get_package_name(): p for p in self.get_packages()}
         return [by_name[n] for n in order]
+
     def packages_validate_internal_dependencies_declarations(self) -> None:
         dependencies_map = self.build_dependencies_map()
         for package_name in dependencies_map:

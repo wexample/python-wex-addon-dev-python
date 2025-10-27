@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from wexample_wex_addon_app.workdir.framework_packages_suite_workdir import FrameworkPackageSuiteWorkdir
+from wexample_wex_addon_app.workdir.framework_packages_suite_workdir import (
+    FrameworkPackageSuiteWorkdir,
+)
 
 from wexample_wex_addon_dev_python.workdir.python_workdir import PythonWorkdir
 
@@ -142,9 +144,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         else:
             # Map token to PyPI's token-based authentication if provided
             username = "__token__"
-            password = self.get_env_parameter_or_suite_fallback(
-                "PIPY_TOKEN"
-            )
+            password = self.get_env_parameter_or_suite_fallback("PIPY_TOKEN")
 
             # Build the publish command, adding credentials only when given
             publish_cmd = ["pdm", "publish"]
@@ -218,6 +218,8 @@ class PythonPackageWorkdir(PythonWorkdir):
 
     @classmethod
     def _get_children_package_workdir_class(cls) -> type[FrameworkPackageSuiteWorkdir]:
-        from wexample_wex_addon_dev_python.workdir.python_packages_suite_workdir import PythonPackagesSuiteWorkdir
+        from wexample_wex_addon_dev_python.workdir.python_packages_suite_workdir import (
+            PythonPackagesSuiteWorkdir,
+        )
 
         return PythonPackagesSuiteWorkdir
