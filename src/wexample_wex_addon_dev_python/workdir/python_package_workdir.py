@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 from wexample_wex_addon_app.workdir.framework_packages_suite_workdir import (
     FrameworkPackageSuiteWorkdir,
 )
-
 from wexample_wex_addon_dev_python.workdir.python_workdir import PythonWorkdir
 
 if TYPE_CHECKING:
@@ -17,7 +16,6 @@ if TYPE_CHECKING:
     from wexample_filestate.utils.search_result import SearchResult
     from wexample_helpers.const.types import StructuredData
     from wexample_prompt.common.progress.progress_handle import ProgressHandle
-
     from wexample_wex_addon_dev_python.file.python_package_toml_file import (
         PythonPackageTomlFile,
     )
@@ -60,7 +58,6 @@ class PythonPackageWorkdir(PythonWorkdir):
     def prepare_value(self, raw_value: DictConfig | None = None) -> DictConfig:
         from wexample_filestate.const.disk import DiskItemType
         from wexample_helpers.helpers.array import array_dict_get_by
-
         from wexample_wex_addon_dev_python.file.python_package_toml_file import (
             PythonPackageTomlFile,
         )
