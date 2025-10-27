@@ -19,6 +19,7 @@ dependencies = [
     "attrs>=23.1.0",
     "cattrs>=23.1.0",
     "jinja2",
+    "networkx",
     "pylint",
     "pyright",
     "wexample-filestate-python==0.0.44",
