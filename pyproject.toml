@@ -18,9 +18,9 @@ classifiers = [
 dependencies = [
     "attrs>=23.1.0",
     "cattrs>=23.1.0",
+    "jinja2",
     "pylint",
     "pyright",
-    "jinja2",
     "wexample-filestate-python==0.0.44",
     "wexample-wex-addon-app==0.0.46",
     "wexample-wex-core==6.0.48",
@@ -39,6 +39,7 @@ homepage = "https://github.com/wexample/python-wex-dev-python"
 [project.optional-dependencies]
 dev = [
     "pytest",
+    "pytest-cov",
 ]
 
 [tool.pdm]
@@ -50,3 +51,7 @@ package-dir = "src"
 [[tool.pdm.build.packages]]
 include = "wexample_wex_addon_dev_python"
 from = "src"
+
+[tool.setuptools.packages.find]
+include = ["*"]
+exclude = ["wexample_wex_addon_dev_python.testing*"]
