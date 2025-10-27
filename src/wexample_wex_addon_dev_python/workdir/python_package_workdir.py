@@ -26,6 +26,14 @@ if TYPE_CHECKING:
 class PythonPackageWorkdir(PythonWorkdir):
     _project_info_cache = None
 
+    @classmethod
+    def _get_children_package_workdir_class(cls) -> type[FrameworkPackageSuiteWorkdir]:
+        from wexample_wex_addon_dev_python.workdir.python_packages_suite_workdir import (
+            PythonPackagesSuiteWorkdir,
+        )
+
+        return PythonPackagesSuiteWorkdir
+
     def depends_from(self, package: PythonPackageWorkdir) -> bool:
         for dependence_name in self.get_dependencies():
             if package.get_package_name() == dependence_name:
@@ -215,11 +223,3 @@ class PythonPackageWorkdir(PythonWorkdir):
         )
 
         return PythonPackageReadmeContentConfigValue(workdir=self)
-
-    @classmethod
-    def _get_children_package_workdir_class(cls) -> type[FrameworkPackageSuiteWorkdir]:
-        from wexample_wex_addon_dev_python.workdir.python_packages_suite_workdir import (
-            PythonPackagesSuiteWorkdir,
-        )
-
-        return PythonPackagesSuiteWorkdir
