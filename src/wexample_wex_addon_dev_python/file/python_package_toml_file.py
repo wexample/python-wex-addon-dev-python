@@ -57,6 +57,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         self._enforce_project_metadata(content, project_name, project_version)
         self._normalize_dependencies(content)
         self._ensure_dev_dependencies(content)
+        self._reorder_toml_sections(content)
 
         return dumps(content)
 
@@ -326,3 +327,51 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         doc = self.read_parsed()
         project, _ = toml_ensure_table(doc, ["project"])
         return project
+
+    def _reorder_toml_sections(self, content: dict) -> None:
+        """Reorder TOML sections and keys for consistent output."""
+        # Define the desired order for top-level sections
+        section_order = [
+            "build-system",
+            "project",
+            "tool",
+        ]
+
+        # Define the desired order for keys within [project]
+        project_key_order = [
+            "name",
+            "version",
+            "description",
+            "authors",
+            "requires-python",
+            "classifiers",
+            "dependencies",
+            "readme",
+            "license",
+            "urls",
+            "optional-dependencies",
+        ]
+
+        # Reorder top-level sections
+        self._reorder_dict_keys(content, section_order)
+
+        # Reorder keys within [project] if it exists
+        if "project" in content:
+            self._reorder_dict_keys(content["project"], project_key_order)
+
+    def _reorder_dict_keys(self, d: dict, key_order: list[str]) -> None:
+        """Reorder dictionary keys according to the specified order.
+        Keys not in key_order will appear after ordered keys in their original order.
+        """
+        # Get all existing keys
+        existing_keys = list(d.keys())
+
+        # Build the new order: ordered keys first, then remaining keys
+        ordered_keys = [k for k in key_order if k in existing_keys]
+        remaining_keys = [k for k in existing_keys if k not in key_order]
+        new_order = ordered_keys + remaining_keys
+
+        # Reorder by removing and re-adding in the desired order
+        for key in new_order:
+            value = d.pop(key)
+            d[key] = value
