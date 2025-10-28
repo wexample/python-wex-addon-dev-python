@@ -183,6 +183,27 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             if not description.is_none():
                 project_tbl["description"] = description.get_str()
 
+        # Add authors if available
+        if package:
+            from tomlkit import array, inline_table
+
+            author_name = package.search_in_package_or_suite_config("global.authors.name")
+            author_email = package.search_in_package_or_suite_config(
+                "global.authors.email"
+            )
+
+            if not author_name.is_none() or not author_email.is_none():
+                authors_arr = array()
+                author_tbl = inline_table()
+
+                if not author_name.is_none():
+                    author_tbl["name"] = author_name.get_str()
+                if not author_email.is_none():
+                    author_tbl["email"] = author_email.get_str()
+
+                authors_arr.append(author_tbl)
+                project_tbl["authors"] = authors_arr
+
         # Add classifiers (standard Python package metadata)
         project_tbl["classifiers"] = [
             "Programming Language :: Python :: 3",
