@@ -269,6 +269,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             toml_get_string_value,
             toml_sort_string_array,
         )
+
         from wexample_wex_addon_dev_python.const.package import (
             RUNTIME_DEPENDENCY_REMOVE_NAMES,
         )
