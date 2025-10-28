@@ -162,7 +162,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             build_pdm_tbl["packages"] = [{"include": import_name, "from": "src"}]
             build_pdm_tbl.pop("includes", None)
 
-        # 🔹 Add setuptools exclusion of testing package
+        # Add setuptools exclusion of testing package
         setuptools_tbl, _ = toml_ensure_table(tool_tbl, ["setuptools"])
         find_tbl, _ = toml_ensure_table(setuptools_tbl, ["packages", "find"])
         find_tbl["include"] = ["*"]
