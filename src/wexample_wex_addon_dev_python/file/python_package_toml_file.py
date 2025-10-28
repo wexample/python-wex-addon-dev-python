@@ -176,6 +176,36 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             project_tbl["version"] = project_version
         project_tbl["requires-python"] = ">=3.10"
 
+        # Add description if available
+        package = self.find_package_workdir()
+        if package:
+            description = package.get_config().search("global.description")
+            if not description.is_none():
+                project_tbl["description"] = description.get_str()
+
+        # Add classifiers (standard Python package metadata)
+        project_tbl["classifiers"] = [
+            "Programming Language :: Python :: 3",
+            "License :: OSI Approved :: MIT License",
+            "Operating System :: OS Independent",
+        ]
+
+        # Add README if it exists
+        if package:
+            from wexample_wex_addon_app.workdir.mixin.with_readme_workdir_mixin import (
+                WithReadmeWorkdirMixin,
+            )
+
+            readme_file = package.find_by_name(WithReadmeWorkdirMixin.README_FILENAME)
+            if readme_file:
+                readme_tbl, _ = toml_ensure_table(project_tbl, ["readme"])
+                readme_tbl["file"] = WithReadmeWorkdirMixin.README_FILENAME
+                readme_tbl["content-type"] = "text/markdown"
+
+        # Add MIT license
+        license_tbl, _ = toml_ensure_table(project_tbl, ["license"])
+        license_tbl["text"] = "MIT"
+
     def _ensure_dev_dependencies(self, content: dict) -> None:
         from wexample_filestate_python.helpers.package import package_normalize_name
         from wexample_filestate_python.helpers.toml import (
