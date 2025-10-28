@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from wexample_wex_addon_app.workdir.framework_packages_suite_workdir import (
     FrameworkPackageSuiteWorkdir,
 )
+from workdir.python_package_workdir import PythonPackageWorkdir
 
 if TYPE_CHECKING:
     from pathlib import Path
