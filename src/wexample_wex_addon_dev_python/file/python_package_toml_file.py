@@ -59,7 +59,10 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         self._ensure_dev_dependencies(content)
         self._reorder_toml_sections(content)
 
-        return dumps(content)
+        result = dumps(content)
+        result = self._normalize_toml_formatting(result)
+
+        return result
 
     def find_package_workdir(self) -> CodeBaseWorkdir | None:
         from wexample_wex_addon_app.workdir.code_base_workdir import CodeBaseWorkdir
@@ -375,3 +378,22 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         for key in new_order:
             value = d.pop(key)
             d[key] = value
+
+    def _normalize_toml_formatting(self, content: str) -> str:
+        """Normalize TOML formatting:
+        - No empty lines at the beginning
+        - Single newline at the end
+        - No double newlines between sections
+        """
+        import re
+
+        # Remove leading empty lines
+        content = content.lstrip("\n")
+
+        # Replace multiple consecutive newlines with single newline
+        content = re.sub(r"\n{3,}", "\n\n", content)
+
+        # Ensure exactly one newline at the end
+        content = content.rstrip("\n") + "\n"
+
+        return content
