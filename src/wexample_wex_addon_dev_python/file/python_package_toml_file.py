@@ -191,7 +191,9 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         if package:
             from tomlkit import array, inline_table
 
-            author_name = package.search_in_package_or_suite_config("global.authors.name")
+            author_name = package.search_in_package_or_suite_config(
+                "global.authors.name"
+            )
             author_email = package.search_in_package_or_suite_config(
                 "global.authors.email"
             )
@@ -310,6 +312,25 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             deps_arr.append("cattrs>=23.1.0")
         toml_sort_string_array(deps_arr)
 
+    def _normalize_toml_formatting(self, content: str) -> str:
+        """Normalize TOML formatting:
+        - No empty lines at the beginning
+        - Single newline at the end
+        - No double newlines between sections
+        """
+        import re
+
+        # Remove leading empty lines
+        content = content.lstrip("\n")
+
+        # Replace multiple consecutive newlines with single newline
+        content = re.sub(r"\n{3,}", "\n\n", content)
+
+        # Ensure exactly one newline at the end
+        content = content.rstrip("\n") + "\n"
+
+        return content
+
     def _optional_group_array(self, group: str):
         """Ensure and return project.optional-dependencies[group] as multi-line array."""
         from wexample_filestate_python.helpers.toml import (
@@ -330,6 +351,23 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         doc = self.read_parsed()
         project, _ = toml_ensure_table(doc, ["project"])
         return project
+
+    def _reorder_dict_keys(self, d: dict, key_order: list[str]) -> None:
+        """Reorder dictionary keys according to the specified order.
+        Keys not in key_order will appear after ordered keys in their original order.
+        """
+        # Get all existing keys
+        existing_keys = list(d.keys())
+
+        # Build the new order: ordered keys first, then remaining keys
+        ordered_keys = [k for k in key_order if k in existing_keys]
+        remaining_keys = [k for k in existing_keys if k not in key_order]
+        new_order = ordered_keys + remaining_keys
+
+        # Reorder by removing and re-adding in the desired order
+        for key in new_order:
+            value = d.pop(key)
+            d[key] = value
 
     def _reorder_toml_sections(self, content: dict) -> None:
         """Reorder TOML sections and keys for consistent output."""
@@ -361,39 +399,3 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         # Reorder keys within [project] if it exists
         if "project" in content:
             self._reorder_dict_keys(content["project"], project_key_order)
-
-    def _reorder_dict_keys(self, d: dict, key_order: list[str]) -> None:
-        """Reorder dictionary keys according to the specified order.
-        Keys not in key_order will appear after ordered keys in their original order.
-        """
-        # Get all existing keys
-        existing_keys = list(d.keys())
-
-        # Build the new order: ordered keys first, then remaining keys
-        ordered_keys = [k for k in key_order if k in existing_keys]
-        remaining_keys = [k for k in existing_keys if k not in key_order]
-        new_order = ordered_keys + remaining_keys
-
-        # Reorder by removing and re-adding in the desired order
-        for key in new_order:
-            value = d.pop(key)
-            d[key] = value
-
-    def _normalize_toml_formatting(self, content: str) -> str:
-        """Normalize TOML formatting:
-        - No empty lines at the beginning
-        - Single newline at the end
-        - No double newlines between sections
-        """
-        import re
-
-        # Remove leading empty lines
-        content = content.lstrip("\n")
-
-        # Replace multiple consecutive newlines with single newline
-        content = re.sub(r"\n{3,}", "\n\n", content)
-
-        # Ensure exactly one newline at the end
-        content = content.rstrip("\n") + "\n"
-
-        return content
