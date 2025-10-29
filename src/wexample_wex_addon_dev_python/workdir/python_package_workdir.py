@@ -254,7 +254,14 @@ class PythonPackageWorkdir(PythonWorkdir):
                     )
                     for pkg in suite_dependencies_ordered:
                         package_path = pkg.get_path()
-                        self.io.log(f"Installing {pkg.get_package_name()}", indentation=2)
+                        package_name = pkg.get_package_name()
+                        
+                        # Check if package is already installed in editable mode at the correct path
+                        if self._is_package_installed_editable(app_path, package_name, package_path):
+                            self.io.log(f"Skipping {package_name} (already installed in editable mode)", indentation=2)
+                            continue
+                        
+                        self.io.log(f"Installing {package_name}", indentation=2)
                         shell_run(
                             cmd=[
                                 ".venv/bin/python",
