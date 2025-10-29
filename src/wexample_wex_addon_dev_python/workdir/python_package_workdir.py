@@ -158,7 +158,7 @@ class PythonPackageWorkdir(PythonWorkdir):
             return True
         return False
 
-    def app_install(self, env: str | None = None) -> bool:
+    def app_install(self, env: str | None = None, force: bool = False) -> bool:
         from wexample_app.const.env import ENV_NAME_LOCAL
         from wexample_helpers.helpers.shell import shell_run
 
@@ -257,7 +257,7 @@ class PythonPackageWorkdir(PythonWorkdir):
                         package_name = pkg.get_package_name()
                         
                         # Check if package is already installed in editable mode at the correct path
-                        if self._is_package_installed_editable(app_path, package_name, package_path):
+                        if not force and self._is_package_installed_editable(app_path, package_name, package_path):
                             self.io.log(f"Skipping {package_name} (already installed in editable mode)", indentation=2)
                             continue
                         
