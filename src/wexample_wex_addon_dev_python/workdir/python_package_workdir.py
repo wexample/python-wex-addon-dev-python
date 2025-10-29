@@ -202,16 +202,18 @@ class PythonPackageWorkdir(PythonWorkdir):
                 suite_packages = suite_workdir.get_ordered_packages()
                 suite_package_names = {pkg.get_package_name() for pkg in suite_packages}
                 
-                # Build a complete dependency graph including transitive dependencies
-                all_dependencies_to_install = self._collect_all_dependencies(
+                # Collect all suite packages that need to be installed (including transitive dependencies)
+                suite_dependencies_ordered = self._collect_suite_dependencies(
                     pyproject_toml_dependencies,
                     suite_workdir,
                     suite_package_names
                 )
                 
-                # Separate into external and suite dependencies
-                external_dependencies = all_dependencies_to_install["external"]
-                suite_dependencies_ordered = all_dependencies_to_install["suite"]
+                # External dependencies are those not in the suite
+                external_dependencies = [
+                    dep for dep in pyproject_toml_dependencies 
+                    if dep not in suite_package_names
+                ]
                 
                 # Install external packages first (normal install)
                 if external_dependencies:
@@ -263,19 +265,16 @@ class PythonPackageWorkdir(PythonWorkdir):
         # For non-local environments, use standard PDM install
         return self.install_python_environment(path=self.get_path())
 
-    def _collect_all_dependencies(
+    def _collect_suite_dependencies(
         self,
         direct_dependencies: list[str],
         suite_workdir,
         suite_package_names: set[str],
-    ) -> dict[str, list]:
-        """Collect all dependencies recursively, separating external and suite packages.
+    ) -> list:
+        """Collect all suite packages recursively that need to be installed in editable mode.
         
-        Returns a dict with:
-        - 'external': list of external package names
-        - 'suite': list of suite package objects ordered leaf -> trunk
+        Returns a list of suite package objects ordered leaf -> trunk.
         """
-        external_deps = set()
         suite_deps_to_install = set()
         visited = set()
         
@@ -290,14 +289,11 @@ class PythonPackageWorkdir(PythonWorkdir):
                     suite_deps_to_install.add(dep_name)
                     pkg = suite_workdir.get_package(dep_name)
                     if pkg:
-                        # Get dependencies of this suite package
+                        # Get dependencies of this suite package and recurse
                         pkg_dependencies = pkg.get_dependencies()
                         collect_recursive(pkg_dependencies)
-                else:
-                    # External dependency
-                    external_deps.add(dep_name)
         
-        # Start with direct dependencies
+        # Start with direct dependencies from pyproject.toml
         collect_recursive(direct_dependencies)
         
         # Order suite packages by dependency (leaf -> trunk)
@@ -307,10 +303,7 @@ class PythonPackageWorkdir(PythonWorkdir):
             if pkg.get_package_name() in suite_deps_to_install
         ]
         
-        return {
-            "external": sorted(external_deps),
-            "suite": suite_deps_ordered,
-        }
+        return suite_deps_ordered
 
     def publish(
         self,
