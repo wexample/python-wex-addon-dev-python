@@ -185,6 +185,18 @@ class PythonPackageWorkdir(PythonWorkdir):
                 inherit_stdio=True,
             )
             
+            # Ensure pip is installed in the venv
+            shell_run(
+                cmd=[
+                    ".venv/bin/python",
+                    "-m",
+                    "ensurepip",
+                    "--upgrade",
+                ],
+                cwd=app_path,
+                inherit_stdio=True,
+            )
+            
             if suite_workdir:
                 # Get all packages from the suite
                 suite_packages = suite_workdir.get_ordered_packages()
