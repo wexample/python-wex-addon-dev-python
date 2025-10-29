@@ -171,7 +171,18 @@ class PythonPackageWorkdir(PythonWorkdir):
             app_path = self.get_path()
             venv_path = app_path / ".venv"
             
-            if not venv_path.exists():
+            # Check if venv exists and is valid (has bin/python)
+            venv_python = venv_path / "bin" / "python"
+            venv_is_valid = venv_path.exists() and venv_python.exists()
+            
+            if not venv_is_valid:
+                # Remove corrupted/empty venv if it exists
+                if venv_path.exists():
+                    self.io.log(f"Removing invalid venv at {venv_path}", indentation=1)
+                    import shutil
+                    shutil.rmtree(venv_path)
+                
+                # Create new venv
                 shell_run(
                     cmd=["pdm", "venv", "create"],
                     cwd=app_path,
