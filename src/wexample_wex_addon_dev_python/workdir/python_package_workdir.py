@@ -283,6 +283,49 @@ class PythonPackageWorkdir(PythonWorkdir):
         # For non-local environments, use standard PDM install
         return self.install_python_environment(path=self.get_path())
 
+    def _is_package_installed_editable(
+        self,
+        app_path,
+        package_name: str,
+        package_path,
+    ) -> bool:
+        """Check if a package is already installed in editable mode at the correct path."""
+        import subprocess
+        
+        try:
+            result = subprocess.run(
+                [".venv/bin/python", "-m", "pip", "show", package_name],
+                cwd=app_path,
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+            
+            if result.returncode != 0:
+                return False
+            
+            # Parse pip show output
+            output_lines = result.stdout.strip().split("\n")
+            location = None
+            editable_location = None
+            
+            for line in output_lines:
+                if line.startswith("Location:"):
+                    location = line.split(":", 1)[1].strip()
+                elif line.startswith("Editable project location:"):
+                    editable_location = line.split(":", 1)[1].strip()
+            
+            # Check if installed in editable mode at the correct path
+            if editable_location:
+                from pathlib import Path
+                return Path(editable_location).resolve() == Path(package_path).resolve()
+            
+            return False
+            
+        except Exception:
+            # If any error occurs, assume not installed
+            return False
+
     def _collect_suite_dependencies(
         self,
         direct_dependencies: list[str],
