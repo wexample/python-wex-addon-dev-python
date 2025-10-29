@@ -2,9 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from wexample_wex_addon_app.workdir.framework_packages_suite_workdir import (
-    FrameworkPackageSuiteWorkdir,
-)
 from wexample_wex_addon_dev_python.workdir.python_workdir import PythonWorkdir
 
 if TYPE_CHECKING:
@@ -14,18 +11,20 @@ if TYPE_CHECKING:
         ReadmeContentConfigValue,
     )
     from wexample_filestate.utils.search_result import SearchResult
-    from wexample_helpers.const.types import StructuredData
+    from wexample_helpers.const.types import StructuredData, PathOrString
     from wexample_prompt.common.progress.progress_handle import ProgressHandle
     from wexample_wex_addon_dev_python.file.python_package_toml_file import (
         PythonPackageTomlFile,
+    )
+    from wexample_wex_addon_app.workdir.framework_packages_suite_workdir import (
+        FrameworkPackageSuiteWorkdir,
     )
 
 
 class PythonPackageWorkdir(PythonWorkdir):
     _project_info_cache = None
 
-    @classmethod
-    def _get_children_package_workdir_class(cls) -> type[FrameworkPackageSuiteWorkdir]:
+    def _get_children_package_workdir_class(self) -> type[FrameworkPackageSuiteWorkdir]:
         from wexample_wex_addon_dev_python.workdir.python_packages_suite_workdir import (
             PythonPackagesSuiteWorkdir,
         )
@@ -126,6 +125,130 @@ class PythonPackageWorkdir(PythonWorkdir):
         )
 
         return raw_value
+
+    @classmethod
+    def install_python_environment(self, path: PathOrString) -> bool:
+        from wexample_helpers.helpers.shell import shell_run
+
+        # This is a non installed app.
+        if path.exists():
+            # Ensure .venv exists
+            venv_path = path / ".venv"
+            if not venv_path.exists():
+                shell_run(
+                    cmd=["pdm", "venv", "create"],
+                    cwd=path,
+                    inherit_stdio=True,
+                )
+
+            # Force PDM to use the local .venv
+            shell_run(
+                cmd=["pdm", "use", ".venv"],
+                cwd=path,
+                inherit_stdio=True,
+            )
+
+            # Install dependencies
+            shell_run(
+                cmd=["pdm", "install"],
+                cwd=path,
+                inherit_stdio=True,
+            )
+
+            return True
+        return False
+
+    def app_install(self, env: str | None = None) -> bool:
+        from wexample_app.const.env import ENV_NAME_LOCAL
+        from wexample_helpers.helpers.shell import shell_run
+
+        if env == ENV_NAME_LOCAL:
+            # Get all dependencies from pyproject.toml
+            pyproject_toml_dependencies = self.get_project_config_file().list_dependency_names()
+            suite_workdir = self.get_suite_workdir()
+            
+            # Ensure venv is created and configured
+            app_path = self.get_path()
+            venv_path = app_path / ".venv"
+            
+            if not venv_path.exists():
+                shell_run(
+                    cmd=["pdm", "venv", "create"],
+                    cwd=app_path,
+                    inherit_stdio=True,
+                )
+            
+            # Force PDM to use the local .venv
+            shell_run(
+                cmd=["pdm", "use", ".venv"],
+                cwd=app_path,
+                inherit_stdio=True,
+            )
+            
+            if suite_workdir:
+                # Get all packages from the suite
+                suite_packages = suite_workdir.get_ordered_packages()
+                suite_package_names = {pkg.get_package_name() for pkg in suite_packages}
+                
+                # Separate dependencies: suite packages vs external packages
+                external_dependencies = [
+                    dep for dep in pyproject_toml_dependencies 
+                    if dep not in suite_package_names
+                ]
+                suite_dependencies = [
+                    pkg for pkg in suite_packages 
+                    if pkg.get_package_name() in pyproject_toml_dependencies
+                ]
+                
+                # Install external packages first (normal install)
+                if external_dependencies:
+                    self.io.subtitle(
+                        f"Installing {len(external_dependencies)} external packages",
+                        indentation=1,
+                    )
+                    for dep in external_dependencies:
+                        self.io.log(f"Installing {dep}", indentation=2)
+                        shell_run(
+                            cmd=[
+                                ".venv/bin/python",
+                                "-m",
+                                "pip",
+                                "install",
+                                dep,
+                            ],
+                            cwd=app_path,
+                            inherit_stdio=True,
+                        )
+                
+                # Install suite packages in editable mode
+                if suite_dependencies:
+                    self.io.subtitle(
+                        f"Installing {len(suite_dependencies)} suite packages in editable mode",
+                        indentation=1,
+                    )
+                    for pkg in suite_dependencies:
+                        package_path = pkg.get_path()
+                        self.io.log(f"Installing {pkg.get_package_name()}", indentation=2)
+                        shell_run(
+                            cmd=[
+                                ".venv/bin/python",
+                                "-m",
+                                "pip",
+                                "install",
+                                "-e",
+                                str(package_path),
+                            ],
+                            cwd=app_path,
+                            inherit_stdio=True,
+                        )
+            else:
+                # No suite workdir, use standard PDM install
+                return self.install_python_environment(path=app_path)
+            
+            return True
+        
+        # For non-local environments, use standard PDM install
+        return self.install_python_environment(path=self.get_path())
 
     def publish(
         self,
