@@ -294,13 +294,11 @@ class PythonWorkdir(CodeBaseWorkdir):
             dependencies_map: Dictionary mapping package names to their new versions.
                              Example: {"wexample-helpers": "0.2.3", "attrs": "23.1.0"}
         """
-        import sys
-
         from packaging.requirements import Requirement
         from packaging.utils import canonicalize_name
 
         config_file = self.get_project_config_file()
-        
+
         # Canonicalize the keys in dependencies_map for consistent matching
         canonical_map = {
             canonicalize_name(name): version 
