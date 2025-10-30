@@ -53,13 +53,14 @@ class PythonWorkdir(CodeBaseWorkdir):
 
         return options
 
+    def get_vendor_name(self) -> str:
+        return self.get_config().search("global.vendor").get_str_or_default("acme")
+
     def get_package_import_name(self) -> str:
         """Get the full package import name with vendor prefix.
         """
-        vendor = self.search_in_package_or_suite_config("global.vendor")
-        vendor_prefix = vendor.get_str_or_default("acme")
 
-        return f"{vendor_prefix}_{self.get_project_name()}"
+        return f"{self.get_vendor_name()}_{self.get_project_name()}"
 
     def get_package_name(self) -> str:
         from wexample_helpers.helpers.string import string_to_kebab_case
@@ -214,8 +215,7 @@ class PythonWorkdir(CodeBaseWorkdir):
 
         from wexample_helpers.helpers.string import string_to_snake_case
 
-        vendor = self.search_in_package_or_suite_config("global.vendor")
-        vendor_prefix = vendor.get_str() if not vendor.is_none() else "wexample"
+        vendor_prefix = self.get_vendor_name()
         return vendor_prefix + "_" + string_to_snake_case(
             os.path.basename(
                 os.path.dirname(os.path.realpath(option.get_parent_item().get_path()))
@@ -301,9 +301,6 @@ class PythonWorkdir(CodeBaseWorkdir):
         """
         from packaging.requirements import Requirement
         from packaging.utils import canonicalize_name
-
-        print(dependencies_map)
-        exit()
 
         config_file = self.get_project_config_file()
 
