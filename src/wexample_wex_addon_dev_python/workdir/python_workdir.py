@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from tomlkit import TOMLDocument
+
 from wexample_wex_addon_app.workdir.code_base_workdir import (
     CodeBaseWorkdir,
 )
@@ -17,9 +19,17 @@ if TYPE_CHECKING:
     from wexample_filestate.option.children_file_factory_option import (
         ChildrenFileFactoryOption,
     )
+    from wexample_helpers.const.types import StructuredData
+    from wexample_wex_addon_dev_python.file.python_package_toml_file import (
+        PythonPackageTomlFile,
+    )
 
 
 class PythonWorkdir(CodeBaseWorkdir):
+    def app_install(self, env: str | None = None, force: bool = False) -> bool:
+        # Use standard PDM install
+        return self.install_python_environment(path=self.get_path())
+
     def get_dependencies(self) -> list[str]:
         from packaging.requirements import Requirement
 
@@ -61,6 +71,9 @@ class PythonWorkdir(CodeBaseWorkdir):
             ChildrenFilterOption,
         )
         from wexample_helpers.helpers.array import array_dict_get_by
+        from wexample_wex_addon_dev_python.file.python_package_toml_file import (
+            PythonPackageTomlFile,
+        )
 
         raw_value = super().prepare_value(raw_value=raw_value)
 
@@ -113,6 +126,13 @@ class PythonWorkdir(CodeBaseWorkdir):
                     "name": "requirements-dev.txt",
                     "type": DiskItemType.FILE,
                     "should_exist": False,
+                },
+                # Pdm versions
+                {
+                    "class": PythonPackageTomlFile,
+                    "name": "pyproject.toml",
+                    "type": DiskItemType.FILE,
+                    "should_exist": True,
                 },
                 # Remove unwanted files
                 # Should only be created during deployment
@@ -237,3 +257,73 @@ class PythonWorkdir(CodeBaseWorkdir):
             name_pattern=r"^.*\.py$",
             recursive=True,
         )
+
+
+    def get_project_config_file(self, reload: bool = True) -> PythonPackageTomlFile:
+        from wexample_wex_addon_dev_python.file.python_package_toml_file import (
+            PythonPackageTomlFile,
+        )
+
+        config_file = self.find_by_name("pyproject.toml")
+        assert isinstance(config_file, PythonPackageTomlFile)
+        # Read once to populate content with file source.
+        config_file.read_text(reload=reload)
+        return config_file
+
+    def get_project_config(self, reload: bool = True) -> TOMLDocument:
+        """
+        Fetch the data from the pyproject.toml file.
+        """
+        return self.get_project_config_file(reload=reload).read_parsed()
+
+    def save_dependency(self, package_name: str, version: str) -> None:
+        """Add or update a dependency with strict version."""
+        config = self.get_project_config_file()
+        config.add_dependency(f"{package_name}=={version}")
+        config.write_parsed()
+
+    def save_project_config_file(self, config: StructuredData) -> None:
+        """Save the project configuration to pyproject.toml."""
+        config_file = self.get_project_config_file()
+        config_file.write(config)
+
+    def update_dependencies(self, dependencies_map: dict[str, str]) -> None:
+        """Update dependencies versions based on the provided map.
+        
+        Args:
+            dependencies_map: Dictionary mapping package names to their new versions.
+                             Example: {"wexample-helpers": "0.2.3", "attrs": "23.1.0"}
+        """
+        import sys
+
+        from packaging.requirements import Requirement
+        from packaging.utils import canonicalize_name
+
+        config_file = self.get_project_config_file()
+        
+        # Canonicalize the keys in dependencies_map for consistent matching
+        canonical_map = {
+            canonicalize_name(name): version 
+            for name, version in dependencies_map.items()
+        }
+        
+        # Get current dependencies
+        current_deps = config_file.list_dependencies()
+        
+        # Update each dependency if it's in the map
+        for dep_spec in current_deps:
+            try:
+                req = Requirement(dep_spec)
+                canonical_name = canonicalize_name(req.name)
+                
+                # If this dependency is in our update map, update it
+                if canonical_name in canonical_map:
+                    new_version = canonical_map[canonical_name]
+                    # Use add_dependency which handles removal of old version
+                    config_file.add_dependency(f"{req.name}=={new_version}")
+            except Exception:
+                # Skip unparsable dependencies
+                continue
+        
+        # Save the updated config
+        config_file.write_parsed()

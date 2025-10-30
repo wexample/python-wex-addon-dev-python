@@ -37,23 +37,6 @@ class PythonPackageWorkdir(PythonWorkdir):
                 return True
         return False
 
-    def get_project_config(self, reload: bool = True) -> TOMLDocument:
-        """
-        Fetch the data from the pyproject.toml file.
-        """
-        return self.get_project_config_file(reload=reload).read_parsed()
-
-    def get_project_config_file(self, reload: bool = True) -> PythonPackageTomlFile:
-        from wexample_wex_addon_dev_python.file.python_package_toml_file import (
-            PythonPackageTomlFile,
-        )
-
-        config_file = self.find_by_name("pyproject.toml")
-        assert isinstance(config_file, PythonPackageTomlFile)
-        # Read once to populate content with file source.
-        config_file.read_text(reload=reload)
-        return config_file
-
     def prepare_value(self, raw_value: DictConfig | None = None) -> DictConfig:
         from wexample_filestate.const.disk import DiskItemType
         from wexample_helpers.helpers.array import array_dict_get_by
@@ -114,15 +97,6 @@ class PythonPackageWorkdir(PythonWorkdir):
                 for rule in rules:
                     if rule not in should_contain_lines:
                         should_contain_lines.append(rule)
-
-        raw_value["children"].append(
-            {
-                "class": PythonPackageTomlFile,
-                "name": "pyproject.toml",
-                "type": DiskItemType.FILE,
-                "should_exist": True,
-            }
-        )
 
         return raw_value
 
@@ -274,14 +248,13 @@ class PythonPackageWorkdir(PythonWorkdir):
                             cwd=app_path,
                             inherit_stdio=True,
                         )
-            else:
-                # No suite workdir, use standard PDM install
-                return self.install_python_environment(path=app_path)
-            
-            return True
-        
+                return True
+
         # For non-local environments, use standard PDM install
-        return self.install_python_environment(path=self.get_path())
+        return super().app_install(
+            env=env,
+            force=force,
+        )
 
     def _is_package_installed_editable(
         self,
@@ -400,17 +373,12 @@ class PythonPackageWorkdir(PythonWorkdir):
             shell_run(publish_cmd, inherit_stdio=True, cwd=self.get_path())
         progress.finish()
 
-    def save_dependency(self, package: PythonPackageWorkdir) -> None:
-        """Add a dependency, use strict version as this is the intended internal management."""
-        config = self.get_project_config_file()
-        config.add_dependency(
-            f"{package.get_package_name()}=={package.get_project_version()}"
+    def save_dependency_from_package(self, package: PythonPackageWorkdir) -> None:
+        """Add a dependency from another package, use strict version as this is the intended internal management."""
+        self.save_dependency(
+            package_name=package.get_package_name(),
+            version=package.get_project_version()
         )
-        config.write_parsed()
-
-    def save_project_config_file(self, config: StructuredData) -> None:
-        config_file = self.get_project_config_file()
-        config_file.write(config)
 
     def search_imports_in_codebase(
         self, searched_package: PythonPackageWorkdir
