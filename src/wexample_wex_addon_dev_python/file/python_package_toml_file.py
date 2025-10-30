@@ -178,7 +178,9 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
             project_tbl["name"] = project_name
         if project_version:
             project_tbl["version"] = project_version
-        project_tbl["requires-python"] = ">=3.10"
+        # Only set requires-python if not already defined
+        if "requires-python" not in project_tbl:
+            project_tbl["requires-python"] = ">=3.10"
 
         # Add description if available
         package = self.find_package_workdir()
