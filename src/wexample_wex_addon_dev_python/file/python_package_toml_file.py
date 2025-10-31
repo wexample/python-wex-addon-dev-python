@@ -4,9 +4,6 @@ from typing import TYPE_CHECKING
 
 from wexample_filestate.item.file.toml_file import TomlFile
 from wexample_helpers.decorator.base_class import base_class
-from wexample_wex_addon_app.workdir.mixin.as_suite_package_item import (
-    AsSuitePackageItem,
-)
 
 if TYPE_CHECKING:
     from tomlkit import TOMLDocument
@@ -16,9 +13,9 @@ if TYPE_CHECKING:
 
 
 @base_class
-class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
+class PythonPackageTomlFile(TomlFile):
     def add_dependency(
-        self, spec: str, optional: bool = False, group: str = "dev"
+            self, spec: str, optional: bool = False, group: str = "dev"
     ) -> bool:
         from packaging.requirements import Requirement
         from packaging.utils import canonicalize_name
@@ -70,16 +67,16 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         return self.find_closest(CodeBaseWorkdir)
 
     def list_dependencies(
-        self, optional: bool = False, group: str = "dev"
+            self, optional: bool = False, group: str = "dev"
     ) -> list[str]:
         deps = self._get_deps_array(optional=optional, group=group)
         return [str(x) for x in list(deps)]
 
     def list_dependency_names(
-        self,
-        canonicalize_names: bool = True,
-        optional: bool = False,
-        group: str = "dev",
+            self,
+            canonicalize_names: bool = True,
+            optional: bool = False,
+            group: str = "dev",
     ) -> list[str]:
         """Return dependency package names derived from list_dependencies().
 
@@ -100,7 +97,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         return names
 
     def remove_dependency_by_name(
-        self, package_name: str, optional: bool = False, group: str = "dev"
+            self, package_name: str, optional: bool = False, group: str = "dev"
     ) -> bool:
         """Remove all dependency entries that match the given package name.
 
@@ -169,7 +166,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         find_tbl["exclude"] = [f"{import_name}.testing*"]
 
     def _enforce_project_metadata(
-        self, content: dict, project_name: str | None, project_version: str | None
+            self, content: dict, project_name: str | None, project_version: str | None
     ) -> None:
         from wexample_filestate_python.helpers.toml import toml_ensure_table
 
@@ -282,7 +279,7 @@ class PythonPackageTomlFile(AsSuitePackageItem, TomlFile):
         def _should_remove(item: object) -> bool:
             name = package_normalize_name(toml_get_string_value(item))
             return name in RUNTIME_DEPENDENCY_REMOVE_NAMES or (
-                name == "typing-extensions"
+                    name == "typing-extensions"
             )
 
         filtered = [it for it in deps_arr if not _should_remove(it)]

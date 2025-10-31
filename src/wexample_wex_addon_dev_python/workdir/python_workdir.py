@@ -53,9 +53,6 @@ class PythonWorkdir(CodeBaseWorkdir):
 
         return options
 
-    def get_vendor_name(self) -> str:
-        return self.get_config().search("global.vendor").get_str_or_default("acme")
-
     def get_package_import_name(self) -> str:
         """Get the full package import name with vendor prefix.
         """
