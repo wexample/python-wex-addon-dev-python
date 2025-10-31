@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from wexample_wex_addon_app.exception.dependency_violation_exception import (
+    DependencyViolationException,
+)
 from wexample_wex_addon_app.workdir.framework_packages_suite_workdir import (
     FrameworkPackageSuiteWorkdir,
 )
@@ -104,16 +107,14 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
 
                     if len(dependencies_stack) == 0:
                         # Build a readable list of import locations to help debugging
-                        imports_details = "\n".join(
-                            f" - {res.item.get_path()}:{res.line}:{res.column}"
+                        import_locations = [
+                            f"{res.item.get_path()}:{res.line}:{res.column}"
                             for res in imports
-                        )
-                        raise AssertionError(
-                            f'Dependency violation: package "{package_name}" imports code from "{package_name_search}" '
-                            f"but there is no declared local dependency path. "
-                            f'Add "{package_name_search}" to the \'project.dependencies\' of "{package_name}" in its pyproject.toml, '
-                            f'or declare an intermediate local package that depends on "{package_name_search}".\n\n'
-                            f"Detected import locations:\n{imports_details}"
+                        ]
+                        raise DependencyViolationException(
+                            package_name=package_name,
+                            imported_package=package_name_search,
+                            import_locations=import_locations,
                         )
 
     def topological_order(self, dep_map: dict[str, list[str]]) -> list[str]:
