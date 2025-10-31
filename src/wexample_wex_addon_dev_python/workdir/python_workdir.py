@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 from tomlkit import TOMLDocument
 
+from wexample_wex_addon_app.helpers.python import python_install_environment
 from wexample_wex_addon_app.workdir.code_base_workdir import (
     CodeBaseWorkdir,
 )
@@ -19,7 +20,7 @@ if TYPE_CHECKING:
     from wexample_filestate.option.children_file_factory_option import (
         ChildrenFileFactoryOption,
     )
-    from wexample_helpers.const.types import StructuredData
+    from wexample_helpers.const.types import StructuredData, PathOrString
     from wexample_wex_addon_dev_python.file.python_package_toml_file import (
         PythonPackageTomlFile,
     )
@@ -28,7 +29,7 @@ if TYPE_CHECKING:
 class PythonWorkdir(CodeBaseWorkdir):
     def app_install(self, env: str | None = None, force: bool = False) -> bool:
         # Use standard PDM install
-        return self.install_python_environment(path=self.get_path())
+        return python_install_environment(path=self.get_path())
 
     def get_dependencies(self) -> list[str]:
         from packaging.requirements import Requirement

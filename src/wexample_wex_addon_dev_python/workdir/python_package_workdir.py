@@ -92,38 +92,6 @@ class PythonPackageWorkdir(PythonWorkdir):
 
         return raw_value
 
-    @classmethod
-    def install_python_environment(self, path: PathOrString) -> bool:
-        from wexample_helpers.helpers.shell import shell_run
-
-        # This is a non installed app.
-        if path.exists():
-            # Ensure .venv exists
-            venv_path = path / ".venv"
-            if not venv_path.exists():
-                shell_run(
-                    cmd=["pdm", "venv", "create"],
-                    cwd=path,
-                    inherit_stdio=True,
-                )
-
-            # Force PDM to use the local .venv
-            shell_run(
-                cmd=["pdm", "use", ".venv"],
-                cwd=path,
-                inherit_stdio=True,
-            )
-
-            # Install dependencies
-            shell_run(
-                cmd=["pdm", "install"],
-                cwd=path,
-                inherit_stdio=True,
-            )
-
-            return True
-        return False
-
     def app_install(self, env: str | None = None, force: bool = False) -> bool:
         from wexample_app.const.env import ENV_NAME_LOCAL
         from wexample_helpers.helpers.shell import shell_run
