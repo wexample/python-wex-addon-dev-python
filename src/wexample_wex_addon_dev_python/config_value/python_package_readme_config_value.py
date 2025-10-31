@@ -122,7 +122,11 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
         """
         Render a README section from .md or .md.j2 file with Jinja2 support.
 
-        Searches in both package-level and suite-level directories.
+        Searches in three levels (in order):
+        1. Package-level templates
+        2. Suite-level templates
+        3. Default templates (bundled with the module)
+        
         Tries .md.j2 first, then .md. Both formats support Jinja2 variables.
 
         Args:
@@ -132,6 +136,7 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
         Returns:
             Rendered content or None if section file not found
         """
+        from pathlib import Path
         from jinja2 import Environment, FileSystemLoader, TemplateNotFound
         from wexample_app.const.globals import WORKDIR_SETUP_DIR
 
@@ -150,6 +155,10 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
                 / "knowledge"
                 / "package-readme",  # Suite-level
             )
+        
+        # Add default templates path (bundled with the module)
+        default_templates_path = Path(__file__).parent.parent / "resources" / "readme_templates"
+        search_paths.append(default_templates_path)
 
         # Try .md.j2 first (Jinja2 template)
         for search_path in search_paths:
@@ -177,6 +186,11 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
     def _section_exists(self, section_name: str) -> bool:
         """
         Check if a section file exists (.md or .md.j2).
+        
+        Searches in three levels:
+        1. Package-level templates
+        2. Suite-level templates
+        3. Default templates (bundled with the module)
 
         Args:
             section_name: Name of the section (without extension)
@@ -184,6 +198,7 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
         Returns:
             True if section file exists, False otherwise
         """
+        from pathlib import Path
         from wexample_app.const.globals import WORKDIR_SETUP_DIR
 
         workdir_path = self.workdir.get_path()
@@ -198,6 +213,10 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
             search_paths.append(
                 suite_path / WORKDIR_SETUP_DIR / "knowledge" / "package-readme",
             )
+        
+        # Add default templates path (bundled with the module)
+        default_templates_path = Path(__file__).parent.parent / "resources" / "readme_templates"
+        search_paths.append(default_templates_path)
 
         for search_path in search_paths:
             if (search_path / f"{section_name}.md.j2").exists():
