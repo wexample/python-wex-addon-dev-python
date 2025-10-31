@@ -57,7 +57,6 @@ class PythonWorkdir(CodeBaseWorkdir):
     def get_package_import_name(self) -> str:
         """Get the full package import name with vendor prefix.
         """
-
         return f"{self.get_vendor_name()}_{self.get_project_name()}"
 
     def get_package_name(self) -> str:
@@ -260,8 +259,7 @@ class PythonWorkdir(CodeBaseWorkdir):
             name_pattern=r"^.*\.py$",
             recursive=True,
         )
-
-
+    
     def get_project_config_file(self, reload: bool = True) -> PythonPackageTomlFile:
         from wexample_wex_addon_dev_python.file.python_package_toml_file import (
             PythonPackageTomlFile,

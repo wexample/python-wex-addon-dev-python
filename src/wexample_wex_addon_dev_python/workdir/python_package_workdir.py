@@ -272,7 +272,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         suite_deps_to_install = set()
         visited = set()
 
-        def collect_recursive(dep_names: list[str]):
+        def collect_recursive(dep_names: list[str]) -> None:
             for dep_name in dep_names:
                 if dep_name in visited:
                     continue

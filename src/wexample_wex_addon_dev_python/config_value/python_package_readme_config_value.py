@@ -126,7 +126,7 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
         1. Package-level templates
         2. Suite-level templates
         3. Default templates (bundled with the module)
-        
+
         Tries .md.j2 first, then .md. Both formats support Jinja2 variables.
 
         Args:
@@ -155,9 +155,11 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
                 / "knowledge"
                 / "package-readme",  # Suite-level
             )
-        
+
         # Add default templates path (bundled with the module)
-        default_templates_path = Path(__file__).parent.parent / "resources" / "readme_templates"
+        default_templates_path = (
+            Path(__file__).parent.parent / "resources" / "readme_templates"
+        )
         search_paths.append(default_templates_path)
 
         # Try .md.j2 first (Jinja2 template)
@@ -186,7 +188,7 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
     def _section_exists(self, section_name: str) -> bool:
         """
         Check if a section file exists (.md or .md.j2).
-        
+
         Searches in three levels:
         1. Package-level templates
         2. Suite-level templates
@@ -213,9 +215,11 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
             search_paths.append(
                 suite_path / WORKDIR_SETUP_DIR / "knowledge" / "package-readme",
             )
-        
+
         # Add default templates path (bundled with the module)
-        default_templates_path = Path(__file__).parent.parent / "resources" / "readme_templates"
+        default_templates_path = (
+            Path(__file__).parent.parent / "resources" / "readme_templates"
+        )
         search_paths.append(default_templates_path)
 
         for search_path in search_paths:
