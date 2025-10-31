@@ -299,17 +299,12 @@ class PythonPackageWorkdir(PythonWorkdir):
 
         return suite_deps_ordered
 
-    def publish(
-            self,
-            progress: ProgressHandle | None = None,
-    ) -> None:
+    def publish(self) -> None:
         from wexample_filestate_python.common.pipy_gateway import PipyGateway
         from wexample_helpers.helpers.shell import shell_run
 
-        progress.update(total=3, current=0)
-        super().publish(progress=progress.create_range_handle(to_step=1))
+        super().publish()
 
-        progress.update(current=2, label="Publishing to Pipy")
         client = PipyGateway(parent_io_handler=self)
 
         package_name = self.get_package_name()
@@ -331,7 +326,6 @@ class PythonPackageWorkdir(PythonWorkdir):
                 publish_cmd += ["--password", password]
 
             shell_run(publish_cmd, inherit_stdio=True, cwd=self.get_path())
-        progress.finish()
 
     def save_dependency_from_package(self, package: PythonPackageWorkdir) -> None:
         """Add a dependency from another package, use strict version as this is the intended internal management."""
