@@ -22,10 +22,10 @@ if TYPE_CHECKING:
 
 class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
     def build_dependencies_stack(
-        self,
-        package: PythonPackageWorkdir,
-        dependency: PythonPackageWorkdir,
-        dependencies_map: dict[str, list[str]],
+            self,
+            package: PythonPackageWorkdir,
+            dependency: PythonPackageWorkdir,
+            dependencies_map: dict[str, list[str]],
     ) -> list[PythonPackageWorkdir]:
         """Return the declared dependency chain from `package` to `dependency`.
 
@@ -78,7 +78,7 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
         return self.topological_order(self.build_dependencies_map())
 
     def get_dependents(
-        self, package: PythonPackageWorkdir
+            self, package: PythonPackageWorkdir
     ) -> list[PythonPackageWorkdir]:
         dependents = []
         for neighbor_package in self.get_packages():
@@ -94,6 +94,14 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
 
     def packages_validate_internal_dependencies_declarations(self) -> None:
         dependencies_map = self.build_dependencies_map()
+
+        self.io.log("Checking packages dependencies consistency...")
+        self.io.indentation_up()
+        progress = self.io.progress(
+            total=len(dependencies_map),
+            print=False
+        ).get_handle()
+
         for package_name in dependencies_map:
             package = self.get_package(package_name)
 
@@ -116,6 +124,14 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
                             imported_package=package_name_search,
                             import_locations=import_locations,
                         )
+
+            progress.advance(
+                label=f"Package {package.get_project_name()}",
+                step=1
+            )
+
+        self.io.success("Internal dependencies match.")
+        self.io.indentation_down()
 
     def topological_order(self, dep_map: dict[str, list[str]]) -> list[str]:
         """Deterministic topological order using graphlib.TopologicalSorter.
