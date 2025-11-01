@@ -98,7 +98,8 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
         self.io.log("Checking packages dependencies consistency...")
         self.io.indentation_up()
         progress = self.io.progress(
-            total=len(dependencies_map), print=False
+            total=len(dependencies_map),
+            print_response=False
         ).get_handle()
 
         for package_name in dependencies_map:
