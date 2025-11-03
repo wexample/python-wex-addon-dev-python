@@ -20,43 +20,6 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
         description="The python package workdir"
     )
 
-    def _get_template_context(self) -> dict:
-        # Use TOMLDocument from the workdir
-        doc = self.workdir.get_project_config()
-        project = doc.get("project", {}) if isinstance(doc, dict) else {}
-
-        # Extract information
-        description = project.get("description", "")
-        python_version = project.get("requires-python", "")
-        dependencies = project.get("dependencies", [])
-        urls = (
-            project.get("urls", {}) if isinstance(project.get("urls", {}), dict) else {}
-        )
-        # Accept both lowercase and capitalized homepage key variants
-        homepage = urls.get("homepage") or urls.get("Homepage") or ""
-        license_field = project.get("license", {})
-        if isinstance(license_field, dict):
-            license_info = license_field.get("text", "") or license_field.get(
-                "file", ""
-            )
-        else:
-            license_info = str(license_field) if license_field else ""
-
-        # Format dependencies list
-        deps_list = "\n".join([f"- {dep}" for dep in dependencies])
-
-        return {
-            "package_name": self.workdir.get_package_name(),
-            "version": self.workdir.get_project_version(),
-            "description": description,
-            "python_version": python_version,
-            "dependencies": dependencies,
-            "deps_list": deps_list,
-            "homepage": homepage,
-            "license_info": license_info,
-            "workdir": self.workdir,
-        }
-
     def get_templates(self) -> list[str] | None:
         # Prepare context for Jinja2 rendering
         context = self._get_template_context()
@@ -121,6 +84,43 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
                 rendered_content += f"{section_content}\n\n"
 
         return [rendered_content]
+
+    def _get_template_context(self) -> dict:
+        # Use TOMLDocument from the workdir
+        doc = self.workdir.get_project_config()
+        project = doc.get("project", {}) if isinstance(doc, dict) else {}
+
+        # Extract information
+        description = project.get("description", "")
+        python_version = project.get("requires-python", "")
+        dependencies = project.get("dependencies", [])
+        urls = (
+            project.get("urls", {}) if isinstance(project.get("urls", {}), dict) else {}
+        )
+        # Accept both lowercase and capitalized homepage key variants
+        homepage = urls.get("homepage") or urls.get("Homepage") or ""
+        license_field = project.get("license", {})
+        if isinstance(license_field, dict):
+            license_info = license_field.get("text", "") or license_field.get(
+                "file", ""
+            )
+        else:
+            license_info = str(license_field) if license_field else ""
+
+        # Format dependencies list
+        deps_list = "\n".join([f"- {dep}" for dep in dependencies])
+
+        return {
+            "package_name": self.workdir.get_package_name(),
+            "version": self.workdir.get_project_version(),
+            "description": description,
+            "python_version": python_version,
+            "dependencies": dependencies,
+            "deps_list": deps_list,
+            "homepage": homepage,
+            "license_info": license_info,
+            "workdir": self.workdir,
+        }
 
     def _render_readme_section(self, section_name: str, context: dict) -> str | None:
         """

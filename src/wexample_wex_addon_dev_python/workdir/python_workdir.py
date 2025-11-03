@@ -43,7 +43,7 @@ class PythonWorkdir(CodeBaseWorkdir):
             module_name
         ]
 
-    def test_run(self):
+    def test_run(self) -> None:
         self.shell_run_for_app(
             cmd=self.test_get_command()
         )

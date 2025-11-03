@@ -98,7 +98,9 @@ class PythonPackageWorkdir(PythonWorkdir):
 
         if env == ENV_NAME_LOCAL:
             # Get all dependencies from pyproject.toml
-            pyproject_toml_dependencies = self.get_project_config_file().list_dependency_names()
+            pyproject_toml_dependencies = (
+                self.get_project_config_file().list_dependency_names()
+            )
             suite_workdir = self.get_suite_workdir()
 
             # Ensure venv is created and configured
@@ -114,6 +116,7 @@ class PythonPackageWorkdir(PythonWorkdir):
                 if venv_path.exists():
                     self.io.log(f"Removing invalid venv at {venv_path}", indentation=1)
                     import shutil
+
                     shutil.rmtree(venv_path)
 
                 # Create new venv
@@ -149,14 +152,13 @@ class PythonPackageWorkdir(PythonWorkdir):
 
                 # Collect all suite packages that need to be installed (including transitive dependencies)
                 suite_dependencies_ordered = self._collect_suite_dependencies(
-                    pyproject_toml_dependencies,
-                    suite_workdir,
-                    suite_package_names
+                    pyproject_toml_dependencies, suite_workdir, suite_package_names
                 )
 
                 # External dependencies are those not in the suite
                 external_dependencies = [
-                    dep for dep in pyproject_toml_dependencies
+                    dep
+                    for dep in pyproject_toml_dependencies
                     if dep not in suite_package_names
                 ]
 
@@ -191,8 +193,13 @@ class PythonPackageWorkdir(PythonWorkdir):
                         package_name = pkg.get_package_name()
 
                         # Check if package is already installed in editable mode at the correct path
-                        if not force and self._is_package_installed_editable(app_path, package_name, package_path):
-                            self.io.log(f"Skipping {package_name} (already installed in editable mode)", indentation=2)
+                        if not force and self._is_package_installed_editable(
+                            app_path, package_name, package_path
+                        ):
+                            self.io.log(
+                                f"Skipping {package_name} (already installed in editable mode)",
+                                indentation=2,
+                            )
                             continue
 
                         self.io.log(f"Installing {package_name}", indentation=2)
@@ -217,10 +224,10 @@ class PythonPackageWorkdir(PythonWorkdir):
         )
 
     def _is_package_installed_editable(
-            self,
-            app_path,
-            package_name: str,
-            package_path,
+        self,
+        app_path,
+        package_name: str,
+        package_path,
     ) -> bool:
         """Check if a package is already installed in editable mode at the correct path."""
         import subprocess
@@ -251,6 +258,7 @@ class PythonPackageWorkdir(PythonWorkdir):
             # Check if installed in editable mode at the correct path
             if editable_location:
                 from pathlib import Path
+
                 return Path(editable_location).resolve() == Path(package_path).resolve()
 
             return False
@@ -260,13 +268,13 @@ class PythonPackageWorkdir(PythonWorkdir):
             return False
 
     def _collect_suite_dependencies(
-            self,
-            direct_dependencies: list[str],
-            suite_workdir,
-            suite_package_names: set[str],
+        self,
+        direct_dependencies: list[str],
+        suite_workdir,
+        suite_package_names: set[str],
     ) -> list:
         """Collect all suite packages recursively that need to be installed in editable mode.
-        
+
         Returns a list of suite package objects ordered leaf -> trunk.
         """
         suite_deps_to_install = set()
@@ -293,7 +301,8 @@ class PythonPackageWorkdir(PythonWorkdir):
         # Order suite packages by dependency (leaf -> trunk)
         all_ordered_packages = suite_workdir.get_ordered_packages()
         suite_deps_ordered = [
-            pkg for pkg in all_ordered_packages
+            pkg
+            for pkg in all_ordered_packages
             if pkg.get_package_name() in suite_deps_to_install
         ]
 
@@ -331,11 +340,11 @@ class PythonPackageWorkdir(PythonWorkdir):
         """Add a dependency from another package, use strict version as this is the intended internal management."""
         self.save_dependency(
             package_name=package.get_package_name(),
-            version=package.get_project_version()
+            version=package.get_project_version(),
         )
 
     def search_imports_in_codebase(
-            self, searched_package: PythonPackageWorkdir
+        self, searched_package: PythonPackageWorkdir
     ) -> list[SearchResult]:
         """Find import statements that reference the given package.
 
@@ -357,7 +366,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         return self.search_in_codebase(pattern, regex=True, flags=re.MULTILINE)
 
     def search_in_codebase(
-            self, string: str, *, regex: bool = False, flags: int = 0
+        self, string: str, *, regex: bool = False, flags: int = 0
     ) -> list[SearchResult]:
         from wexample_filestate.utils.search_result import SearchResult
         from wexample_filestate_python.file.python_file import PythonFile
