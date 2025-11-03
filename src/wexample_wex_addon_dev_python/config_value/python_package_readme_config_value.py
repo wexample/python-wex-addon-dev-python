@@ -55,6 +55,7 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
             "deps_list": deps_list,
             "homepage": homepage,
             "license_info": license_info,
+            "workdir": self.workdir,
         }
 
         # Define fixed order of README sections
