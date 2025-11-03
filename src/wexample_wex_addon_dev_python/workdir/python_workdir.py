@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from tomlkit import TOMLDocument
@@ -20,13 +21,35 @@ if TYPE_CHECKING:
     from wexample_filestate.option.children_file_factory_option import (
         ChildrenFileFactoryOption,
     )
-    from wexample_helpers.const.types import StructuredData, PathOrString
+    from wexample_helpers.const.types import StructuredData
     from wexample_wex_addon_dev_python.file.python_package_toml_file import (
         PythonPackageTomlFile,
     )
 
 
 class PythonWorkdir(CodeBaseWorkdir):
+    def get_venv_bin_path(self) -> Path:
+        return self.get_path() / ".venv" / "bin"
+
+    def get_python_path(self) -> Path:
+        return self.get_venv_bin_path() / "python"
+
+    def get_python_exec_module_command(self, module_name: str) -> list[str]:
+        return [
+            self.get_python_path(),
+            "-m",
+            module_name
+        ]
+
+    def test_get_command(self) -> list[str]:
+        cmd = self.get_python_exec_module_command("pytest")
+        cmd.extend([
+            "--cov",
+            "--cov-report=json",
+        ])
+
+        return cmd
+
     def app_install(self, env: str | None = None, force: bool = False) -> bool:
         # Use standard PDM install
         return python_install_environment(path=self.get_path())
@@ -83,7 +106,9 @@ class PythonWorkdir(CodeBaseWorkdir):
 
         # Add rules to .gitignore
         array_dict_get_by("name", ".gitignore", raw_value["children"]).setdefault(
-            "should_contain_lines", []
+            "should_contain_lines", [
+                "coverage.json"
+            ]
         ).extend(
             [
                 ".pdm-python",
@@ -259,7 +284,7 @@ class PythonWorkdir(CodeBaseWorkdir):
             name_pattern=r"^.*\.py$",
             recursive=True,
         )
-    
+
     def get_project_config_file(self, reload: bool = True) -> PythonPackageTomlFile:
         from wexample_wex_addon_dev_python.file.python_package_toml_file import (
             PythonPackageTomlFile,
@@ -302,19 +327,19 @@ class PythonWorkdir(CodeBaseWorkdir):
 
         # Canonicalize the keys in dependencies_map for consistent matching
         canonical_map = {
-            canonicalize_name(name): version 
+            canonicalize_name(name): version
             for name, version in dependencies_map.items()
         }
-        
+
         # Get current dependencies
         current_deps = config_file.list_dependencies()
-        
+
         # Update each dependency if it's in the map
         for dep_spec in current_deps:
             try:
                 req = Requirement(dep_spec)
                 canonical_name = canonicalize_name(req.name)
-                
+
                 # If this dependency is in our update map, update it
                 if canonical_name in canonical_map:
                     new_version = canonical_map[canonical_name]
@@ -323,6 +348,6 @@ class PythonWorkdir(CodeBaseWorkdir):
             except Exception:
                 # Skip unparsable dependencies
                 continue
-        
+
         # Save the updated config
         config_file.write_parsed()
