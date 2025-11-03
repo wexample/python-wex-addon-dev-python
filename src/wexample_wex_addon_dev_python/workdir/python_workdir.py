@@ -5,6 +5,8 @@ from typing import TYPE_CHECKING
 
 from tomlkit import TOMLDocument
 
+from wexample_filestate.item.file.json_file import JsonFile
+from wexample_filestate_python.const.python_file import PYTHON_FILE_PYTEST_COVERAGE_JSON
 from wexample_wex_addon_app.helpers.python import python_install_environment
 from wexample_wex_addon_app.workdir.code_base_workdir import (
     CodeBaseWorkdir,
@@ -40,6 +42,31 @@ class PythonWorkdir(CodeBaseWorkdir):
             "-m",
             module_name
         ]
+
+    def test_run(self):
+        self.shell_run_for_app(
+            cmd=self.test_get_command()
+        )
+
+        json_file = JsonFile.create_from_path(
+            path=self.get_path() / PYTHON_FILE_PYTEST_COVERAGE_JSON
+        )
+        totals = json_file.read_config().search("totals", default={}).get_dict()
+
+        config_file = self.get_config_file()
+        config = config_file.read_config()
+        config.set_by_path(
+            "test.coverage.last_report", {
+                "covered": totals.get("covered_lines", 0),
+                "excluded": totals.get("excluded_lines", 0),
+                "missing": totals.get("missing_lines", 0),
+                "percent": totals.get("percent_covered", 0),
+                "total": totals.get("num_statements", 0),
+            }
+        )
+        config_file.write_config()
+
+        # print(json)
 
     def test_get_command(self) -> list[str]:
         cmd = self.get_python_exec_module_command("pytest")
@@ -112,7 +139,7 @@ class PythonWorkdir(CodeBaseWorkdir):
                 ".pdm-python",
                 ".python-version",
                 ".venv",
-                "/coverage.json"
+                f"/{PYTHON_FILE_PYTEST_COVERAGE_JSON}"
             ]
         )
 
