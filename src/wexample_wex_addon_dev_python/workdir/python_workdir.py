@@ -66,8 +66,6 @@ class PythonWorkdir(CodeBaseWorkdir):
         )
         config_file.write_config()
 
-        # print(json)
-
     def test_get_command(self) -> list[str]:
         cmd = self.get_python_exec_module_command("pytest")
         cmd.extend([
