@@ -106,14 +106,13 @@ class PythonWorkdir(CodeBaseWorkdir):
 
         # Add rules to .gitignore
         array_dict_get_by("name", ".gitignore", raw_value["children"]).setdefault(
-            "should_contain_lines", [
-                "coverage.json"
-            ]
+            "should_contain_lines", []
         ).extend(
             [
                 ".pdm-python",
                 ".python-version",
                 ".venv",
+                "/coverage.json"
             ]
         )
 
