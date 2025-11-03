@@ -20,7 +20,7 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
         description="The python package workdir"
     )
 
-    def get_templates(self) -> list[str] | None:
+    def _get_template_context(self) -> dict:
         # Use TOMLDocument from the workdir
         doc = self.workdir.get_project_config()
         project = doc.get("project", {}) if isinstance(doc, dict) else {}
@@ -45,8 +45,7 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
         # Format dependencies list
         deps_list = "\n".join([f"- {dep}" for dep in dependencies])
 
-        # Prepare context for Jinja2 rendering
-        context = {
+        return {
             "package_name": self.workdir.get_package_name(),
             "version": self.workdir.get_project_version(),
             "description": description,
@@ -57,6 +56,10 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
             "license_info": license_info,
             "workdir": self.workdir,
         }
+
+    def get_templates(self) -> list[str] | None:
+        # Prepare context for Jinja2 rendering
+        context = self._get_template_context()
 
         # Define fixed order of README sections
         section_names = [
