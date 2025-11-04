@@ -67,10 +67,6 @@ class PythonWorkdir(CodeBaseWorkdir):
                 "total": totals.get("num_statements", 0),
             },
         )
-        config.set_by_path(
-            "test.coverage.last_publication_tag",
-            self.get_publication_tag_name()
-        )
         config_file.write_config()
 
     def test_get_command(self) -> list[str]:
