@@ -94,6 +94,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         from wexample_app.const.env import ENV_NAME_LOCAL
         from wexample_helpers.helpers.shell import shell_run
 
+        # In local env, installs packages using pip.
         if env == ENV_NAME_LOCAL:
             # Get all dependencies from pyproject.toml
             pyproject_toml_dependencies = (
@@ -112,7 +113,7 @@ class PythonPackageWorkdir(PythonWorkdir):
             if not venv_is_valid:
                 # Remove corrupted/empty venv if it exists
                 if venv_path.exists():
-                    self.io.log(f"Removing invalid venv at {venv_path}", indentation=1)
+                    self.log(f"Removing invalid venv at {venv_path}", indentation=1)
                     import shutil
 
                     shutil.rmtree(venv_path)
@@ -162,12 +163,12 @@ class PythonPackageWorkdir(PythonWorkdir):
 
                 # Install external packages first (normal install)
                 if external_dependencies:
-                    self.io.subtitle(
+                    self.subtitle(
                         f"Installing {len(external_dependencies)} external packages",
                         indentation=1,
                     )
                     for dep in external_dependencies:
-                        self.io.log(f"Installing {dep}", indentation=2)
+                        self.log(f"Installing {dep}", indentation=2)
                         shell_run(
                             cmd=[
                                 ".venv/bin/python",
@@ -182,7 +183,7 @@ class PythonPackageWorkdir(PythonWorkdir):
 
                 # Install suite packages in editable mode (leaf -> trunk order)
                 if suite_dependencies_ordered:
-                    self.io.subtitle(
+                    self.subtitle(
                         f"Installing {len(suite_dependencies_ordered)} suite packages in editable mode (leaf -> trunk)",
                         indentation=1,
                     )
@@ -192,15 +193,15 @@ class PythonPackageWorkdir(PythonWorkdir):
 
                         # Check if package is already installed in editable mode at the correct path
                         if not force and self._is_package_installed_editable(
-                            app_path, package_name, package_path
+                                app_path, package_name, package_path
                         ):
-                            self.io.log(
+                            self.log(
                                 f"Skipping {package_name} (already installed in editable mode)",
                                 indentation=2,
                             )
                             continue
 
-                        self.io.log(f"Installing {package_name}", indentation=2)
+                        self.log(f"Installing {package_name}", indentation=2)
                         shell_run(
                             cmd=[
                                 ".venv/bin/python",
@@ -213,6 +214,18 @@ class PythonPackageWorkdir(PythonWorkdir):
                             cwd=app_path,
                             inherit_stdio=True,
                         )
+
+                self.subtitle(
+                    f"Installing dev group dependencies",
+                    indentation=1,
+                )
+                # Install dev group
+                shell_run(
+                    cmd=["pdm", "install", "-G", "dev"],
+                    cwd=app_path,
+                    inherit_stdio=True,
+                )
+
                 return True
 
         # For non-local environments, use standard PDM install
@@ -222,10 +235,10 @@ class PythonPackageWorkdir(PythonWorkdir):
         )
 
     def _is_package_installed_editable(
-        self,
-        app_path,
-        package_name: str,
-        package_path,
+            self,
+            app_path,
+            package_name: str,
+            package_path,
     ) -> bool:
         """Check if a package is already installed in editable mode at the correct path."""
         import subprocess
@@ -266,10 +279,10 @@ class PythonPackageWorkdir(PythonWorkdir):
             return False
 
     def _collect_suite_dependencies(
-        self,
-        direct_dependencies: list[str],
-        suite_workdir,
-        suite_package_names: set[str],
+            self,
+            direct_dependencies: list[str],
+            suite_workdir,
+            suite_package_names: set[str],
     ) -> list:
         """Collect all suite packages recursively that need to be installed in editable mode.
 
@@ -333,7 +346,7 @@ class PythonPackageWorkdir(PythonWorkdir):
             shell_run(publish_cmd, inherit_stdio=True, cwd=self.get_path())
 
     def search_imports_in_codebase(
-        self, searched_package: PythonPackageWorkdir
+            self, searched_package: PythonPackageWorkdir
     ) -> list[SearchResult]:
         """Find import statements that reference the given package.
 
@@ -355,7 +368,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         return self.search_in_codebase(pattern, regex=True, flags=re.MULTILINE)
 
     def search_in_codebase(
-        self, string: str, *, regex: bool = False, flags: int = 0
+            self, string: str, *, regex: bool = False, flags: int = 0
     ) -> list[SearchResult]:
         from wexample_filestate.utils.search_result import SearchResult
         from wexample_filestate_python.file.python_file import PythonFile
