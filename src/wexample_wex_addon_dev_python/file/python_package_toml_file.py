@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 from wexample_filestate.item.file.toml_file import TomlFile
 from wexample_helpers.decorator.base_class import base_class
+from wexample_wex_addon_app.const.path import APP_PATH_README
 
 if TYPE_CHECKING:
     from tomlkit import TOMLDocument
@@ -222,10 +223,10 @@ class PythonPackageTomlFile(TomlFile):
                 WithReadmeWorkdirMixin,
             )
 
-            readme_file = package.find_by_name(WithReadmeWorkdirMixin.README_FILENAME)
+            readme_file = package.find_by_name(APP_PATH_README)
             if readme_file:
                 readme_tbl, _ = toml_ensure_table(project_tbl, ["readme"])
-                readme_tbl["file"] = WithReadmeWorkdirMixin.README_FILENAME
+                readme_tbl["file"] = str(APP_PATH_README)
                 readme_tbl["content-type"] = "text/markdown"
 
         # Add MIT license
