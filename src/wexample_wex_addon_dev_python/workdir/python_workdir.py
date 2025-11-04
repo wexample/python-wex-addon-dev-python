@@ -7,7 +7,7 @@ from tomlkit import TOMLDocument
 
 from wexample_filestate.const.types_state_items import TargetFileOrDirectoryType
 from wexample_filestate.item.file.json_file import JsonFile
-from wexample_filestate_python.const.path import PATH_DIR_SRC
+from wexample_filestate_python.const.path import PATH_DIR_SRC, PATH_DIR_TESTS
 from wexample_filestate_python.const.python_file import PYTHON_FILE_PYTEST_COVERAGE_JSON, PYTHON_FILE_EXTENSION
 from wexample_wex_addon_app.helpers.python import python_install_environment
 from wexample_wex_addon_app.workdir.code_base_workdir import (
@@ -401,7 +401,15 @@ class PythonWorkdir(CodeBaseWorkdir):
 
         return current_coverage != last_report.get("percent")
 
-    def _get_code_source_directories(self) -> [TargetFileOrDirectoryType]:
+    def _get_test_code_directories(self) -> [TargetFileOrDirectoryType]:
+        src = self.find_by_name(PATH_DIR_TESTS)
+
+        if src:
+            return [src]
+
+        return []
+
+    def _get_source_code_directories(self) -> [TargetFileOrDirectoryType]:
         src = self.find_by_name(PATH_DIR_SRC)
 
         if src:
