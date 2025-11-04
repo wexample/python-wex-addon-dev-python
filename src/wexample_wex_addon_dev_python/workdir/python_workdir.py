@@ -7,6 +7,7 @@ from tomlkit import TOMLDocument
 
 from wexample_filestate.item.file.json_file import JsonFile
 from wexample_filestate_python.const.python_file import PYTHON_FILE_PYTEST_COVERAGE_JSON
+from wexample_helpers_git.helpers.git import git_has_changes_since_tag
 from wexample_wex_addon_app.helpers.python import python_install_environment
 from wexample_wex_addon_app.workdir.code_base_workdir import (
     CodeBaseWorkdir,
@@ -61,6 +62,10 @@ class PythonWorkdir(CodeBaseWorkdir):
                 "percent": totals.get("percent_covered", 0),
                 "total": totals.get("num_statements", 0),
             },
+        )
+        config.set_by_path(
+            "test.coverage.last_publication_tag",
+            self.get_publication_tag_name()
         )
         config_file.write_config()
 
@@ -380,3 +385,14 @@ class PythonWorkdir(CodeBaseWorkdir):
 
         # Save the updated config
         config_file.write_parsed()
+
+    def has_coverage_changes_since_last_report(self) -> bool:
+        """Return True if coverage has changed since last saved report."""
+        last_report = self.app_workdir.get_config().search("test.coverage.last_report").get_dict_or_default()
+
+        if not last_report:
+            return True
+
+        current_coverage = self._run_coverage()
+
+        return current_coverage != last_report.get("percent")
