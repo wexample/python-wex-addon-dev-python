@@ -30,8 +30,11 @@ if TYPE_CHECKING:
 
 
 class PythonWorkdir(CodeBaseWorkdir):
+    def get_venv_path(self) -> Path:
+        return self.get_path() / ".venv"
+
     def get_venv_bin_path(self) -> Path:
-        return self.get_path() / ".venv" / "bin"
+        return self.get_venv_path() / "bin"
 
     def get_python_path(self) -> Path:
         return self.get_venv_bin_path() / "python"
