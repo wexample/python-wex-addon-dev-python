@@ -255,6 +255,43 @@ class PythonPackageTomlFile(TomlFile):
 
         toml_sort_string_array(dev_arr)
 
+    def _enforce_pytest_coverage_config(
+        self, content: dict, import_name: str | None
+    ) -> None:
+        """Add pytest and coverage configuration to limit coverage to the package only."""
+        if not import_name:
+            return
+
+        from wexample_filestate_python.helpers.toml import toml_ensure_table
+
+        tool_tbl, _ = toml_ensure_table(content, ["tool"])
+
+        # Add pytest configuration
+        pytest_tbl, _ = toml_ensure_table(tool_tbl, ["pytest", "ini_options"])
+        pytest_tbl["testpaths"] = ["tests"]
+        pytest_tbl["pythonpath"] = ["src"]
+
+        # Add coverage.run configuration to limit source to the package
+        coverage_run_tbl, _ = toml_ensure_table(tool_tbl, ["coverage", "run"])
+        coverage_run_tbl["source"] = [import_name]
+        coverage_run_tbl["omit"] = [
+            "*/tests/*",
+            "*/.venv/*",
+            "*/venv/*",
+        ]
+
+        # Add coverage.report configuration
+        coverage_report_tbl, _ = toml_ensure_table(tool_tbl, ["coverage", "report"])
+        coverage_report_tbl["exclude_lines"] = [
+            "pragma: no cover",
+            "def __repr__",
+            "raise AssertionError",
+            "raise NotImplementedError",
+            "if __name__ == .__main__.:",
+            "if TYPE_CHECKING:",
+            "@abstractmethod",
+        ]
+
     # --- Unified dependency accessors (runtime vs optional) ---
     def _get_deps_array(self, optional: bool = False, group: str = "dev"):
         """Return TOML array for runtime deps or optional group (multiline)."""
@@ -372,9 +409,21 @@ class PythonPackageTomlFile(TomlFile):
             "optional-dependencies",
         ]
 
+        # Define the desired order for keys within [tool]
+        tool_key_order = [
+            "setuptools",
+            "pdm",
+            "pytest",
+            "coverage",
+        ]
+
         # Reorder top-level sections
         self._reorder_dict_keys(content, section_order)
 
         # Reorder keys within [project] if it exists
         if "project" in content:
             self._reorder_dict_keys(content["project"], project_key_order)
+
+        # Reorder keys within [tool] if it exists
+        if "tool" in content:
+            self._reorder_dict_keys(content["tool"], tool_key_order)
