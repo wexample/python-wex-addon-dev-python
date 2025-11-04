@@ -1,6 +1,6 @@
 # wexample-wex-addon-dev-python
 
-Version: 0.0.49
+Version: 0.0.53
 
 Python dev addon for wex
 

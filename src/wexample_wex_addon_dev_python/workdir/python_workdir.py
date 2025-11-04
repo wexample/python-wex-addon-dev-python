@@ -40,16 +40,10 @@ class PythonWorkdir(CodeBaseWorkdir):
         return self.get_venv_bin_path() / "python"
 
     def get_python_exec_module_command(self, module_name: str) -> list[str]:
-        return [
-            self.get_python_path(),
-            "-m",
-            module_name
-        ]
+        return [self.get_python_path(), "-m", module_name]
 
     def test_run(self) -> None:
-        self.shell_run_for_app(
-            cmd=self.test_get_command()
-        )
+        self.shell_run_for_app(cmd=self.test_get_command())
 
         json_file = JsonFile.create_from_path(
             path=self.get_path() / PYTHON_FILE_PYTEST_COVERAGE_JSON
@@ -59,22 +53,25 @@ class PythonWorkdir(CodeBaseWorkdir):
         config_file = self.get_config_file()
         config = config_file.read_config()
         config.set_by_path(
-            "test.coverage.last_report", {
+            "test.coverage.last_report",
+            {
                 "covered": totals.get("covered_lines", 0),
                 "excluded": totals.get("excluded_lines", 0),
                 "missing": totals.get("missing_lines", 0),
                 "percent": totals.get("percent_covered", 0),
                 "total": totals.get("num_statements", 0),
-            }
+            },
         )
         config_file.write_config()
 
     def test_get_command(self) -> list[str]:
         cmd = self.get_python_exec_module_command("pytest")
-        cmd.extend([
-            "--cov",
-            "--cov-report=json",
-        ])
+        cmd.extend(
+            [
+                "--cov",
+                "--cov-report=json",
+            ]
+        )
 
         return cmd
 
@@ -106,8 +103,7 @@ class PythonWorkdir(CodeBaseWorkdir):
         return options
 
     def get_package_import_name(self) -> str:
-        """Get the full package import name with vendor prefix.
-        """
+        """Get the full package import name with vendor prefix."""
         return f"{self.get_vendor_name()}_{self.get_project_name()}"
 
     def get_package_name(self) -> str:
@@ -140,7 +136,7 @@ class PythonWorkdir(CodeBaseWorkdir):
                 ".pdm-python",
                 ".python-version",
                 ".venv",
-                f"/{PYTHON_FILE_PYTEST_COVERAGE_JSON}"
+                f"/{PYTHON_FILE_PYTEST_COVERAGE_JSON}",
             ]
         )
 
@@ -265,9 +261,15 @@ class PythonWorkdir(CodeBaseWorkdir):
         from wexample_helpers.helpers.string import string_to_snake_case
 
         vendor_prefix = self.get_vendor_name()
-        return vendor_prefix + "_" + string_to_snake_case(
-            os.path.basename(
-                os.path.dirname(os.path.realpath(option.get_parent_item().get_path()))
+        return (
+            vendor_prefix
+            + "_"
+            + string_to_snake_case(
+                os.path.basename(
+                    os.path.dirname(
+                        os.path.realpath(option.get_parent_item().get_path())
+                    )
+                )
             )
         )
 
@@ -342,7 +344,7 @@ class PythonWorkdir(CodeBaseWorkdir):
 
     def update_dependencies(self, dependencies_map: dict[str, str]) -> None:
         """Update dependencies versions based on the provided map.
-        
+
         Args:
             dependencies_map: Dictionary mapping package names to their new versions.
                              Example: {"wexample-helpers": "0.2.3", "attrs": "23.1.0"}
