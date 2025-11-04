@@ -332,13 +332,6 @@ class PythonPackageWorkdir(PythonWorkdir):
 
             shell_run(publish_cmd, inherit_stdio=True, cwd=self.get_path())
 
-    def save_dependency_from_package(self, package: PythonPackageWorkdir) -> None:
-        """Add a dependency from another package, use strict version as this is the intended internal management."""
-        self.save_dependency(
-            package_name=package.get_package_name(),
-            version=package.get_project_version(),
-        )
-
     def search_imports_in_codebase(
             self, searched_package: PythonPackageWorkdir
     ) -> list[SearchResult]:
