@@ -288,28 +288,6 @@ class PythonPackageTomlFile(TomlFile):
         deps_arr.extend(filtered)
         toml_sort_string_array(deps_arr)
 
-        # normalize attrs/cattrs
-        normalized = []
-        for it in list(deps_arr):
-            base = package_normalize_name(toml_get_string_value(it).strip())
-            if base == "attrs":
-                normalized.append("attrs>=23.1.0")
-            elif base == "cattrs":
-                normalized.append("cattrs>=23.1.0")
-            else:
-                normalized.append(it)
-        if normalized:
-            deps_arr.clear()
-            deps_arr.extend(normalized)
-            toml_sort_string_array(deps_arr)
-
-        # ensure they are present
-        names = {package_normalize_name(toml_get_string_value(it)) for it in deps_arr}
-        if "attrs" not in names:
-            deps_arr.append("attrs>=23.1.0")
-        if "cattrs" not in names:
-            deps_arr.append("cattrs>=23.1.0")
-        toml_sort_string_array(deps_arr)
 
     def _normalize_toml_formatting(self, content: str) -> str:
         """Normalize TOML formatting:
