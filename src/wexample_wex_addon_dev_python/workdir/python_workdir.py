@@ -5,9 +5,10 @@ from typing import TYPE_CHECKING
 
 from tomlkit import TOMLDocument
 
+from wexample_filestate.const.types_state_items import TargetFileOrDirectoryType
 from wexample_filestate.item.file.json_file import JsonFile
-from wexample_filestate_python.const.python_file import PYTHON_FILE_PYTEST_COVERAGE_JSON
-from wexample_helpers_git.helpers.git import git_has_changes_since_tag
+from wexample_filestate_python.const.path import PATH_DIR_SRC
+from wexample_filestate_python.const.python_file import PYTHON_FILE_PYTEST_COVERAGE_JSON, PYTHON_FILE_EXTENSION
 from wexample_wex_addon_app.helpers.python import python_install_environment
 from wexample_wex_addon_app.workdir.code_base_workdir import (
     CodeBaseWorkdir,
@@ -39,6 +40,9 @@ class PythonWorkdir(CodeBaseWorkdir):
 
     def get_python_path(self) -> Path:
         return self.get_venv_bin_path() / "python"
+
+    def get_main_code_file_extension(self) -> str:
+        return PYTHON_FILE_EXTENSION
 
     def get_python_exec_module_command(self, module_name: str) -> list[str]:
         return [self.get_python_path(), "-m", module_name]
@@ -267,15 +271,15 @@ class PythonWorkdir(CodeBaseWorkdir):
 
         vendor_prefix = self.get_vendor_name()
         return (
-            vendor_prefix
-            + "_"
-            + string_to_snake_case(
-                os.path.basename(
-                    os.path.dirname(
-                        os.path.realpath(option.get_parent_item().get_path())
-                    )
+                vendor_prefix
+                + "_"
+                + string_to_snake_case(
+            os.path.basename(
+                os.path.dirname(
+                    os.path.realpath(option.get_parent_item().get_path())
                 )
             )
+        )
         )
 
     def _create_python_file_children_filter(self) -> ChildrenFileFactoryOption:
@@ -396,3 +400,11 @@ class PythonWorkdir(CodeBaseWorkdir):
         current_coverage = self._run_coverage()
 
         return current_coverage != last_report.get("percent")
+
+    def _get_code_source_directories(self) -> [TargetFileOrDirectoryType]:
+        src = self.find_by_name(PATH_DIR_SRC)
+
+        if src:
+            return [src]
+
+        return []
