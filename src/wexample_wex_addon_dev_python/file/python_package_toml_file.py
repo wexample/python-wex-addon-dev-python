@@ -55,6 +55,7 @@ class PythonPackageTomlFile(TomlFile):
         self._enforce_project_metadata(content, project_name, project_version)
         self._normalize_dependencies(content)
         self._ensure_dev_dependencies(content)
+        self._enforce_pytest_coverage_config(content, import_name)
         self._reorder_toml_sections(content)
 
         result = dumps(content)
