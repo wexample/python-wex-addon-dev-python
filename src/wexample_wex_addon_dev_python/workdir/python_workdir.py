@@ -402,10 +402,10 @@ class PythonWorkdir(CodeBaseWorkdir):
         return current_coverage != last_report.get("percent")
 
     def _get_test_code_directories(self) -> [TargetFileOrDirectoryType]:
-        src = self.find_by_name(PATH_DIR_TESTS)
+        tests = self.find_by_name(PATH_DIR_TESTS)
 
-        if src:
-            return [src]
+        if tests:
+            return [tests]
 
         return []
 
