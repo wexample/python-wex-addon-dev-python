@@ -38,7 +38,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         raw_value = super().prepare_value(raw_value=raw_value)
         children = raw_value.get("children")
 
-        children.append([
+        children.append(
             {
                 "name": "examples",
                 "type": DiskItemType.DIRECTORY,
@@ -51,7 +51,7 @@ class PythonPackageWorkdir(PythonWorkdir):
                     },
                 ],
             },
-        ])
+        )
 
         # Retrieve the '.gitignore' configuration or create it if it doesn't exist
         config_gitignore = array_dict_get_by(

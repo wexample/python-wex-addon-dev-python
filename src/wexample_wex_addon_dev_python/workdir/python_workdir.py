@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from tomlkit import TOMLDocument
 
-from src.wexample_app.item.file.iml_file import ImlFile
+from wexample_app.item.file.iml_file import ImlFile
 from wexample_filestate.const.types_state_items import TargetFileOrDirectoryType
 from wexample_filestate.item.file.json_file import JsonFile
 from wexample_filestate_python.const.path import PATH_DIR_SRC, PATH_DIR_TESTS
