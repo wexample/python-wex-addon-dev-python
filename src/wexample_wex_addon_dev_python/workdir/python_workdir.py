@@ -5,11 +5,13 @@ from typing import TYPE_CHECKING
 
 from tomlkit import TOMLDocument
 
+from src.wexample_app.item.file.iml_file import ImlFile
 from wexample_filestate.const.types_state_items import TargetFileOrDirectoryType
 from wexample_filestate.item.file.json_file import JsonFile
 from wexample_filestate_python.const.path import PATH_DIR_SRC, PATH_DIR_TESTS
 from wexample_filestate_python.const.python_file import PYTHON_FILE_PYTEST_COVERAGE_JSON, PYTHON_FILE_EXTENSION
 from wexample_wex_addon_app.helpers.python import python_install_environment
+from wexample_wex_addon_app.item.file.python_app_iml_file import PythonAppImlFile
 from wexample_wex_addon_app.workdir.code_base_workdir import (
     CodeBaseWorkdir,
 )
@@ -115,6 +117,9 @@ class PythonWorkdir(CodeBaseWorkdir):
         from wexample_helpers.helpers.string import string_to_kebab_case
 
         return string_to_kebab_case(self.get_package_import_name())
+
+    def _get_iml_file_class(self) -> type[ImlFile]:
+        return PythonAppImlFile
 
     def prepare_value(self, raw_value: DictConfig | None = None) -> DictConfig:
         from wexample_config.config_value.callback_render_config_value import (
