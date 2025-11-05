@@ -9,7 +9,10 @@ from wexample_app.item.file.iml_file import ImlFile
 from wexample_filestate.const.types_state_items import TargetFileOrDirectoryType
 from wexample_filestate.item.file.json_file import JsonFile
 from wexample_filestate_python.const.path import PATH_DIR_SRC, PATH_DIR_TESTS
-from wexample_filestate_python.const.python_file import PYTHON_FILE_PYTEST_COVERAGE_JSON, PYTHON_FILE_EXTENSION
+from wexample_filestate_python.const.python_file import (
+    PYTHON_FILE_PYTEST_COVERAGE_JSON,
+    PYTHON_FILE_EXTENSION,
+)
 from wexample_wex_addon_app.helpers.python import python_install_environment
 from wexample_wex_addon_app.item.file.python_app_iml_file import PythonAppImlFile
 from wexample_wex_addon_app.workdir.code_base_workdir import (
@@ -272,15 +275,15 @@ class PythonWorkdir(CodeBaseWorkdir):
 
         vendor_prefix = self.get_vendor_name()
         return (
-                vendor_prefix
-                + "_"
-                + string_to_snake_case(
-            os.path.basename(
-                os.path.dirname(
-                    os.path.realpath(option.get_parent_item().get_path())
+            vendor_prefix
+            + "_"
+            + string_to_snake_case(
+                os.path.basename(
+                    os.path.dirname(
+                        os.path.realpath(option.get_parent_item().get_path())
+                    )
                 )
             )
-        )
         )
 
     def _create_python_file_children_filter(self) -> ChildrenFileFactoryOption:
@@ -393,7 +396,11 @@ class PythonWorkdir(CodeBaseWorkdir):
 
     def has_coverage_changes_since_last_report(self) -> bool:
         """Return True if coverage has changed since last saved report."""
-        last_report = self.app_workdir.get_config().search("test.coverage.last_report").get_dict_or_default()
+        last_report = (
+            self.app_workdir.get_config()
+            .search("test.coverage.last_report")
+            .get_dict_or_default()
+        )
 
         if not last_report:
             return True

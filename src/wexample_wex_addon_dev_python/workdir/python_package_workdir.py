@@ -54,9 +54,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         )
 
         # Retrieve the '.gitignore' configuration or create it if it doesn't exist
-        config_gitignore = array_dict_get_by(
-            "name", ".gitignore", children
-        )
+        config_gitignore = array_dict_get_by("name", ".gitignore", children)
         if config_gitignore is not None:
             generic_gitignore_rules = {
                 "Python artifacts": [
@@ -210,7 +208,7 @@ class PythonPackageWorkdir(PythonWorkdir):
 
                         # Check if package is already installed in editable mode at the correct path
                         if not force and self._is_package_installed_editable(
-                                app_path, package_name, package_path
+                            app_path, package_name, package_path
                         ):
                             self.log(
                                 f"Skipping {package_name} (already installed in editable mode)",
@@ -252,10 +250,10 @@ class PythonPackageWorkdir(PythonWorkdir):
         )
 
     def _is_package_installed_editable(
-            self,
-            app_path,
-            package_name: str,
-            package_path,
+        self,
+        app_path,
+        package_name: str,
+        package_path,
     ) -> bool:
         """Check if a package is already installed in editable mode at the correct path."""
         import subprocess
@@ -296,10 +294,10 @@ class PythonPackageWorkdir(PythonWorkdir):
             return False
 
     def _collect_suite_dependencies(
-            self,
-            direct_dependencies: list[str],
-            suite_workdir,
-            suite_package_names: set[str],
+        self,
+        direct_dependencies: list[str],
+        suite_workdir,
+        suite_package_names: set[str],
     ) -> list:
         """Collect all suite packages recursively that need to be installed in editable mode.
 
@@ -363,7 +361,7 @@ class PythonPackageWorkdir(PythonWorkdir):
             shell_run(publish_cmd, inherit_stdio=True, cwd=self.get_path())
 
     def search_imports_in_codebase(
-            self, searched_package: PythonPackageWorkdir
+        self, searched_package: PythonPackageWorkdir
     ) -> list[SearchResult]:
         """Find import statements that reference the given package.
 
@@ -385,7 +383,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         return self.search_in_codebase(pattern, regex=True, flags=re.MULTILINE)
 
     def search_in_codebase(
-            self, string: str, *, regex: bool = False, flags: int = 0
+        self, string: str, *, regex: bool = False, flags: int = 0
     ) -> list[SearchResult]:
         from wexample_filestate.utils.search_result import SearchResult
         from wexample_filestate_python.file.python_file import PythonFile

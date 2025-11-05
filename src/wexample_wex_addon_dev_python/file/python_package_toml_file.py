@@ -326,8 +326,7 @@ class PythonPackageTomlFile(TomlFile):
         deps_arr.clear()
         deps_arr.extend(filtered)
         toml_sort_string_array(deps_arr)
-
-
+    
     def _normalize_toml_formatting(self, content: str) -> str:
         """Normalize TOML formatting:
         - No empty lines at the beginning

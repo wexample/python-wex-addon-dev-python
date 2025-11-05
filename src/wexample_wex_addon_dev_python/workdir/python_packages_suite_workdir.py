@@ -89,7 +89,10 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
         return [by_name[n] for n in order]
 
     def packages_validate_internal_dependencies_declarations(self) -> None:
-        from wexample_wex_addon_app.exception.dependency_violation_exception import DependencyViolationException
+        from wexample_wex_addon_app.exception.dependency_violation_exception import (
+            DependencyViolationException,
+        )
+
         dependencies_map = self.build_dependencies_map()
 
         self.io.log("Checking packages dependencies consistency...")
