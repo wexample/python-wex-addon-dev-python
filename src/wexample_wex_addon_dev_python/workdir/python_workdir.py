@@ -292,7 +292,64 @@ class PythonWorkdir(CodeBaseWorkdir):
             ChildrenFilterOption,
         )
         from wexample_filestate_python.file.python_file import PythonFile
-        from wexample_filestate_python.option.python_option import PythonOption
+
+        from wexample_filestate_python.option.python.add_future_annotations_option import (
+            AddFutureAnnotationsOption,
+        )
+        from wexample_filestate_python.option.python.add_return_types_option import (
+            AddReturnTypesOption,
+        )
+        from wexample_filestate_python.option.python.fix_attrs_option import FixAttrsOption
+        from wexample_filestate_python.option.python.fix_blank_lines_option import (
+            FixBlankLinesOption,
+        )
+        from wexample_filestate_python.option.python.format_option import FormatOption
+        from wexample_filestate_python.option.python.fstringify_option import FstringifyOption
+        from wexample_filestate_python.option.python.modernize_typing_option import (
+            ModernizeTypingOption,
+        )
+        from wexample_filestate_python.option.python.order_class_attributes_option import (
+            OrderClassAttributesOption,
+        )
+        from wexample_filestate_python.option.python.order_class_docstring_option import (
+            OrderClassDocstringOption,
+        )
+        from wexample_filestate_python.option.python.order_class_methods_option import (
+            OrderClassMethodsOption,
+        )
+        from wexample_filestate_python.option.python.order_constants_option import (
+            OrderConstantsOption,
+        )
+        from wexample_filestate_python.option.python.order_iterable_items_option import (
+            OrderIterableItemsOption,
+        )
+        from wexample_filestate_python.option.python.order_main_guard_option import (
+            OrderMainGuardOption,
+        )
+        from wexample_filestate_python.option.python.order_module_docstring_option import (
+            OrderModuleDocstringOption,
+        )
+        from wexample_filestate_python.option.python.order_module_functions_option import (
+            OrderModuleFunctionsOption,
+        )
+        from wexample_filestate_python.option.python.order_module_metadata_option import (
+            OrderModuleMetadataOption,
+        )
+        from wexample_filestate_python.option.python.order_type_checking_block_option import (
+            OrderTypeCheckingBlockOption,
+        )
+        from wexample_filestate_python.option.python.relocate_imports_option import (
+            RelocateImportsOption,
+        )
+        from wexample_filestate_python.option.python.remove_unused_option import (
+            RemoveUnusedOption,
+        )
+        from wexample_filestate_python.option.python.sort_imports_option import (
+            SortImportsOption,
+        )
+        from wexample_filestate_python.option.python.unquote_annotations_option import (
+            UnquoteAnnotationsOption,
+        )
 
         return ChildrenFilterOption(
             pattern={
@@ -300,27 +357,27 @@ class PythonWorkdir(CodeBaseWorkdir):
                 "type": DiskItemType.FILE,
                 "python": {
                     # Configured for python >= 3.12
-                    PythonOption.OPTION_NAME_ADD_FUTURE_ANNOTATIONS: True,
-                    PythonOption.OPTION_NAME_RELOCATE_IMPORTS: True,
-                    PythonOption.OPTION_NAME_REMOVE_UNUSED: True,
-                    PythonOption.OPTION_NAME_SORT_IMPORTS: True,
-                    PythonOption.OPTION_NAME_MODERNIZE_TYPING: True,
-                    PythonOption.OPTION_NAME_FSTRINGIFY: True,
-                    PythonOption.OPTION_NAME_ADD_RETURN_TYPES: True,
-                    PythonOption.OPTION_NAME_UNQUOTE_ANNOTATIONS: True,
-                    PythonOption.OPTION_NAME_FIX_ATTRS: True,
-                    PythonOption.OPTION_NAME_ORDER_TYPE_CHECKING_BLOCK: True,
-                    PythonOption.OPTION_NAME_ORDER_MODULE_DOCSTRING: True,
-                    PythonOption.OPTION_NAME_ORDER_MODULE_METADATA: True,
-                    PythonOption.OPTION_NAME_ORDER_CONSTANTS: True,
-                    PythonOption.OPTION_NAME_ORDER_ITERABLE_ITEMS: True,
-                    PythonOption.OPTION_NAME_ORDER_MODULE_FUNCTIONS: True,
-                    PythonOption.OPTION_NAME_ORDER_MAIN_GUARD: True,
-                    PythonOption.OPTION_NAME_ORDER_CLASS_DOCSTRING: True,
-                    PythonOption.OPTION_NAME_ORDER_CLASS_ATTRIBUTES: True,
-                    PythonOption.OPTION_NAME_ORDER_CLASS_METHODS: True,
-                    PythonOption.OPTION_NAME_FIX_BLANK_LINES: True,
-                    PythonOption.OPTION_NAME_FORMAT: True,
+                    AddFutureAnnotationsOption.get_name(): True,
+                    RelocateImportsOption.get_name(): True,
+                    RemoveUnusedOption.get_name(): True,
+                    SortImportsOption.get_name(): True,
+                    ModernizeTypingOption.get_name(): True,
+                    FstringifyOption.get_name(): True,
+                    AddReturnTypesOption.get_name(): True,
+                    UnquoteAnnotationsOption.get_name(): True,
+                    FixAttrsOption.get_name(): True,
+                    OrderTypeCheckingBlockOption.get_name(): True,
+                    OrderModuleDocstringOption.get_name(): True,
+                    OrderModuleMetadataOption.get_name(): True,
+                    OrderConstantsOption.get_name(): True,
+                    OrderIterableItemsOption.get_name(): True,
+                    OrderModuleFunctionsOption.get_name(): True,
+                    OrderMainGuardOption.get_name(): True,
+                    OrderClassDocstringOption.get_name(): True,
+                    OrderClassAttributesOption.get_name(): True,
+                    OrderClassMethodsOption.get_name(): True,
+                    FixBlankLinesOption.get_name(): True,
+                    FormatOption.get_name(): True,
                 },
             },
             name_pattern=r"^.*\.py$",
