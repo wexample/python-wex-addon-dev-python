@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from wexample_filestate.const.disk import DiskItemType
 from wexample_wex_addon_dev_python.workdir.python_workdir import PythonWorkdir
 
 if TYPE_CHECKING:
@@ -35,10 +36,26 @@ class PythonPackageWorkdir(PythonWorkdir):
         from wexample_helpers.helpers.array import array_dict_get_by
 
         raw_value = super().prepare_value(raw_value=raw_value)
+        children = raw_value.get("children")
+
+        children.append([
+            {
+                "name": "examples",
+                "type": DiskItemType.DIRECTORY,
+                "should_exist": True,
+                "children": [
+                    {
+                        "name": "__main__.py",
+                        "type": DiskItemType.FILE,
+                        "should_exist": True,
+                    },
+                ],
+            },
+        ])
 
         # Retrieve the '.gitignore' configuration or create it if it doesn't exist
         config_gitignore = array_dict_get_by(
-            "name", ".gitignore", raw_value["children"]
+            "name", ".gitignore", children
         )
         if config_gitignore is not None:
             generic_gitignore_rules = {
