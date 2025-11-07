@@ -117,7 +117,7 @@ class PythonPackageWorkdir(PythonWorkdir):
                 toml_file.list_dependency_names()
             )
 
-            suite_workdir = self.get_suite_workdir()
+            suite_workdir = self.get_shallow_suite_workdir()
 
             # Ensure venv is created and configured
             app_path = self.get_path()
