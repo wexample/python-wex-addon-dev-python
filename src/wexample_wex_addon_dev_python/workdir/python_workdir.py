@@ -401,11 +401,15 @@ class PythonWorkdir(CodeBaseWorkdir):
         """
         return self.get_project_config_file(reload=reload).read_parsed()
 
-    def save_dependency(self, package_name: str, version: str) -> None:
+    def save_dependency(self, package_name: str, version: str) -> bool:
         """Add or update a dependency with strict version."""
         config = self.get_project_config_file()
-        config.add_dependency(f"{package_name}=={version}")
-        config.write_parsed()
+        updated = config.add_dependency(f"{package_name}=={version}")
+
+        if updated:
+            config.write_parsed()
+
+        return updated
 
     def save_project_config_file(self, config: StructuredData) -> None:
         """Save the project configuration to pyproject.toml."""

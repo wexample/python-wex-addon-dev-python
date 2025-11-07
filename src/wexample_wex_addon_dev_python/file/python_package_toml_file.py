@@ -16,26 +16,30 @@ if TYPE_CHECKING:
 @base_class
 class PythonPackageTomlFile(TomlFile):
     def add_dependency(
-        self, spec: str, optional: bool = False, group: str = "dev"
+            self, spec: str, optional: bool = False, group: str = "dev"
     ) -> bool:
         from packaging.requirements import Requirement
         from packaging.utils import canonicalize_name
         from wexample_filestate_python.helpers.toml import toml_sort_string_array
 
         deps = self._get_deps_array(optional=optional, group=group)
-        # Remove existing entries for the same package name before adding the new spec.
-        new_name = canonicalize_name(Requirement(spec).name)
-        removed = self.remove_dependency_by_name(
+        new_req = Requirement(spec)
+        new_name = canonicalize_name(new_req.name)
+
+        old_spec = None
+        for dep in deps:
+            if canonicalize_name(Requirement(dep).name) == new_name:
+                old_spec = dep
+                break
+
+        self.remove_dependency_by_name(
             new_name, optional=optional, group=group
         )
 
-        # Append (or re-append) the new spec if it is not already present verbatim
-        if spec not in deps:
-            deps.append(spec)
-            toml_sort_string_array(deps)
-            return True
+        deps.append(spec)
+        toml_sort_string_array(deps)
 
-        return removed
+        return old_spec != spec
 
     def dumps(self, content: TOMLDocument | dict | None = None) -> str:
         """Serialize a TOMLDocument (preferred) or a plain dict to TOML.
