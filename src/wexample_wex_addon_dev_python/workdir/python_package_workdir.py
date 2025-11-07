@@ -111,10 +111,12 @@ class PythonPackageWorkdir(PythonWorkdir):
 
         # In local env, installs packages using pip.
         if env == ENV_NAME_LOCAL:
+            toml_file = self.get_project_config_file()
             # Get all dependencies from pyproject.toml
             pyproject_toml_dependencies = (
-                self.get_project_config_file().list_dependency_names()
+                toml_file.list_dependency_names()
             )
+
             suite_workdir = self.get_suite_workdir()
 
             # Ensure venv is created and configured
@@ -159,6 +161,7 @@ class PythonPackageWorkdir(PythonWorkdir):
                 inherit_stdio=True,
             )
 
+            # The package is a part of a workdir, so we install manually individual package.
             if suite_workdir:
                 # Get all packages from the suite ordered by dependencies (leaf -> trunk)
                 suite_packages = suite_workdir.get_ordered_packages()
@@ -208,7 +211,7 @@ class PythonPackageWorkdir(PythonWorkdir):
 
                         # Check if package is already installed in editable mode at the correct path
                         if not force and self._is_package_installed_editable(
-                            app_path, package_name, package_path
+                                app_path, package_name, package_path
                         ):
                             self.log(
                                 f"Skipping {package_name} (already installed in editable mode)",
@@ -230,16 +233,19 @@ class PythonPackageWorkdir(PythonWorkdir):
                             inherit_stdio=True,
                         )
 
-                self.subtitle(
-                    f"Installing dev group dependencies",
-                    indentation=1,
-                )
-                # Install dev group
-                shell_run(
-                    cmd=["pdm", "install", "-G", "dev"],
-                    cwd=app_path,
-                    inherit_stdio=True,
-                )
+                # Avoid error using -G
+                dev_group_name = "dev"
+                if len(self.get_project_config_file().optional_group_array(group=dev_group_name)) > 0:
+                    self._pdm_update_lock_if_needed()
+
+                    self.log(f"Installing dev group dependencies")
+                    self._pdm_run_command(
+                        command=[
+                            "install", "-G", dev_group_name
+                        ]
+                    )
+                else:
+                    self.log("Skipping dev group install: group 'dev' not defined in pyproject.toml")
 
                 return True
 
@@ -249,11 +255,35 @@ class PythonPackageWorkdir(PythonWorkdir):
             force=force,
         )
 
+    def _pdm_update_lock_if_needed(self):
+        try:
+            self._pdm_run_command(command=["lock", "--check"])
+            self.log("pdm.lock is up to date")
+
+        except Exception:
+            self.log("pdm.lock is out of date")
+
+            try:
+                self._pdm_run_command(command=["lock"])
+                self.success("pdm.lock updated")
+            except Exception as e:
+                self.failure("pdm.lock updated")
+
+    def _pdm_run_command(self, command: list[str]):
+        from wexample_helpers.helpers.shell import shell_run
+
+        # Install dev group
+        shell_run(
+            cmd=["pdm"] + command,
+            cwd=self.get_path(),
+            inherit_stdio=True,
+        )
+
     def _is_package_installed_editable(
-        self,
-        app_path,
-        package_name: str,
-        package_path,
+            self,
+            app_path,
+            package_name: str,
+            package_path,
     ) -> bool:
         """Check if a package is already installed in editable mode at the correct path."""
         import subprocess
@@ -294,10 +324,10 @@ class PythonPackageWorkdir(PythonWorkdir):
             return False
 
     def _collect_suite_dependencies(
-        self,
-        direct_dependencies: list[str],
-        suite_workdir,
-        suite_package_names: set[str],
+            self,
+            direct_dependencies: list[str],
+            suite_workdir,
+            suite_package_names: set[str],
     ) -> list:
         """Collect all suite packages recursively that need to be installed in editable mode.
 
@@ -361,7 +391,7 @@ class PythonPackageWorkdir(PythonWorkdir):
             shell_run(publish_cmd, inherit_stdio=True, cwd=self.get_path())
 
     def search_imports_in_codebase(
-        self, searched_package: PythonPackageWorkdir
+            self, searched_package: PythonPackageWorkdir
     ) -> list[SearchResult]:
         """Find import statements that reference the given package.
 
@@ -383,7 +413,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         return self.search_in_codebase(pattern, regex=True, flags=re.MULTILINE)
 
     def search_in_codebase(
-        self, string: str, *, regex: bool = False, flags: int = 0
+            self, string: str, *, regex: bool = False, flags: int = 0
     ) -> list[SearchResult]:
         from wexample_filestate.utils.search_result import SearchResult
         from wexample_filestate_python.file.python_file import PythonFile

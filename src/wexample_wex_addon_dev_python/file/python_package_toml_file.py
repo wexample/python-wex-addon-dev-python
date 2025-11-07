@@ -245,7 +245,7 @@ class PythonPackageTomlFile(TomlFile):
             toml_sort_string_array,
         )
 
-        dev_arr = self._optional_group_array("dev")
+        dev_arr = self.optional_group_array("dev")
         deps_arr = self._dependencies_array()
 
         runtime_pkgs = {
@@ -300,7 +300,7 @@ class PythonPackageTomlFile(TomlFile):
     def _get_deps_array(self, optional: bool = False, group: str = "dev"):
         """Return TOML array for runtime deps or optional group (multiline)."""
         return (
-            self._optional_group_array(group)
+            self.optional_group_array(group)
             if optional
             else self._dependencies_array()
         )
@@ -350,7 +350,7 @@ class PythonPackageTomlFile(TomlFile):
 
         return content
 
-    def _optional_group_array(self, group: str):
+    def optional_group_array(self, group: str):
         """Ensure and return project.optional-dependencies[group] as multi-line array."""
         from wexample_filestate_python.helpers.toml import (
             toml_ensure_array,
