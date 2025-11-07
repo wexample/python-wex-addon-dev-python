@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING
 from tomlkit import TOMLDocument
 
 from wexample_app.item.file.iml_file import ImlFile
+
+from wexample_wex_addon_dev_python.const.python import PYTHON_PYTEST_COV_FORMAT_JSON, PYTHON_PYTEST_COV_FORMAT_HTML, PYTHON_PYTEST_COV_REPORT_DIR
 from wexample_filestate.const.types_state_items import TargetFileOrDirectoryType
 from wexample_filestate.item.file.json_file import JsonFile
 from wexample_filestate_python.const.path import PATH_DIR_SRC, PATH_DIR_TESTS
@@ -52,8 +54,8 @@ class PythonWorkdir(CodeBaseWorkdir):
     def get_python_exec_module_command(self, module_name: str) -> list[str]:
         return [self.get_python_path(), "-m", module_name]
 
-    def test_run(self) -> None:
-        self.shell_run_for_app(cmd=self.test_get_command())
+    def test_run(self, format:str = PYTHON_PYTEST_COV_FORMAT_JSON) -> None:
+        self.shell_run_for_app(cmd=self.test_get_command(format=format))
 
         json_file = JsonFile.create_from_path(
             path=self.get_path() / PYTHON_FILE_PYTEST_COVERAGE_JSON
@@ -74,12 +76,17 @@ class PythonWorkdir(CodeBaseWorkdir):
         )
         config_file.write_config()
 
-    def test_get_command(self) -> list[str]:
+        if format == PYTHON_PYTEST_COV_FORMAT_HTML:
+            report_path = self.get_path() / PYTHON_PYTEST_COV_REPORT_DIR / "index.html"
+            if report_path.exists():
+                self.info(f'Report: @path{{{report_path}}}')
+
+    def test_get_command(self, format:str = PYTHON_PYTEST_COV_FORMAT_JSON) -> list[str]:
         cmd = self.get_python_exec_module_command("pytest")
         cmd.extend(
             [
                 "--cov",
-                "--cov-report=json",
+                f"--cov-report={format}",
             ]
         )
 
