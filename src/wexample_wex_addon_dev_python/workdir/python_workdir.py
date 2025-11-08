@@ -4,12 +4,13 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from tomlkit import TOMLDocument
-
 from wexample_app.item.file.iml_file import ImlFile
 
-from wexample_wex_addon_dev_python.const.python import PYTHON_PYTEST_COV_FORMAT_JSON, PYTHON_PYTEST_COV_FORMAT_HTML, PYTHON_PYTEST_COV_REPORT_DIR
+from wexample_event.dataclass.event import Event
+from wexample_event.dataclass.listener_record import EventCallback
 from wexample_filestate.const.types_state_items import TargetFileOrDirectoryType
 from wexample_filestate.item.file.json_file import JsonFile
+from wexample_filestate.operation.file_rename_operation import FileRenameOperation
 from wexample_filestate_python.const.path import PATH_DIR_SRC, PATH_DIR_TESTS
 from wexample_filestate_python.const.python_file import (
     PYTHON_FILE_PYTEST_COVERAGE_JSON,
@@ -20,6 +21,8 @@ from wexample_wex_addon_app.item.file.python_app_iml_file import PythonAppImlFil
 from wexample_wex_addon_app.workdir.code_base_workdir import (
     CodeBaseWorkdir,
 )
+from wexample_wex_addon_dev_python.const.python import PYTHON_PYTEST_COV_FORMAT_JSON, PYTHON_PYTEST_COV_FORMAT_HTML, \
+    PYTHON_PYTEST_COV_REPORT_DIR
 
 if TYPE_CHECKING:
     from wexample_config.const.types import DictConfig
@@ -36,9 +39,34 @@ if TYPE_CHECKING:
     from wexample_wex_addon_dev_python.file.python_package_toml_file import (
         PythonPackageTomlFile,
     )
+from wexample_filestate.operation.abstract_operation import AbstractOperation
 
 
 class PythonWorkdir(CodeBaseWorkdir):
+    def _init_listeners(self) -> None:
+        """Add event listeners"""
+        self.operation_add_event_listener(
+            operation=FileRenameOperation,
+            suffix="post",
+            callback=self._on_test_event
+        )
+
+    def _on_test_event(self, event: Event) -> None:
+        self.success('A python file has been renamed')
+
+    def operation_add_event_listener(
+            self,
+            operation: AbstractOperation | type[AbstractOperation],
+            callback: EventCallback,
+            suffix:str|None = None,
+            **kwargs
+    ):
+        self.add_event_listener(
+            name=operation.get_event_name(suffix=suffix),
+            callback=callback,
+            **kwargs
+        )
+
     def get_venv_path(self) -> Path:
         return self.get_path() / ".venv"
 
