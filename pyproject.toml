@@ -16,9 +16,9 @@ dependencies = [
     "networkx",
     "pylint",
     "pyright",
-    "wexample-filestate-python==0.0.54",
-    "wexample-wex-addon-app==0.0.51",
-    "wexample-wex-core==6.0.63",
+    "wexample-filestate-python==0.0.55",
+    "wexample-wex-addon-app==0.0.52",
+    "wexample-wex-core==6.0.64",
 ]
 
 [project.readme]
