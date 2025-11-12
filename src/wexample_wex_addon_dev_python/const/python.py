@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 
 PYTHON_PYTEST_COV_REPORT_DIR: Path = Path("htmlcov")

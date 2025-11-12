@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 @base_class
 class PythonPackageTomlFile(TomlFile):
     def add_dependency(
-            self, spec: str, optional: bool = False, group: str = "dev"
+        self, spec: str, optional: bool = False, group: str = "dev"
     ) -> bool:
         from packaging.requirements import Requirement
         from packaging.utils import canonicalize_name
@@ -32,9 +32,7 @@ class PythonPackageTomlFile(TomlFile):
                 old_spec = dep
                 break
 
-        self.remove_dependency_by_name(
-            new_name, optional=optional, group=group
-        )
+        self.remove_dependency_by_name(new_name, optional=optional, group=group)
 
         deps.append(spec)
         toml_sort_string_array(deps)
@@ -101,6 +99,19 @@ class PythonPackageTomlFile(TomlFile):
                 # Skip unparsable entries when deriving names
                 continue
         return names
+
+    def optional_group_array(self, group: str):
+        """Ensure and return project.optional-dependencies[group] as multi-line array."""
+        from wexample_filestate_python.helpers.toml import (
+            toml_ensure_array,
+            toml_ensure_table,
+        )
+
+        project = self._project_table()
+        opt, _ = toml_ensure_table(project, ["optional-dependencies"])
+        arr, _ = toml_ensure_array(opt, group)
+        arr.multiline(True)
+        return arr
 
     def remove_dependency_by_name(
         self, package_name: str, optional: bool = False, group: str = "dev"
@@ -224,9 +235,7 @@ class PythonPackageTomlFile(TomlFile):
 
         # Add README if it exists
         if package:
-            from wexample_wex_addon_app.workdir.mixin.with_readme_workdir_mixin import (
-                WithReadmeWorkdirMixin,
-            )
+            pass
 
             readme_file = package.find_by_name(APP_PATH_README)
             if readme_file:
@@ -237,27 +246,6 @@ class PythonPackageTomlFile(TomlFile):
         # Add MIT license
         license_tbl, _ = toml_ensure_table(project_tbl, ["license"])
         license_tbl["text"] = "MIT"
-
-    def _ensure_dev_dependencies(self, content: dict) -> None:
-        from wexample_filestate_python.helpers.package import package_normalize_name
-        from wexample_filestate_python.helpers.toml import (
-            toml_get_string_value,
-            toml_sort_string_array,
-        )
-
-        dev_arr = self.optional_group_array("dev")
-        deps_arr = self._dependencies_array()
-
-        runtime_pkgs = {
-            package_normalize_name(toml_get_string_value(it)) for it in list(deps_arr)
-        }
-        dev_values = [toml_get_string_value(it).strip() for it in list(dev_arr)]
-
-        for pkg in ["pytest", "pytest-cov"]:
-            if pkg not in runtime_pkgs and pkg not in dev_values:
-                dev_arr.append(pkg)
-
-        toml_sort_string_array(dev_arr)
 
     def _enforce_pytest_coverage_config(
         self, content: dict, import_name: str | None
@@ -296,13 +284,32 @@ class PythonPackageTomlFile(TomlFile):
             "@abstractmethod",
         ]
 
+    def _ensure_dev_dependencies(self, content: dict) -> None:
+        from wexample_filestate_python.helpers.package import package_normalize_name
+        from wexample_filestate_python.helpers.toml import (
+            toml_get_string_value,
+            toml_sort_string_array,
+        )
+
+        dev_arr = self.optional_group_array("dev")
+        deps_arr = self._dependencies_array()
+
+        runtime_pkgs = {
+            package_normalize_name(toml_get_string_value(it)) for it in list(deps_arr)
+        }
+        dev_values = [toml_get_string_value(it).strip() for it in list(dev_arr)]
+
+        for pkg in ["pytest", "pytest-cov"]:
+            if pkg not in runtime_pkgs and pkg not in dev_values:
+                dev_arr.append(pkg)
+
+        toml_sort_string_array(dev_arr)
+
     # --- Unified dependency accessors (runtime vs optional) ---
     def _get_deps_array(self, optional: bool = False, group: str = "dev"):
         """Return TOML array for runtime deps or optional group (multiline)."""
         return (
-            self.optional_group_array(group)
-            if optional
-            else self._dependencies_array()
+            self.optional_group_array(group) if optional else self._dependencies_array()
         )
 
     def _normalize_dependencies(self, content: dict) -> None:
@@ -330,7 +337,7 @@ class PythonPackageTomlFile(TomlFile):
         deps_arr.clear()
         deps_arr.extend(filtered)
         toml_sort_string_array(deps_arr)
-    
+
     def _normalize_toml_formatting(self, content: str) -> str:
         """Normalize TOML formatting:
         - No empty lines at the beginning
@@ -349,19 +356,6 @@ class PythonPackageTomlFile(TomlFile):
         content = content.rstrip("\n") + "\n"
 
         return content
-
-    def optional_group_array(self, group: str):
-        """Ensure and return project.optional-dependencies[group] as multi-line array."""
-        from wexample_filestate_python.helpers.toml import (
-            toml_ensure_array,
-            toml_ensure_table,
-        )
-
-        project = self._project_table()
-        opt, _ = toml_ensure_table(project, ["optional-dependencies"])
-        arr, _ = toml_ensure_array(opt, group)
-        arr.multiline(True)
-        return arr
 
     def _project_table(self):
         """Ensure and return the [project] table."""
