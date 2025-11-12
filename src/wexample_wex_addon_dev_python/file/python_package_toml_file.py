@@ -326,9 +326,24 @@ class PythonPackageTomlFile(TomlFile):
         deps_arr = self._dependencies_array()
         toml_sort_string_array(deps_arr)
 
+        # Read the keep list from [tool.filestate].keep
+        keep_packages: set[str] = set()
+        if "tool" in content and isinstance(content["tool"], dict):
+            tool_tbl = content["tool"]
+            if "filestate" in tool_tbl and isinstance(tool_tbl["filestate"], dict):
+                filestate_tbl = tool_tbl["filestate"]
+                if "keep" in filestate_tbl and isinstance(filestate_tbl["keep"], list):
+                    keep_packages = {
+                        package_normalize_name(str(pkg))
+                        for pkg in filestate_tbl["keep"]
+                    }
+
         # filter unwanted deps
         def _should_remove(item: object) -> bool:
             name = package_normalize_name(toml_get_string_value(item))
+            # Don't remove if in keep list
+            if name in keep_packages:
+                return False
             return name in RUNTIME_DEPENDENCY_REMOVE_NAMES or (
                 name == "typing-extensions"
             )
