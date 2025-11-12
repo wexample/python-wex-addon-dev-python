@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from wexample_wex_core.common.kernel import Kernel
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from wexample_wex_core.common.kernel import Kernel
 
 
 def _code_check_mypy(kernel: Kernel, file_path: str) -> bool:
@@ -15,7 +18,6 @@ def _code_check_mypy(kernel: Kernel, file_path: str) -> bool:
     """
     import sys
 
-    # Import mypy modules
     from mypy import build
     from mypy.modulefinder import BuildSource
     from mypy.options import Options

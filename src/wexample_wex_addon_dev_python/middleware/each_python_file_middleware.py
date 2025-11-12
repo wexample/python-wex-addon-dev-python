@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os.path
 from typing import TYPE_CHECKING
 
 from wexample_wex_core.middleware.each_file_middleware import EachFileMiddleware
@@ -16,9 +15,6 @@ class EachPythonFileMiddleware(EachFileMiddleware):
     - Ignores special directories like __pycache__ during recursion
     """
 
-    # Default extension to filter
-    python_extension_only: bool = True
-
     # Default list of directories to ignore during recursion
     ignored_directories: set[str] = {
         "__pycache__",
@@ -32,6 +28,8 @@ class EachPythonFileMiddleware(EachFileMiddleware):
         ".mypy_cache",
         ".ruff_cache",
     }
+    # Default extension to filter
+    python_extension_only: bool = True
 
     def __init__(self, **kwargs) -> None:
         # Allow overriding the default settings
@@ -42,6 +40,20 @@ class EachPythonFileMiddleware(EachFileMiddleware):
             self.ignored_directories = set(kwargs.pop("ignored_directories"))
 
         super().__init__(**kwargs)
+
+    def _should_explore_directory(
+        self, request: CommandRequest, directory_name: str
+    ) -> bool:
+        """
+        Skip directories that are in the ignored_directories list.
+
+        Args:
+            directory_name: Name of the directory to check
+
+        Returns:
+            False if the directory is in the ignored list, True otherwise
+        """
+        return directory_name not in self.ignored_directories
 
     def _should_process_item(self, request: CommandRequest, item_path: str) -> bool:
         """
@@ -63,17 +75,3 @@ class EachPythonFileMiddleware(EachFileMiddleware):
 
         # Otherwise, accept all files
         return True
-
-    def _should_explore_directory(
-        self, request: CommandRequest, directory_name: str
-    ) -> bool:
-        """
-        Skip directories that are in the ignored_directories list.
-
-        Args:
-            directory_name: Name of the directory to check
-
-        Returns:
-            False if the directory is in the ignored list, True otherwise
-        """
-        return directory_name not in self.ignored_directories

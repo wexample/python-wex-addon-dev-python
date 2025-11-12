@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from wexample_wex_core.common.kernel import Kernel
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from wexample_wex_core.common.kernel import Kernel
 
 
 def _code_check_pyright(kernel: Kernel, file_path: str) -> bool:
