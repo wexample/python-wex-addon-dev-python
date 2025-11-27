@@ -48,8 +48,15 @@ if TYPE_CHECKING:
 
 class PythonWorkdir(CodeBaseWorkdir):
     def app_install(self, env: str | None = None, force: bool = False) -> bool:
+        # Check if a venv path is somewhere in the config hierarchy.
+        venv_path = self.search_app_or_suite_runtime_config("python.venv_path")
+
+        # There is no venv, so create a venv for this project.
+        if not venv_path.is_none():
+            return python_install_environment(path=self.get_path())
+
         # Use standard PDM install
-        return python_install_environment(path=self.get_path())
+        return False
 
     def get_dependencies(self) -> list[str]:
         from packaging.requirements import Requirement
