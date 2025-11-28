@@ -60,7 +60,7 @@ class PythonWorkdir(CodeBaseWorkdir):
 
         python_ensure_pip_or_fail(venv_path)
 
-        self._install_dependencies_inv_venv(
+        self._install_dependencies_in_venv(
             venv_path=venv_path,
             env=env,
             force=force,
@@ -69,7 +69,7 @@ class PythonWorkdir(CodeBaseWorkdir):
         # Use standard PDM install
         return venv_path
 
-    def _install_dependencies_inv_venv(self, venv_path: Path, env: str | None = None, force: bool = False) -> None:
+    def _install_dependencies_in_venv(self, venv_path: Path, env: str | None = None, force: bool = False) -> None:
         from wexample_wex_addon_app.helpers.python import python_install_dependencies_in_venv
 
         toml_file = self.get_project_config_file()

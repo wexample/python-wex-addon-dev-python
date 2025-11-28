@@ -4,7 +4,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from wexample_filestate.const.disk import DiskItemType
-from wexample_wex_addon_app.helpers.python import python_is_package_installed_editable_in_venv
+from wexample_wex_addon_app.helpers.python import python_is_package_installed_editable_in_venv, \
+    python_install_dependency_in_venv
 from wexample_wex_addon_dev_python.workdir.python_workdir import PythonWorkdir
 
 if TYPE_CHECKING:
@@ -21,7 +22,7 @@ if TYPE_CHECKING:
 class PythonPackageWorkdir(PythonWorkdir):
     _project_info_cache = None
 
-    def _install_dependencies_inv_venv(self, venv_path: Path, env: str | None = None, force: bool = False) -> None:
+    def _install_dependencies_in_venv(self, venv_path: Path, env: str | None = None, force: bool = False) -> None:
         from wexample_app.const.env import ENV_NAME_LOCAL
         from wexample_wex_addon_app.helpers.python import python_install_dependencies_in_venv
 
@@ -97,10 +98,17 @@ class PythonPackageWorkdir(PythonWorkdir):
                     )
                 )
 
-                return
+            # Install itself as editable.
+            python_install_dependency_in_venv(
+                venv_path=venv_path,
+                name=self.get_package_name(),
+                editable=True
+            )
+
+            return
 
         # Fallback to parent behaviour
-        super()._install_dependencies_inv_venv(
+        super()._install_dependencies_in_venv(
             venv_path=venv_path,
             env=env,
             force=force
