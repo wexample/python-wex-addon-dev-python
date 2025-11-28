@@ -106,7 +106,7 @@ class PythonPackageWorkdir(PythonWorkdir):
             # Install itself as editable.
             python_install_dependency_in_venv(
                 venv_path=venv_path,
-                name=self.get_package_name(),
+                name=self.get_path(),
                 editable=True
             )
 
