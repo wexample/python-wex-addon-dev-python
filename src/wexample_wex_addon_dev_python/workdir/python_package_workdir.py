@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from wexample_filestate.const.disk import DiskItemType
+from wexample_wex_addon_app.helpers.python import python_is_package_installed_editable_in_venv
 
 from wexample_wex_addon_dev_python.workdir.python_workdir import PythonWorkdir
 
@@ -20,62 +22,19 @@ if TYPE_CHECKING:
 class PythonPackageWorkdir(PythonWorkdir):
     _project_info_cache = None
 
-    def app_install(self, env: str | None = None, force: bool = False) -> bool:
+    def _install_dependencies_inv_venv(self, venv_path: Path, env: str | None = None, force: bool = False) -> None:
         from wexample_app.const.env import ENV_NAME_LOCAL
-        from wexample_helpers.helpers.shell import shell_run
+        from wexample_wex_addon_app.helpers.python import python_install_dependencies_in_venv
 
-        # In local env, installs packages using pip.
+        suite_workdir = self.get_shallow_suite_workdir()
+        toml_file = self.get_project_config_file()
+
+        # Check for suite only in local env.
         if env == ENV_NAME_LOCAL:
-            toml_file = self.get_project_config_file()
-            # Get all dependencies from pyproject.toml
-            pyproject_toml_dependencies = toml_file.list_dependency_names()
-
-            suite_workdir = self.get_shallow_suite_workdir()
-
-            # Ensure venv is created and configured
-            app_path = self.get_path()
-            venv_path = app_path / ".venv"
-
-            # Check if venv exists and is valid (has bin/python)
-            venv_python = venv_path / "bin" / "python"
-            venv_is_valid = venv_path.exists() and venv_python.exists()
-
-            if not venv_is_valid:
-                # Remove corrupted/empty venv if it exists
-                if venv_path.exists():
-                    self.log(f"Removing invalid venv at {venv_path}", indentation=1)
-                    import shutil
-
-                    shutil.rmtree(venv_path)
-
-                # Create new venv
-                shell_run(
-                    cmd=["pdm", "venv", "create"],
-                    cwd=app_path,
-                    inherit_stdio=True,
-                )
-
-            # Force PDM to use the local .venv
-            shell_run(
-                cmd=["pdm", "use", ".venv"],
-                cwd=app_path,
-                inherit_stdio=True,
-            )
-
-            # Ensure pip is installed in the venv
-            shell_run(
-                cmd=[
-                    ".venv/bin/python",
-                    "-m",
-                    "ensurepip",
-                    "--upgrade",
-                ],
-                cwd=app_path,
-                inherit_stdio=True,
-            )
-
-            # The package is a part of a workdir, so we install manually individual package.
+            # Package is a part of a suite that may have a venv configured.
             if suite_workdir:
+                # Get all dependencies from pyproject.toml
+                pyproject_toml_dependencies = toml_file.list_dependency_names()
                 # Get all packages from the suite ordered by dependencies (leaf -> trunk)
                 suite_packages = suite_workdir.get_ordered_packages()
                 suite_package_names = {pkg.get_package_name() for pkg in suite_packages}
@@ -92,25 +51,14 @@ class PythonPackageWorkdir(PythonWorkdir):
                     if dep not in suite_package_names
                 ]
 
-                # Install external packages first (normal install)
-                if external_dependencies:
-                    self.subtitle(
-                        f"Installing {len(external_dependencies)} external packages",
-                        indentation=1,
-                    )
-                    for dep in external_dependencies:
-                        self.log(f"Installing {dep}", indentation=2)
-                        shell_run(
-                            cmd=[
-                                ".venv/bin/python",
-                                "-m",
-                                "pip",
-                                "install",
-                                dep,
-                            ],
-                            cwd=app_path,
-                            inherit_stdio=True,
-                        )
+                self.subtitle(
+                    f"Installing {len(external_dependencies)} external packages",
+                    indentation=1,
+                )
+                python_install_dependencies_in_venv(
+                    venv_path=venv_path,
+                    names=external_dependencies
+                )
 
                 # Install suite packages in editable mode (leaf -> trunk order)
                 if suite_dependencies_ordered:
@@ -118,59 +66,43 @@ class PythonPackageWorkdir(PythonWorkdir):
                         f"Installing {len(suite_dependencies_ordered)} suite packages in editable mode (leaf -> trunk)",
                         indentation=1,
                     )
+
+                    packages_to_install = []
+
                     for pkg in suite_dependencies_ordered:
-                        package_path = pkg.get_path()
-                        package_name = pkg.get_package_name()
+                        name = pkg.get_package_name()
 
-                        # Check if package is already installed in editable mode at the correct path
-                        if not force and self._is_package_installed_editable(
-                            app_path, package_name, package_path
+                        if force or not python_is_package_installed_editable_in_venv(
+                                venv_path=venv_path,
+                                package_name=name,
+                                package_path=pkg.get_path()
                         ):
-                            self.log(
-                                f"Skipping {package_name} (already installed in editable mode)",
-                                indentation=2,
-                            )
-                            continue
+                            packages_to_install.append(name)
 
-                        self.log(f"Installing {package_name}", indentation=2)
-                        shell_run(
-                            cmd=[
-                                ".venv/bin/python",
-                                "-m",
-                                "pip",
-                                "install",
-                                "-e",
-                                str(package_path),
-                            ],
-                            cwd=app_path,
-                            inherit_stdio=True,
-                        )
-
-                # Avoid error using -G
-                dev_group_name = "dev"
-                if (
-                    len(
-                        self.get_project_config_file().optional_group_array(
-                            group=dev_group_name
-                        )
-                    )
-                    > 0
-                ):
-                    self._pdm_update_lock_if_needed()
-
-                    self.log(f"Installing dev group dependencies")
-                    self._pdm_run_command(command=["install", "-G", dev_group_name])
-                else:
-                    self.log(
-                        "Skipping dev group install: group 'dev' not defined in pyproject.toml"
+                    python_install_dependencies_in_venv(
+                        venv_path=venv_path,
+                        names=external_dependencies,
+                        editable=True
                     )
 
-                return True
+                self.subtitle(
+                    "Installing dev group dependencies",
+                    indentation=1,
+                )
 
-        # For non-local environments, use standard PDM install
-        return super().app_install(
+                python_install_dependencies_in_venv(
+                    venv_path=venv_path,
+                    names=self.get_project_config_file().optional_group_array(
+                        group="dev"
+                    )
+                )
+
+
+        # Get all dependencies from pyproject.toml
+        super()._install_dependencies_inv_venv(
+            venv_path=venv_path,
             env=env,
-            force=force,
+            force=force
         )
 
     def depends_from(self, package: PythonPackageWorkdir) -> bool:
@@ -347,74 +279,6 @@ class PythonPackageWorkdir(PythonWorkdir):
         )
 
         return PythonPackageReadmeContentConfigValue(workdir=self)
-
-    def _is_package_installed_editable(
-        self,
-        app_path,
-        package_name: str,
-        package_path,
-    ) -> bool:
-        """Check if a package is already installed in editable mode at the correct path."""
-        import subprocess
-
-        try:
-            result = subprocess.run(
-                [".venv/bin/python", "-m", "pip", "show", package_name],
-                cwd=app_path,
-                capture_output=True,
-                text=True,
-                timeout=5,
-            )
-
-            if result.returncode != 0:
-                return False
-
-            # Parse pip show output
-            output_lines = result.stdout.strip().split("\n")
-            location = None
-            editable_location = None
-
-            for line in output_lines:
-                if line.startswith("Location:"):
-                    location = line.split(":", 1)[1].strip()
-                elif line.startswith("Editable project location:"):
-                    editable_location = line.split(":", 1)[1].strip()
-
-            # Check if installed in editable mode at the correct path
-            if editable_location:
-                from pathlib import Path
-
-                return Path(editable_location).resolve() == Path(package_path).resolve()
-
-            return False
-
-        except Exception:
-            # If any error occurs, assume not installed
-            return False
-
-    def _pdm_run_command(self, command: list[str]) -> None:
-        from wexample_helpers.helpers.shell import shell_run
-
-        # Install dev group
-        shell_run(
-            cmd=["pdm"] + command,
-            cwd=self.get_path(),
-            inherit_stdio=True,
-        )
-
-    def _pdm_update_lock_if_needed(self) -> None:
-        try:
-            self._pdm_run_command(command=["lock", "--check"])
-            self.log("pdm.lock is up to date")
-
-        except Exception:
-            self.log("pdm.lock is out of date")
-
-            try:
-                self._pdm_run_command(command=["lock"])
-                self.success("pdm.lock updated")
-            except Exception:
-                self.failure("pdm.lock updated")
 
     def _publish(self, force: bool = False) -> None:
         from wexample_filestate_python.common.pipy_gateway import PipyGateway
