@@ -70,19 +70,20 @@ class PythonPackageWorkdir(PythonWorkdir):
                     packages_to_install = []
 
                     for pkg in suite_dependencies_ordered:
-                        name = pkg.get_package_name()
+                        pkg_path = pkg.get_path()
+                        pkg_name = pkg.get_package_name()
 
                         if force or not python_is_package_installed_editable_in_venv(
                                 venv_path=venv_path,
-                                package_name=name,
-                                package_path=pkg.get_path()
+                                package_name=pkg_name,
+                                package_path=pkg_path
                         ):
-                            packages_to_install.append(name)
+                            packages_to_install.append(str(pkg_path))
 
                     python_install_dependencies_in_venv(
                         venv_path=venv_path,
-                        names=external_dependencies,
-                        editable=True
+                        names=packages_to_install,
+                        editable=True,
                     )
 
                 self.subtitle(
