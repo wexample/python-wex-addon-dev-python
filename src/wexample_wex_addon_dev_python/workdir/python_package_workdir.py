@@ -98,6 +98,11 @@ class PythonPackageWorkdir(PythonWorkdir):
                     )
                 )
 
+            self.subtitle(
+                "Installing itself in editable mode",
+                indentation=1,
+            )
+
             # Install itself as editable.
             python_install_dependency_in_venv(
                 venv_path=venv_path,
