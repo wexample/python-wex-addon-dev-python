@@ -280,7 +280,7 @@ class PythonPackageWorkdir(PythonWorkdir):
 
         return suite_deps_ordered
 
-    def _get_children_package_workdir_class(self) -> type[FrameworkPackageSuiteWorkdir]:
+    def _get_suite_package_workdir_class(self) -> type[FrameworkPackageSuiteWorkdir]:
         from wexample_wex_addon_dev_python.workdir.python_packages_suite_workdir import (
             PythonPackagesSuiteWorkdir,
         )
