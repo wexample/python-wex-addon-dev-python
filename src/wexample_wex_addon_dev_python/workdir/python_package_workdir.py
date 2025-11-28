@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 
 from wexample_filestate.const.disk import DiskItemType
 from wexample_wex_addon_app.helpers.python import python_is_package_installed_editable_in_venv
-
 from wexample_wex_addon_dev_python.workdir.python_workdir import PythonWorkdir
 
 if TYPE_CHECKING:
@@ -31,10 +30,11 @@ class PythonPackageWorkdir(PythonWorkdir):
 
         # Check for suite only in local env.
         if env == ENV_NAME_LOCAL:
-            # Package is a part of a suite that may have a venv configured.
+            # Package is part of a suite that may have a venv configured.
             if suite_workdir:
                 # Get all dependencies from pyproject.toml
                 pyproject_toml_dependencies = toml_file.list_dependency_names()
+
                 # Get all packages from the suite ordered by dependencies (leaf -> trunk)
                 suite_packages = suite_workdir.get_ordered_packages()
                 suite_package_names = {pkg.get_package_name() for pkg in suite_packages}
@@ -67,7 +67,7 @@ class PythonPackageWorkdir(PythonWorkdir):
                         indentation=1,
                     )
 
-                    packages_to_install = []
+                    editable_paths = []
 
                     for pkg in suite_dependencies_ordered:
                         pkg_path = pkg.get_path()
@@ -78,11 +78,11 @@ class PythonPackageWorkdir(PythonWorkdir):
                                 package_name=pkg_name,
                                 package_path=pkg_path
                         ):
-                            packages_to_install.append(str(pkg_path))
+                            editable_paths.append(str(pkg_path))
 
                     python_install_dependencies_in_venv(
                         venv_path=venv_path,
-                        names=packages_to_install,
+                        names=editable_paths,
                         editable=True,
                     )
 
@@ -90,7 +90,6 @@ class PythonPackageWorkdir(PythonWorkdir):
                     "Installing dev group dependencies",
                     indentation=1,
                 )
-
                 python_install_dependencies_in_venv(
                     venv_path=venv_path,
                     names=self.get_project_config_file().optional_group_array(
@@ -98,8 +97,9 @@ class PythonPackageWorkdir(PythonWorkdir):
                     )
                 )
 
+                return
 
-        # Get all dependencies from pyproject.toml
+        # Fallback to parent behaviour
         super()._install_dependencies_inv_venv(
             venv_path=venv_path,
             env=env,
@@ -186,7 +186,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         return raw_value
 
     def search_imports_in_codebase(
-        self, searched_package: PythonPackageWorkdir
+            self, searched_package: PythonPackageWorkdir
     ) -> list[SearchResult]:
         """Find import statements that reference the given package.
 
@@ -208,7 +208,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         return self.search_in_codebase(pattern, regex=True, flags=re.MULTILINE)
 
     def search_in_codebase(
-        self, string: str, *, regex: bool = False, flags: int = 0
+            self, string: str, *, regex: bool = False, flags: int = 0
     ) -> list[SearchResult]:
         from wexample_filestate.utils.search_result import SearchResult
         from wexample_filestate_python.file.python_file import PythonFile
@@ -227,10 +227,10 @@ class PythonPackageWorkdir(PythonWorkdir):
         return found
 
     def _collect_suite_dependencies(
-        self,
-        direct_dependencies: list[str],
-        suite_workdir,
-        suite_package_names: set[str],
+            self,
+            direct_dependencies: list[str],
+            suite_workdir,
+            suite_package_names: set[str],
     ) -> list:
         """Collect all suite packages recursively that need to be installed in editable mode.
 
