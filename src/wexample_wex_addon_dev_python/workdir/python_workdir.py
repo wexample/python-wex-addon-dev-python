@@ -16,7 +16,6 @@ from wexample_filestate_python.const.python_file import (
     PYTHON_FILE_EXTENSION,
     PYTHON_FILE_PYTEST_COVERAGE_JSON,
 )
-from wexample_wex_addon_app.helpers.python import python_install_environment
 from wexample_wex_addon_app.item.file.python_app_iml_file import PythonAppImlFile
 from wexample_wex_addon_app.workdir.code_base_workdir import (
     CodeBaseWorkdir,
@@ -47,16 +46,34 @@ if TYPE_CHECKING:
 
 
 class PythonWorkdir(CodeBaseWorkdir):
-    def app_install(self, env: str | None = None, force: bool = False) -> bool:
+    def app_install(self, env: str | None = None, force: bool = False) -> Path:
+        from wexample_wex_addon_app.helpers.python import python_ensure_pip_or_fail, python_install_environment
+
         # Check if a venv path is somewhere in the config hierarchy.
-        venv_path = self.search_app_or_suite_runtime_config("python.venv_path")
+        venv_path_config = self.search_app_or_suite_runtime_config("python.venv_path")
 
         # There is no venv, so create a venv for this project.
-        if not venv_path.is_none():
-            return python_install_environment(path=self.get_path())
+        if venv_path_config.is_none():
+            venv_path = python_install_environment(path=self.get_path())
+        else:
+            venv_path = Path(venv_path_config.get_str())
+
+        python_ensure_pip_or_fail(venv_path)
+
+        self._install_dependencies_inv_venv(venv_path=venv_path)
 
         # Use standard PDM install
-        return False
+        return venv_path
+
+    def _install_dependencies_inv_venv(self,venv_path:Path):
+        from wexample_wex_addon_app.helpers.python import python_install_dependencies_in_venv
+
+        toml_file = self.get_project_config_file()
+        # Get all dependencies from pyproject.toml
+        python_install_dependencies_in_venv(
+            venv_path=venv_path,
+            names=toml_file.list_dependency_names()
+        )
 
     def get_dependencies(self) -> list[str]:
         from packaging.requirements import Requirement
