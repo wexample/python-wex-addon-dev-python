@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from tomlkit import TOMLDocument
+
 from wexample_app.item.file.iml_file import ImlFile
 from wexample_event.dataclass.event import Event
 from wexample_event.dataclass.listener_record import EventCallback
@@ -20,7 +21,6 @@ from wexample_wex_addon_app.item.file.python_app_iml_file import PythonAppImlFil
 from wexample_wex_addon_app.workdir.code_base_workdir import (
     CodeBaseWorkdir,
 )
-
 from wexample_wex_addon_dev_python.const.python import (
     PYTHON_PYTEST_COV_FORMAT_HTML,
     PYTHON_PYTEST_COV_FORMAT_JSON,
@@ -60,12 +60,16 @@ class PythonWorkdir(CodeBaseWorkdir):
 
         python_ensure_pip_or_fail(venv_path)
 
-        self._install_dependencies_inv_venv(venv_path=venv_path)
+        self._install_dependencies_inv_venv(
+            venv_path=venv_path,
+            env=env,
+            force=force,
+        )
 
         # Use standard PDM install
         return venv_path
 
-    def _install_dependencies_inv_venv(self,venv_path:Path):
+    def _install_dependencies_inv_venv(self, venv_path: Path, env: str | None = None, force: bool = False) -> None:
         from wexample_wex_addon_app.helpers.python import python_install_dependencies_in_venv
 
         toml_file = self.get_project_config_file()
@@ -155,11 +159,11 @@ class PythonWorkdir(CodeBaseWorkdir):
         return current_coverage != last_report.get("percent")
 
     def operation_add_event_listener(
-        self,
-        operation: AbstractOperation | type[AbstractOperation],
-        callback: EventCallback,
-        suffix: str | None = None,
-        **kwargs,
+            self,
+            operation: AbstractOperation | type[AbstractOperation],
+            callback: EventCallback,
+            suffix: str | None = None,
+            **kwargs,
     ) -> None:
         self.add_event_listener(
             name=operation.get_event_name(suffix=suffix), callback=callback, **kwargs
@@ -302,7 +306,7 @@ class PythonWorkdir(CodeBaseWorkdir):
         config_file.write(config)
 
     def test_get_command(
-        self, format: str = PYTHON_PYTEST_COV_FORMAT_JSON
+            self, format: str = PYTHON_PYTEST_COV_FORMAT_JSON
     ) -> list[str]:
         cmd = self.get_python_exec_module_command("pytest")
         cmd.extend(
@@ -411,15 +415,15 @@ class PythonWorkdir(CodeBaseWorkdir):
 
         vendor_prefix = self.get_vendor_name()
         return (
-            vendor_prefix
-            + "_"
-            + string_to_snake_case(
-                os.path.basename(
-                    os.path.dirname(
-                        os.path.realpath(option.get_parent_item().get_path())
-                    )
+                vendor_prefix
+                + "_"
+                + string_to_snake_case(
+            os.path.basename(
+                os.path.dirname(
+                    os.path.realpath(option.get_parent_item().get_path())
                 )
             )
+        )
         )
 
     def _create_python_file_children_filter(self) -> ChildrenFileFactoryOption:
