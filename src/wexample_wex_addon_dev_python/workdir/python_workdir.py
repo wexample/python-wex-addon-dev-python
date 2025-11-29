@@ -194,7 +194,6 @@ class PythonWorkdir(CodeBaseWorkdir):
             [
                 ".pdm-python",
                 ".python-version",
-                ".venv",
                 f"/{PYTHON_FILE_PYTEST_COVERAGE_JSON}",
             ]
         )
