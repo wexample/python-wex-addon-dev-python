@@ -53,11 +53,12 @@ class PythonWorkdir(CodeBaseWorkdir):
         venv_path_config = self.search_app_or_suite_runtime_config("python.venv_path")
 
         # There is no venv, so create a venv for this project.
-        if venv_path_config.is_none():
+        if not venv_path_config:
             venv_path = python_install_environment(path=self.get_path())
         else:
             venv_path = Path(venv_path_config.get_str())
 
+        self.log(f"Using venv: @path{{{venv_path}}}")
         python_ensure_pip_or_fail(venv_path)
 
         self._install_dependencies_in_venv(
