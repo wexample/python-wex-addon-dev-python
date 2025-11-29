@@ -210,11 +210,6 @@ class PythonWorkdir(CodeBaseWorkdir):
                         self._create_python_file_children_filter(),
                     ],
                 },
-                {
-                    "name": ".venv",
-                    "type": DiskItemType.DIRECTORY,
-                    "should_exist": True,
-                },
                 # Replaced by pdm
                 {
                     "name": "requirements.in",
