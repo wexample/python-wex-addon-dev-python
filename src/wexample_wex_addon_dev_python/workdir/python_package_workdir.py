@@ -4,8 +4,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from wexample_filestate.const.disk import DiskItemType
-from wexample_wex_addon_app.helpers.python import python_is_package_installed_editable_in_venv, \
-    python_install_dependency_in_venv
+from wexample_wex_addon_app.helpers.python import (
+    python_install_dependency_in_venv,
+    python_is_package_installed_editable_in_venv,
+)
+
 from wexample_wex_addon_dev_python.workdir.python_workdir import PythonWorkdir
 
 if TYPE_CHECKING:
@@ -21,103 +24,6 @@ if TYPE_CHECKING:
 
 class PythonPackageWorkdir(PythonWorkdir):
     _project_info_cache = None
-
-    def _install_dependencies_in_venv(self, venv_path: Path, env: str | None = None, force: bool = False) -> None:
-        from wexample_app.const.env import ENV_NAME_LOCAL
-        from wexample_wex_addon_app.helpers.python import python_install_dependencies_in_venv
-
-        suite_workdir = self.get_shallow_suite_workdir()
-        toml_file = self.get_project_config_file()
-
-        # Check for suite only in local env.
-        if env == ENV_NAME_LOCAL:
-            # Package is part of a suite that may have a venv configured.
-            if suite_workdir:
-                # Get all dependencies from pyproject.toml
-                pyproject_toml_dependencies = toml_file.list_dependency_names()
-
-                # Get all packages from the suite ordered by dependencies (leaf -> trunk)
-                suite_packages = suite_workdir.get_ordered_packages()
-                suite_package_names = {pkg.get_package_name() for pkg in suite_packages}
-
-                # Collect all suite packages that need to be installed (including transitive dependencies)
-                suite_dependencies_ordered = self._collect_suite_dependencies(
-                    pyproject_toml_dependencies, suite_workdir, suite_package_names
-                )
-
-                # External dependencies are those not in the suite
-                external_dependencies = [
-                    dep
-                    for dep in pyproject_toml_dependencies
-                    if dep not in suite_package_names
-                ]
-
-                self.subtitle(
-                    f"Installing {len(external_dependencies)} external packages",
-                    indentation=1,
-                )
-                python_install_dependencies_in_venv(
-                    venv_path=venv_path,
-                    names=external_dependencies
-                )
-
-                # Install suite packages in editable mode (leaf -> trunk order)
-                if suite_dependencies_ordered:
-                    self.subtitle(
-                        f"Installing {len(suite_dependencies_ordered)} suite packages in editable mode (leaf -> trunk)",
-                        indentation=1,
-                    )
-
-                    editable_paths = []
-
-                    for pkg in suite_dependencies_ordered:
-                        pkg_path = pkg.get_path()
-                        pkg_name = pkg.get_package_name()
-
-                        if force or not python_is_package_installed_editable_in_venv(
-                                venv_path=venv_path,
-                                package_name=pkg_name,
-                                package_path=pkg_path
-                        ):
-                            editable_paths.append(str(pkg_path))
-
-                    python_install_dependencies_in_venv(
-                        venv_path=venv_path,
-                        names=editable_paths,
-                        editable=True,
-                    )
-
-                self.subtitle(
-                    "Installing dev group dependencies",
-                    indentation=1,
-                )
-                python_install_dependencies_in_venv(
-                    venv_path=venv_path,
-                    names=self.get_project_config_file().optional_group_array(
-                        group="dev"
-                    )
-                )
-
-            self.subtitle(
-                "Installing itself in editable mode",
-                indentation=1,
-            )
-
-            # Install itself as editable.
-            python_install_dependency_in_venv(
-                venv_path=venv_path,
-                name=self.get_path(),
-                editable=True
-            )
-
-            return
-
-        # Fallback to parent behaviour
-        super()._install_dependencies_in_venv(
-            venv_path=venv_path,
-            env=env,
-            force=force
-        )
 
     def depends_from(self, package: PythonPackageWorkdir) -> bool:
         for dependence_name in self.get_dependencies():
@@ -199,7 +105,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         return raw_value
 
     def search_imports_in_codebase(
-            self, searched_package: PythonPackageWorkdir
+        self, searched_package: PythonPackageWorkdir
     ) -> list[SearchResult]:
         """Find import statements that reference the given package.
 
@@ -221,7 +127,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         return self.search_in_codebase(pattern, regex=True, flags=re.MULTILINE)
 
     def search_in_codebase(
-            self, string: str, *, regex: bool = False, flags: int = 0
+        self, string: str, *, regex: bool = False, flags: int = 0
     ) -> list[SearchResult]:
         from wexample_filestate.utils.search_result import SearchResult
         from wexample_filestate_python.file.python_file import PythonFile
@@ -240,10 +146,10 @@ class PythonPackageWorkdir(PythonWorkdir):
         return found
 
     def _collect_suite_dependencies(
-            self,
-            direct_dependencies: list[str],
-            suite_workdir,
-            suite_package_names: set[str],
+        self,
+        direct_dependencies: list[str],
+        suite_workdir,
+        suite_package_names: set[str],
     ) -> list:
         """Collect all suite packages recursively that need to be installed in editable mode.
 
@@ -280,6 +186,13 @@ class PythonPackageWorkdir(PythonWorkdir):
 
         return suite_deps_ordered
 
+    def _get_readme_content(self) -> ReadmeContentConfigValue | None:
+        from wexample_wex_addon_dev_python.config_value.python_package_readme_config_value import (
+            PythonPackageReadmeContentConfigValue,
+        )
+
+        return PythonPackageReadmeContentConfigValue(workdir=self)
+
     def _get_suite_package_workdir_class(self) -> type[FrameworkPackageSuiteWorkdir]:
         from wexample_wex_addon_dev_python.workdir.python_packages_suite_workdir import (
             PythonPackagesSuiteWorkdir,
@@ -287,12 +200,99 @@ class PythonPackageWorkdir(PythonWorkdir):
 
         return PythonPackagesSuiteWorkdir
 
-    def _get_readme_content(self) -> ReadmeContentConfigValue | None:
-        from wexample_wex_addon_dev_python.config_value.python_package_readme_config_value import (
-            PythonPackageReadmeContentConfigValue,
+    def _install_dependencies_in_venv(
+        self, venv_path: Path, env: str | None = None, force: bool = False
+    ) -> None:
+        from wexample_app.const.env import ENV_NAME_LOCAL
+        from wexample_wex_addon_app.helpers.python import (
+            python_install_dependencies_in_venv,
         )
 
-        return PythonPackageReadmeContentConfigValue(workdir=self)
+        suite_workdir = self.get_shallow_suite_workdir()
+        toml_file = self.get_project_config_file()
+
+        # Check for suite only in local env.
+        if env == ENV_NAME_LOCAL:
+            # Package is part of a suite that may have a venv configured.
+            if suite_workdir:
+                # Get all dependencies from pyproject.toml
+                pyproject_toml_dependencies = toml_file.list_dependency_names()
+
+                # Get all packages from the suite ordered by dependencies (leaf -> trunk)
+                suite_packages = suite_workdir.get_ordered_packages()
+                suite_package_names = {pkg.get_package_name() for pkg in suite_packages}
+
+                # Collect all suite packages that need to be installed (including transitive dependencies)
+                suite_dependencies_ordered = self._collect_suite_dependencies(
+                    pyproject_toml_dependencies, suite_workdir, suite_package_names
+                )
+
+                # External dependencies are those not in the suite
+                external_dependencies = [
+                    dep
+                    for dep in pyproject_toml_dependencies
+                    if dep not in suite_package_names
+                ]
+
+                self.subtitle(
+                    f"Installing {len(external_dependencies)} external packages",
+                    indentation=1,
+                )
+                python_install_dependencies_in_venv(
+                    venv_path=venv_path, names=external_dependencies
+                )
+
+                # Install suite packages in editable mode (leaf -> trunk order)
+                if suite_dependencies_ordered:
+                    self.subtitle(
+                        f"Installing {len(suite_dependencies_ordered)} suite packages in editable mode (leaf -> trunk)",
+                        indentation=1,
+                    )
+
+                    editable_paths = []
+
+                    for pkg in suite_dependencies_ordered:
+                        pkg_path = pkg.get_path()
+                        pkg_name = pkg.get_package_name()
+
+                        if force or not python_is_package_installed_editable_in_venv(
+                            venv_path=venv_path,
+                            package_name=pkg_name,
+                            package_path=pkg_path,
+                        ):
+                            editable_paths.append(str(pkg_path))
+
+                    python_install_dependencies_in_venv(
+                        venv_path=venv_path,
+                        names=editable_paths,
+                        editable=True,
+                    )
+
+                self.subtitle(
+                    "Installing dev group dependencies",
+                    indentation=1,
+                )
+                python_install_dependencies_in_venv(
+                    venv_path=venv_path,
+                    names=self.get_project_config_file().optional_group_array(
+                        group="dev"
+                    ),
+                )
+
+            self.subtitle(
+                "Installing itself in editable mode",
+                indentation=1,
+            )
+
+            # Install itself as editable.
+            python_install_dependency_in_venv(
+                venv_path=venv_path, name=self.get_path(), editable=True
+            )
+
+            return
+
+        # Fallback to parent behaviour
+        super()._install_dependencies_in_venv(venv_path=venv_path, env=env, force=force)
 
     def _publish(self, force: bool = False) -> None:
         from wexample_filestate_python.common.pipy_gateway import PipyGateway

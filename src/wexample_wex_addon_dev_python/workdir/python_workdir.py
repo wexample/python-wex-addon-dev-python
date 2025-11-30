@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from tomlkit import TOMLDocument
-
 from wexample_app.item.file.iml_file import ImlFile
 from wexample_event.dataclass.event import Event
 from wexample_event.dataclass.listener_record import EventCallback
@@ -21,6 +20,7 @@ from wexample_wex_addon_app.item.file.python_app_iml_file import PythonAppImlFil
 from wexample_wex_addon_app.workdir.code_base_workdir import (
     CodeBaseWorkdir,
 )
+
 from wexample_wex_addon_dev_python.const.python import (
     PYTHON_PYTEST_COV_FORMAT_HTML,
     PYTHON_PYTEST_COV_FORMAT_JSON,
@@ -47,7 +47,10 @@ if TYPE_CHECKING:
 
 class PythonWorkdir(CodeBaseWorkdir):
     def app_install(self, env: str | None = None, force: bool = False) -> Path:
-        from wexample_wex_addon_app.helpers.python import python_ensure_pip_or_fail, python_install_environment
+        from wexample_wex_addon_app.helpers.python import (
+            python_ensure_pip_or_fail,
+            python_install_environment,
+        )
 
         # Check if a venv path is somewhere in the config hierarchy.
         venv_path_config = self.search_app_or_suite_runtime_config("python.venv_path")
@@ -69,16 +72,6 @@ class PythonWorkdir(CodeBaseWorkdir):
 
         # Use standard PDM install
         return venv_path
-
-    def _install_dependencies_in_venv(self, venv_path: Path, env: str | None = None, force: bool = False) -> None:
-        from wexample_wex_addon_app.helpers.python import python_install_dependencies_in_venv
-
-        toml_file = self.get_project_config_file()
-        # Get all dependencies from pyproject.toml
-        python_install_dependencies_in_venv(
-            venv_path=venv_path,
-            names=toml_file.list_dependency_names()
-        )
 
     def get_dependencies(self) -> list[str]:
         from packaging.requirements import Requirement
@@ -160,11 +153,11 @@ class PythonWorkdir(CodeBaseWorkdir):
         return current_coverage != last_report.get("percent")
 
     def operation_add_event_listener(
-            self,
-            operation: AbstractOperation | type[AbstractOperation],
-            callback: EventCallback,
-            suffix: str | None = None,
-            **kwargs,
+        self,
+        operation: AbstractOperation | type[AbstractOperation],
+        callback: EventCallback,
+        suffix: str | None = None,
+        **kwargs,
     ) -> None:
         self.add_event_listener(
             name=operation.get_event_name(suffix=suffix), callback=callback, **kwargs
@@ -301,7 +294,7 @@ class PythonWorkdir(CodeBaseWorkdir):
         config_file.write(config)
 
     def test_get_command(
-            self, format: str = PYTHON_PYTEST_COV_FORMAT_JSON
+        self, format: str = PYTHON_PYTEST_COV_FORMAT_JSON
     ) -> list[str]:
         cmd = self.get_python_exec_module_command("pytest")
         cmd.extend(
@@ -410,15 +403,15 @@ class PythonWorkdir(CodeBaseWorkdir):
 
         vendor_prefix = self.get_vendor_name()
         return (
-                vendor_prefix
-                + "_"
-                + string_to_snake_case(
-            os.path.basename(
-                os.path.dirname(
-                    os.path.realpath(option.get_parent_item().get_path())
+            vendor_prefix
+            + "_"
+            + string_to_snake_case(
+                os.path.basename(
+                    os.path.dirname(
+                        os.path.realpath(option.get_parent_item().get_path())
+                    )
                 )
             )
-        )
         )
 
     def _create_python_file_children_filter(self) -> ChildrenFileFactoryOption:
@@ -545,6 +538,19 @@ class PythonWorkdir(CodeBaseWorkdir):
         """Add event listeners"""
         self.operation_add_event_listener(
             operation=FileRenameOperation, suffix="post", callback=self._on_test_event
+        )
+
+    def _install_dependencies_in_venv(
+        self, venv_path: Path, env: str | None = None, force: bool = False
+    ) -> None:
+        from wexample_wex_addon_app.helpers.python import (
+            python_install_dependencies_in_venv,
+        )
+
+        toml_file = self.get_project_config_file()
+        # Get all dependencies from pyproject.toml
+        python_install_dependencies_in_venv(
+            venv_path=venv_path, names=toml_file.list_dependency_names()
         )
 
     def _on_test_event(self, event: Event) -> None:

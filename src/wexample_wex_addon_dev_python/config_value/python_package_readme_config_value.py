@@ -20,31 +20,6 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
         description="The python package workdir"
     )
 
-    def _get_readme_search_paths(self):
-        from pathlib import Path
-        from wexample_app.const.globals import WORKDIR_SETUP_DIR
-
-        workdir_path = self.workdir.get_path()
-
-        search_paths = [
-            workdir_path / WORKDIR_SETUP_DIR / "knowledge" / "readme",
-            ]
-
-        # Suite-level templates
-        suite_path = self.workdir.find_suite_workdir_path()
-        if suite_path is not None:
-            search_paths.append(
-                suite_path / WORKDIR_SETUP_DIR / "knowledge" / "package-readme"
-            )
-
-        # Default templates (bundled)
-        default_templates_path = (
-                Path(__file__).parent.parent / "resources" / "readme_templates"
-        )
-        search_paths.append(default_templates_path)
-
-        return search_paths
-
     def get_templates(self) -> list[str] | None:
         context = self._get_template_context()
 
@@ -106,6 +81,32 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
 
         return [rendered_content]
 
+    def _get_readme_search_paths(self):
+        from pathlib import Path
+
+        from wexample_app.const.globals import WORKDIR_SETUP_DIR
+
+        workdir_path = self.workdir.get_path()
+
+        search_paths = [
+            workdir_path / WORKDIR_SETUP_DIR / "knowledge" / "readme",
+        ]
+
+        # Suite-level templates
+        suite_path = self.workdir.find_suite_workdir_path()
+        if suite_path is not None:
+            search_paths.append(
+                suite_path / WORKDIR_SETUP_DIR / "knowledge" / "package-readme"
+            )
+
+        # Default templates (bundled)
+        default_templates_path = (
+            Path(__file__).parent.parent / "resources" / "readme_templates"
+        )
+        search_paths.append(default_templates_path)
+
+        return search_paths
+
     def _get_template_context(self) -> dict:
         doc = self.workdir.get_project_config()
         project = doc.get("project", {}) if isinstance(doc, dict) else {}
@@ -113,13 +114,17 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
         description = project.get("description", "")
         python_version = project.get("requires-python", "")
         dependencies = project.get("dependencies", [])
-        urls = project.get("urls", {}) if isinstance(project.get("urls", {}), dict) else {}
+        urls = (
+            project.get("urls", {}) if isinstance(project.get("urls", {}), dict) else {}
+        )
 
         homepage = urls.get("homepage") or urls.get("Homepage") or ""
 
         license_field = project.get("license", {})
         if isinstance(license_field, dict):
-            license_info = license_field.get("text", "") or license_field.get("file", "")
+            license_info = license_field.get("text", "") or license_field.get(
+                "file", ""
+            )
         else:
             license_info = str(license_field) if license_field else ""
 
@@ -127,15 +132,15 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
 
         return {
             # filestate: python-iterable-sort
-            "package_name": self.workdir.get_package_name(),
-            "project_name": self.workdir.get_project_name(),
-            "version": self.workdir.get_project_version(),
-            "description": description,
-            "python_version": python_version,
             "dependencies": dependencies,
             "deps_list": deps_list,
+            "description": description,
             "homepage": homepage,
             "license_info": license_info,
+            "package_name": self.workdir.get_package_name(),
+            "project_name": self.workdir.get_project_name(),
+            "python_version": python_version,
+            "version": self.workdir.get_project_version(),
             "workdir": self.workdir,
         }
 
