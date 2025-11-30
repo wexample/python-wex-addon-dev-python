@@ -126,7 +126,9 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
         deps_list = "\n".join([f"- {dep}" for dep in dependencies])
 
         return {
+            # filestate: python-iterable-sort
             "package_name": self.workdir.get_package_name(),
+            "project_name": self.workdir.get_project_name(),
             "version": self.workdir.get_project_version(),
             "description": description,
             "python_version": python_version,
