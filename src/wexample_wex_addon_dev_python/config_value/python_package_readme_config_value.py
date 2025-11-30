@@ -20,127 +20,65 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
         description="The python package workdir"
     )
 
-    def get_templates(self) -> list[str] | None:
-        context = self._get_template_context()
+    # Path-related methods
+    def _get_workdir_path(self):
+        return self.workdir.get_path()
 
-        section_names = [
-            "title",
-            "table-of-contents",
-            "status-compatibility",
-            "prerequisites",
-            "installation",
-            "quickstart",
-            "basic-usage",
-            "configuration",
-            "logging",
-            "api-reference",
-            "examples",
-            "tests",
-            "code-quality",
-            "versioning",
-            "changelog",
-            "migration-notes",
-            "roadmap",
-            "troubleshooting",
-            "security",
-            "privacy",
-            "support",
-            "contribution-guidelines",
-            "maintainers",
-            "license",
-            "useful-links",
-            "suite-integration",
-            "compatibility-matrix",
-            "requirements",
-            "dependencies",
-            "links",
-            "suite-signature",
-        ]
+    def _get_suite_workdir_path(self):
+        return self.workdir.find_suite_workdir_path()
 
-        # Collect available sections
-        available_sections = []
-        for section_name in section_names:
-            if section_name not in ["title", "table-of-contents"]:
-                if self._section_exists(section_name):
-                    available_sections.append(
-                        {
-                            "name": section_name,
-                            "title": self._section_name_to_title(section_name),
-                            "anchor": section_name.replace("_", "-"),
-                        }
-                    )
-
-        context["available_sections"] = available_sections
-
-        # Render in order
-        rendered_content = ""
-        for section_name in section_names:
-            section_content = self._render_readme_section(section_name, context)
-            if section_content:
-                rendered_content += f"{section_content}\n\n"
-
-        return [rendered_content]
-
-    def _get_readme_search_paths(self):
+    def _get_bundled_templates_path(self):
         from pathlib import Path
 
-        from wexample_app.const.globals import WORKDIR_SETUP_DIR
+        return Path(__file__).parent.parent / "resources" / "readme_templates"
 
-        workdir_path = self.workdir.get_path()
+    # Project metadata methods
+    def _get_package_name(self) -> str:
+        return self.workdir.get_package_name()
 
-        search_paths = [
-            workdir_path / WORKDIR_SETUP_DIR / "knowledge" / "readme",
-        ]
+    def _get_project_name(self) -> str:
+        return self.workdir.get_project_name()
 
-        # Suite-level templates
-        suite_path = self.workdir.find_suite_workdir_path()
-        if suite_path is not None:
-            search_paths.append(
-                suite_path / WORKDIR_SETUP_DIR / "knowledge" / "package-readme"
-            )
+    def _get_project_version(self) -> str:
+        return self.workdir.get_project_version()
 
-        # Default templates (bundled)
-        default_templates_path = (
-            Path(__file__).parent.parent / "resources" / "readme_templates"
-        )
-        search_paths.append(default_templates_path)
-
-        return search_paths
-
-    def _get_template_context(self) -> dict:
+    def _get_project_description(self) -> str:
         doc = self.workdir.get_project_config()
         project = doc.get("project", {}) if isinstance(doc, dict) else {}
+        return project.get("description", "")
 
-        description = project.get("description", "")
-        python_version = project.get("requires-python", "")
-        dependencies = project.get("dependencies", [])
+    def _get_project_homepage(self) -> str:
+        doc = self.workdir.get_project_config()
+        project = doc.get("project", {}) if isinstance(doc, dict) else {}
         urls = (
             project.get("urls", {}) if isinstance(project.get("urls", {}), dict) else {}
         )
+        return urls.get("homepage") or urls.get("Homepage") or ""
 
-        homepage = urls.get("homepage") or urls.get("Homepage") or ""
-
+    def _get_project_license(self) -> str:
+        doc = self.workdir.get_project_config()
+        project = doc.get("project", {}) if isinstance(doc, dict) else {}
         license_field = project.get("license", {})
         if isinstance(license_field, dict):
-            license_info = license_field.get("text", "") or license_field.get(
-                "file", ""
-            )
-        else:
-            license_info = str(license_field) if license_field else ""
+            return license_field.get("text", "") or license_field.get("file", "")
+        return str(license_field) if license_field else ""
 
-        deps_list = "\n".join([f"- {dep}" for dep in dependencies])
+    def _get_project_dependencies(self) -> list[str]:
+        doc = self.workdir.get_project_config()
+        project = doc.get("project", {}) if isinstance(doc, dict) else {}
+        return project.get("dependencies", [])
 
-        return {
-            # filestate: python-iterable-sort
-            "dependencies": dependencies,
-            "deps_list": deps_list,
-            "description": description,
-            "homepage": homepage,
-            "license_info": license_info,
-            "package_name": self.workdir.get_package_name(),
-            "project_name": self.workdir.get_project_name(),
-            "python_version": python_version,
-            "version": self.workdir.get_project_version(),
-            "workdir": self.workdir,
-        }
+    # Python-specific context extension
+    def _get_template_context(self) -> dict:
+        # Get base context from parent
+        context = super()._get_template_context()
+
+        # Add Python-specific variables
+        doc = self.workdir.get_project_config()
+        project = doc.get("project", {}) if isinstance(doc, dict) else {}
+
+        context["python_version"] = project.get("requires-python", "")
+        context["workdir"] = self.workdir
+
+        return context
 
