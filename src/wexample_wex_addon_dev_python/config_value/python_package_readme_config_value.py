@@ -20,27 +20,10 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
         description="The python package workdir"
     )
 
-    # Path-related methods
-    def _get_workdir_path(self):
-        return self.workdir.get_path()
-
-    def _get_suite_workdir_path(self):
-        return self.workdir.find_suite_workdir_path()
-
     def _get_bundled_templates_path(self):
         from pathlib import Path
 
         return Path(__file__).parent.parent / "resources" / "readme_templates"
-
-    # Project metadata methods
-    def _get_package_name(self) -> str:
-        return self.workdir.get_package_name()
-
-    def _get_project_name(self) -> str:
-        return self.workdir.get_project_name()
-
-    def _get_project_version(self) -> str:
-        return self.workdir.get_project_version()
 
     def _get_project_description(self) -> str:
         doc = self.workdir.get_project_config()
@@ -63,11 +46,6 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
             return license_field.get("text", "") or license_field.get("file", "")
         return str(license_field) if license_field else ""
 
-    def _get_project_dependencies(self) -> list[str]:
-        doc = self.workdir.get_project_config()
-        project = doc.get("project", {}) if isinstance(doc, dict) else {}
-        return project.get("dependencies", [])
-
     # Python-specific context extension
     def _get_template_context(self) -> dict:
         # Get base context from parent
@@ -81,4 +59,3 @@ class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
         context["workdir"] = self.workdir
 
         return context
-
