@@ -26,7 +26,7 @@ class PythonPackageWorkdir(PythonWorkdir):
     _project_info_cache = None
 
     def depends_from(self, package: PythonPackageWorkdir) -> bool:
-        for dependence_name in self.get_dependencies():
+        for dependence_name in self.list_dependency_names():
             if package.get_package_name() == dependence_name:
                 return True
         return False
@@ -170,7 +170,7 @@ class PythonPackageWorkdir(PythonWorkdir):
                     pkg = suite_workdir.get_package(dep_name)
                     if pkg:
                         # Get dependencies of this suite package and recurse
-                        pkg_dependencies = pkg.get_dependencies()
+                        pkg_dependencies = pkg.list_dependency_names()
                         collect_recursive(pkg_dependencies)
 
         # Start with direct dependencies from pyproject.toml

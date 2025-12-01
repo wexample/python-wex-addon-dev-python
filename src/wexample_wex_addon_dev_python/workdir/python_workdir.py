@@ -73,13 +73,8 @@ class PythonWorkdir(CodeBaseWorkdir):
         # Use standard PDM install
         return venv_path
 
-    def get_dependencies(self) -> list[str]:
-        from packaging.requirements import Requirement
-
-        dependencies = []
-        for dependency in self.get_app_config_file().list_dependency_names():
-            dependencies.append(Requirement(dependency).name)
-        return dependencies
+    def get_dependencies_versions(self) -> dict[str, str]:
+        return self.get_app_config_file().get_dependencies_versions()
 
     def get_main_code_file_extension(self) -> str:
         return PYTHON_FILE_EXTENSION

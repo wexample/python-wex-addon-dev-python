@@ -25,6 +25,10 @@ class PythonPackageReadmeContentConfigValue(AppReadmeConfigValue):
         )
         return urls.get("homepage") or urls.get("Homepage") or ""
 
+    def _get_dependencies(self) -> dict[str, str]:
+        """Extract dependencies from pyproject.toml."""
+        return self.workdir.get_dependencies_versions()
+
     def _get_project_license(self) ->str | None:
         """Extract license information from pyproject.toml."""
         project = self.workdir.get_app_config()
