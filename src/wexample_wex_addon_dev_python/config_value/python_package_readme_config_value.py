@@ -2,11 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from wexample_filestate.config_value.readme_content_config_value import (
-    ReadmeContentConfigValue,
-)
 from wexample_helpers.classes.field import public_field
 from wexample_helpers.decorator.base_class import base_class
+from wexample_wex_addon_app.config_value.app_readme_config_value import AppReadmeConfigValue
 
 if TYPE_CHECKING:
     from wexample_wex_addon_dev_python.workdir.python_package_workdir import (
@@ -15,47 +13,65 @@ if TYPE_CHECKING:
 
 
 @base_class
-class PythonPackageReadmeContentConfigValue(ReadmeContentConfigValue):
+class PythonPackageReadmeContentConfigValue(AppReadmeConfigValue):
+    """README generation for Python packages.
+    
+    Handles Python-specific metadata extraction from pyproject.toml.
+    """
+
     workdir: PythonPackageWorkdir = public_field(
         description="The python package workdir"
     )
 
     def _get_bundled_templates_path(self):
+        """Return path to bundled Python README templates."""
         from pathlib import Path
 
         return Path(__file__).parent.parent / "resources" / "readme_templates"
 
-    def _get_project_description(self) -> str:
+    def _get_project_config(self) -> dict:
+        """Get the pyproject.toml configuration.
+        
+        Returns:
+            The project configuration dictionary
+        """
         doc = self.workdir.get_project_config()
-        project = doc.get("project", {}) if isinstance(doc, dict) else {}
-        return project.get("description", "")
+        return doc.get("project", {}) if isinstance(doc, dict) else {}
+
+    def _get_project_description(self) -> str:
+        """Extract description from pyproject.toml."""
+        return self._get_project_config().get("description", "")
 
     def _get_project_homepage(self) -> str:
-        doc = self.workdir.get_project_config()
-        project = doc.get("project", {}) if isinstance(doc, dict) else {}
+        """Extract homepage URL from pyproject.toml."""
+        project = self._get_project_config()
         urls = (
             project.get("urls", {}) if isinstance(project.get("urls", {}), dict) else {}
         )
         return urls.get("homepage") or urls.get("Homepage") or ""
 
     def _get_project_license(self) -> str:
-        doc = self.workdir.get_project_config()
-        project = doc.get("project", {}) if isinstance(doc, dict) else {}
+        """Extract license information from pyproject.toml."""
+        project = self._get_project_config()
         license_field = project.get("license", {})
         if isinstance(license_field, dict):
             return license_field.get("text", "") or license_field.get("file", "")
         return str(license_field) if license_field else ""
 
-    # Python-specific context extension
+    def _get_project_dependencies(self) -> list[str]:
+        """Extract dependencies from pyproject.toml."""
+        return self._get_project_config().get("dependencies", [])
+
     def _get_template_context(self) -> dict:
-        # Get base context from parent
+        """Build template context with Python-specific variables.
+        
+        Adds python_version to the base context.
+        """
         context = super()._get_template_context()
 
-        # Add Python-specific variables
-        doc = self.workdir.get_project_config()
-        project = doc.get("project", {}) if isinstance(doc, dict) else {}
-
-        context["python_version"] = project.get("requires-python", "")
-        context["workdir"] = self.workdir
+        # Add Python-specific variable
+        context["python_version"] = self._get_project_config().get(
+            "requires-python", ""
+        )
 
         return context
