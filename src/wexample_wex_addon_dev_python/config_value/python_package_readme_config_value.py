@@ -25,6 +25,14 @@ class PythonPackageReadmeContentConfigValue(AppReadmeConfigValue):
         )
         return urls.get("homepage") or urls.get("Homepage") or ""
 
+    def _get_project_license(self) ->str | None:
+        """Extract license information from pyproject.toml."""
+        project = self.workdir.get_app_config()
+        license_field = project.get("license", {})
+        if isinstance(license_field, dict):
+            return license_field.get("text", "") or license_field.get("file", "")
+        return str(license_field) if license_field else ""
+
     def _get_template_context(self) -> dict:
         """Build template context with Python-specific variables.
         
