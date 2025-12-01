@@ -274,9 +274,7 @@ class PythonPackageWorkdir(PythonWorkdir):
                 )
                 python_install_dependencies_in_venv(
                     venv_path=venv_path,
-                    names=self.get_app_config_file().optional_group_array(
-                        group="dev"
-                    ),
+                    names=self.get_app_config_file().optional_group_array(group="dev"),
                 )
 
             self.subtitle(

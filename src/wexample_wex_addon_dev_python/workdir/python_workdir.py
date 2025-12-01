@@ -3,7 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from tomlkit import TOMLDocument
 from wexample_app.item.file.iml_file import ImlFile
 from wexample_event.dataclass.event import Event
 from wexample_event.dataclass.listener_record import EventCallback
@@ -16,7 +15,6 @@ from wexample_filestate_python.const.python_file import (
     PYTHON_FILE_EXTENSION,
     PYTHON_FILE_PYTEST_COVERAGE_JSON,
 )
-from wexample_wex_addon_dev_python.file.python_app_iml_file import PythonAppImlFile
 from wexample_wex_addon_app.workdir.code_base_workdir import (
     CodeBaseWorkdir,
 )
@@ -26,6 +24,7 @@ from wexample_wex_addon_dev_python.const.python import (
     PYTHON_PYTEST_COV_FORMAT_JSON,
     PYTHON_PYTEST_COV_REPORT_DIR,
 )
+from wexample_wex_addon_dev_python.file.python_app_iml_file import PythonAppImlFile
 
 if TYPE_CHECKING:
     from wexample_config.const.types import DictConfig
@@ -73,6 +72,16 @@ class PythonWorkdir(CodeBaseWorkdir):
         # Use standard PDM install
         return venv_path
 
+    def get_app_config_file(self, reload: bool = True) -> PythonPyprojectTomlFile:
+        from wexample_wex_addon_dev_python.file.python_pyproject_toml_file import (
+            PythonPyprojectTomlFile,
+        )
+
+        config_file = self.find_by_type(PythonPyprojectTomlFile)
+        # Read once to populate content with file source.
+        config_file.read_text(reload=reload)
+        return config_file
+
     def get_dependencies_versions(self) -> dict[str, str]:
         return self.get_app_config_file().get_dependencies_versions()
 
@@ -102,16 +111,6 @@ class PythonWorkdir(CodeBaseWorkdir):
         from wexample_helpers.helpers.string import string_to_kebab_case
 
         return string_to_kebab_case(self.get_package_import_name())
-
-    def get_app_config_file(self, reload: bool = True) -> PythonPyprojectTomlFile:
-        from wexample_wex_addon_dev_python.file.python_pyproject_toml_file import (
-            PythonPyprojectTomlFile,
-        )
-
-        config_file = self.find_by_type(PythonPyprojectTomlFile)
-        # Read once to populate content with file source.
-        config_file.read_text(reload=reload)
-        return config_file
 
     def get_python_exec_module_command(self, module_name: str) -> list[str]:
         return [self.get_python_path(), "-m", module_name]
