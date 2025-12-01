@@ -70,12 +70,6 @@ class PythonPyprojectTomlFile(TomlFile):
 
         return self.find_closest(CodeBaseWorkdir)
 
-    def list_dependencies(
-            self, optional: bool = False, group: str = "dev"
-    ) -> list[str]:
-        deps = self._get_deps_array(optional=optional, group=group)
-        return [str(x) for x in list(deps)]
-
     def get_dependencies_versions(
             self, optional: bool = False, group: str = "dev"
     ) -> dict[str, str]:
@@ -91,7 +85,7 @@ class PythonPyprojectTomlFile(TomlFile):
 
         return map
 
-    def list_dependency_names(
+    def list_dependencies_names(
             self,
             optional: bool = False,
             group: str = "dev",

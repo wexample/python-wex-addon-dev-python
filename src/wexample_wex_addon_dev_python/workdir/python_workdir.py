@@ -318,7 +318,7 @@ class PythonWorkdir(CodeBaseWorkdir):
         }
 
         # Get current dependencies
-        current_deps = config_file.list_dependencies()
+        current_deps = config_file.list_dependencies_names()
 
         # Update each dependency if it's in the map
         for dep_spec in current_deps:
@@ -516,7 +516,7 @@ class PythonWorkdir(CodeBaseWorkdir):
         toml_file = self.get_app_config_file()
         # Get all dependencies from pyproject.toml
         python_install_dependencies_in_venv(
-            venv_path=venv_path, names=toml_file.list_dependency_names()
+            venv_path=venv_path, names=toml_file.list_dependencies_names()
         )
 
     def _on_test_event(self, event: Event) -> None:
