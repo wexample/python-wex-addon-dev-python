@@ -16,7 +16,7 @@ from wexample_filestate_python.const.python_file import (
     PYTHON_FILE_EXTENSION,
     PYTHON_FILE_PYTEST_COVERAGE_JSON,
 )
-from wexample_wex_addon_app.item.file.python_app_iml_file import PythonAppImlFile
+from wexample_wex_addon_dev_python.file.python_app_iml_file import PythonAppImlFile
 from wexample_wex_addon_app.workdir.code_base_workdir import (
     CodeBaseWorkdir,
 )
