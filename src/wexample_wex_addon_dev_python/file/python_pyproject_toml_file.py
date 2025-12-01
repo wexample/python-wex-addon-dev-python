@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 @base_class
-class PythonPackageTomlFile(TomlFile):
+class PythonPyprojectTomlFile(TomlFile):
     def add_dependency(
         self, spec: str, optional: bool = False, group: str = "dev"
     ) -> bool:

@@ -209,7 +209,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         )
 
         suite_workdir = self.get_shallow_suite_workdir()
-        toml_file = self.get_project_config_file()
+        toml_file = self.get_app_config_file()
 
         # Check for suite only in local env.
         if env == ENV_NAME_LOCAL:
@@ -274,7 +274,7 @@ class PythonPackageWorkdir(PythonWorkdir):
                 )
                 python_install_dependencies_in_venv(
                     venv_path=venv_path,
-                    names=self.get_project_config_file().optional_group_array(
+                    names=self.get_app_config_file().optional_group_array(
                         group="dev"
                     ),
                 )

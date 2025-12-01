@@ -40,8 +40,8 @@ if TYPE_CHECKING:
     )
     from wexample_helpers.const.types import StructuredData
 
-    from wexample_wex_addon_dev_python.file.python_package_toml_file import (
-        PythonPackageTomlFile,
+    from wexample_wex_addon_dev_python.file.python_pyproject_toml_file import (
+        PythonPyprojectTomlFile,
     )
 
 
@@ -77,7 +77,7 @@ class PythonWorkdir(CodeBaseWorkdir):
         from packaging.requirements import Requirement
 
         dependencies = []
-        for dependency in self.get_project_config_file().list_dependency_names():
+        for dependency in self.get_app_config_file().list_dependency_names():
             dependencies.append(Requirement(dependency).name)
         return dependencies
 
@@ -108,19 +108,12 @@ class PythonWorkdir(CodeBaseWorkdir):
 
         return string_to_kebab_case(self.get_package_import_name())
 
-    def get_project_config(self, reload: bool = True) -> TOMLDocument:
-        """
-        Fetch the data from the pyproject.toml file.
-        """
-        return self.get_project_config_file(reload=reload).read_parsed()
-
-    def get_project_config_file(self, reload: bool = True) -> PythonPackageTomlFile:
-        from wexample_wex_addon_dev_python.file.python_package_toml_file import (
-            PythonPackageTomlFile,
+    def get_app_config_file(self, reload: bool = True) -> PythonPyprojectTomlFile:
+        from wexample_wex_addon_dev_python.file.python_pyproject_toml_file import (
+            PythonPyprojectTomlFile,
         )
 
-        config_file = self.find_by_name("pyproject.toml")
-        assert isinstance(config_file, PythonPackageTomlFile)
+        config_file = self.find_by_type(PythonPyprojectTomlFile)
         # Read once to populate content with file source.
         config_file.read_text(reload=reload)
         return config_file
@@ -173,8 +166,8 @@ class PythonWorkdir(CodeBaseWorkdir):
         )
         from wexample_helpers.helpers.array import array_dict_get_by
 
-        from wexample_wex_addon_dev_python.file.python_package_toml_file import (
-            PythonPackageTomlFile,
+        from wexample_wex_addon_dev_python.file.python_pyproject_toml_file import (
+            PythonPyprojectTomlFile,
         )
 
         raw_value = super().prepare_value(raw_value=raw_value)
@@ -203,30 +196,8 @@ class PythonWorkdir(CodeBaseWorkdir):
                         self._create_python_file_children_filter(),
                     ],
                 },
-                # Replaced by pdm
                 {
-                    "name": "requirements.in",
-                    "type": DiskItemType.FILE,
-                    "should_exist": False,
-                },
-                {
-                    "name": "requirements.txt",
-                    "type": DiskItemType.FILE,
-                    "should_exist": False,
-                },
-                {
-                    "name": "requirements-dev.in",
-                    "type": DiskItemType.FILE,
-                    "should_exist": False,
-                },
-                {
-                    "name": "requirements-dev.txt",
-                    "type": DiskItemType.FILE,
-                    "should_exist": False,
-                },
-                # Pdm versions
-                {
-                    "class": PythonPackageTomlFile,
+                    "class": PythonPyprojectTomlFile,
                     "name": "pyproject.toml",
                     "type": DiskItemType.FILE,
                     "should_exist": True,
@@ -280,7 +251,7 @@ class PythonWorkdir(CodeBaseWorkdir):
 
     def save_dependency(self, package_name: str, version: str) -> bool:
         """Add or update a dependency with strict version."""
-        config = self.get_project_config_file()
+        config = self.get_app_config_file()
         updated = config.add_dependency(f"{package_name}=={version}")
 
         if updated:
@@ -290,7 +261,7 @@ class PythonWorkdir(CodeBaseWorkdir):
 
     def save_project_config_file(self, config: StructuredData) -> None:
         """Save the project configuration to pyproject.toml."""
-        config_file = self.get_project_config_file()
+        config_file = self.get_app_config_file()
         config_file.write(config)
 
     def test_get_command(
@@ -343,7 +314,7 @@ class PythonWorkdir(CodeBaseWorkdir):
         from packaging.requirements import Requirement
         from packaging.utils import canonicalize_name
 
-        config_file = self.get_project_config_file()
+        config_file = self.get_app_config_file()
 
         # Canonicalize the keys in dependencies_map for consistent matching
         canonical_map = {
@@ -547,7 +518,7 @@ class PythonWorkdir(CodeBaseWorkdir):
             python_install_dependencies_in_venv,
         )
 
-        toml_file = self.get_project_config_file()
+        toml_file = self.get_app_config_file()
         # Get all dependencies from pyproject.toml
         python_install_dependencies_in_venv(
             venv_path=venv_path, names=toml_file.list_dependency_names()
