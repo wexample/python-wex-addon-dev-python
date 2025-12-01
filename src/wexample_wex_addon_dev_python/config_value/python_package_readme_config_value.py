@@ -41,7 +41,7 @@ class PythonPackageReadmeContentConfigValue(AppReadmeConfigValue):
         context = super()._get_template_context()
 
         # Add Python-specific variable
-        context["python_version"] = self.workdir.get_app_config().get(
+        context["python_version"] = self.workdir.get_app_config().get("project", {}).get(
             "requires-python", ""
         )
 
