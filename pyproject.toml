@@ -12,7 +12,6 @@ classifiers = ["Programming Language :: Python :: 3", "License :: OSI Approved :
 dependencies = [
     "attrs>=23.1.0",
     "cattrs>=23.1.0",
-    "jinja2",
     "networkx",
     "pylint",
     "pyright",
