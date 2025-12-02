@@ -71,16 +71,6 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
 
         return stack if stack and stack[-1].get_package_name() == target else []
 
-    def build_ordered_dependencies(self) -> list[str]:
-        # Build and validate the dependency map, then compute a stable topological order
-        return self.topological_order(self.build_dependencies_map())
-
-    def get_ordered_packages(self) -> list[PythonPackageWorkdir]:
-        """Return package objects ordered leaves -> trunk."""
-        order = self.build_ordered_dependencies()
-        by_name = {p.get_package_name(): p for p in self.get_packages()}
-        return [by_name[n] for n in order]
-
     def packages_validate_internal_dependencies_declarations(self) -> None:
         from wexample_wex_addon_app.exception.dependency_violation_exception import (
             DependencyViolationException,
@@ -121,34 +111,6 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
 
         self.io.success("Internal dependencies match.")
         self.io.indentation_down()
-
-    def topological_order(self, dep_map: dict[str, list[str]]) -> list[str]:
-        """Deterministic topological order using graphlib.TopologicalSorter.
-        Returns a leaves -> trunk order (dependencies before dependents).
-        Raises ValueError on cycles.
-        """
-        from graphlib import CycleError, TopologicalSorter
-
-        # Normalize: include every mentioned node and sort for stable results
-        nodes = set(dep_map.keys()) | {d for deps in dep_map.values() for d in deps}
-        normalized: dict[str, list[str]] = {
-            k: sorted([d for d in dep_map.get(k, []) if d in nodes])
-            for k in sorted(nodes)
-        }
-
-        ts = TopologicalSorter()
-        for k, deps in normalized.items():
-            ts.add(k, *deps)
-
-        try:
-            order = list(ts.static_order())
-        except CycleError as e:
-            # Extract involved nodes if present, otherwise a generic message
-            msg = getattr(e, "args", [None])[0] or "Cyclic dependencies detected"
-            raise ValueError(str(msg)) from e
-
-        # Return only local packages (original keys of dep_map)
-        return [n for n in order if n in dep_map]
 
     def _child_is_package_directory(self, entry: Path) -> bool:
         return entry.is_dir() and (entry / "pyproject.toml").is_file()
