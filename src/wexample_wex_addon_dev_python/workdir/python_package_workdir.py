@@ -25,12 +25,6 @@ if TYPE_CHECKING:
 class PythonPackageWorkdir(PythonWorkdir):
     _project_info_cache = None
 
-    def depends_from(self, package: PythonPackageWorkdir) -> bool:
-        for dependence_name in self.get_dependencies_versions().keys():
-            if package.get_package_name() == dependence_name:
-                return True
-        return False
-
     def prepare_value(self, raw_value: DictConfig | None = None) -> DictConfig:
         from wexample_helpers.helpers.array import array_dict_get_by
 

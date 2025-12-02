@@ -75,15 +75,6 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
         # Build and validate the dependency map, then compute a stable topological order
         return self.topological_order(self.build_dependencies_map())
 
-    def get_dependents(
-        self, package: PythonPackageWorkdir
-    ) -> list[PythonPackageWorkdir]:
-        dependents = []
-        for neighbor_package in self.get_packages():
-            if neighbor_package.depends_from(package):
-                dependents.append(neighbor_package)
-        return dependents
-
     def get_ordered_packages(self) -> list[PythonPackageWorkdir]:
         """Return package objects ordered leaves -> trunk."""
         order = self.build_ordered_dependencies()
