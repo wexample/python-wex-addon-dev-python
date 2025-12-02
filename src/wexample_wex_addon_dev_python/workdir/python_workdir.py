@@ -246,7 +246,7 @@ class PythonWorkdir(CodeBaseWorkdir):
     def save_dependency(self, package_name: str, version: str) -> bool:
         """Add or update a dependency with strict version."""
         config = self.get_app_config_file()
-        updated = config.add_dependency(f"{package_name}=={version}")
+        updated = config.add_dependency(package_name=package_name, version=version)
 
         if updated:
             config.write_parsed()
@@ -329,7 +329,7 @@ class PythonWorkdir(CodeBaseWorkdir):
                 if canonical_name in canonical_map:
                     new_version = canonical_map[canonical_name]
                     # Use add_dependency which handles removal of old version
-                    config_file.add_dependency(f"{req.name}=={new_version}")
+                    config_file.add_dependency(package_name=req.name, version=new_version)
             except Exception:
                 # Skip unparsable dependencies
                 continue
