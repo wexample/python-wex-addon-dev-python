@@ -26,7 +26,7 @@ class PythonPackageWorkdir(PythonWorkdir):
     _project_info_cache = None
 
     def depends_from(self, package: PythonPackageWorkdir) -> bool:
-        for dependence_name in self.list_dependency_names():
+        for dependence_name in self.get_dependencies_versions().keys():
             if package.get_package_name() == dependence_name:
                 return True
         return False
