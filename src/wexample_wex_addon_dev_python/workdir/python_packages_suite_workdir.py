@@ -71,47 +71,6 @@ class PythonPackagesSuiteWorkdir(FrameworkPackageSuiteWorkdir):
 
         return stack if stack and stack[-1].get_package_name() == target else []
 
-    def packages_validate_internal_dependencies_declarations(self) -> None:
-        from wexample_wex_addon_app.exception.dependency_violation_exception import (
-            DependencyViolationException,
-        )
-
-        dependencies_map = self.build_dependencies_map()
-
-        self.io.log("Checking packages dependencies consistency...")
-        self.io.indentation_up()
-        progress = self.io.progress(
-            total=len(dependencies_map), print_response=False
-        ).get_handle()
-
-        for package_name in dependencies_map:
-            package = self.get_package(package_name)
-
-            for package_name_search in dependencies_map:
-                searched_package = self.get_package(package_name_search)
-                imports = package.search_imports_in_codebase(searched_package)
-                if len(imports) > 0:
-                    dependencies_stack = self.build_dependencies_stack(
-                        package, searched_package, dependencies_map
-                    )
-
-                    if len(dependencies_stack) == 0:
-                        # Build a readable list of import locations to help debugging
-                        import_locations = [
-                            f"{res.item.get_path()}:{res.line}:{res.column}"
-                            for res in imports
-                        ]
-                        raise DependencyViolationException(
-                            package_name=package_name,
-                            imported_package=package_name_search,
-                            import_locations=import_locations,
-                        )
-
-            progress.advance(label=f"Package {package.get_project_name()}", step=1)
-
-        self.io.success("Internal dependencies match.")
-        self.io.indentation_down()
-
     def _child_is_package_directory(self, entry: Path) -> bool:
         return entry.is_dir() and (entry / "pyproject.toml").is_file()
 
