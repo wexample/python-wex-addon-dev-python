@@ -329,7 +329,9 @@ class PythonWorkdir(CodeBaseWorkdir):
                 if canonical_name in canonical_map:
                     new_version = canonical_map[canonical_name]
                     # Use add_dependency which handles removal of old version
-                    config_file.add_dependency(package_name=req.name, version=new_version)
+                    config_file.add_dependency(
+                        package_name=req.name, version=new_version
+                    )
             except Exception:
                 # Skip unparsable dependencies
                 continue
