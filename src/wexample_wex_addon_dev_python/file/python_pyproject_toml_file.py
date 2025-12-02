@@ -16,30 +16,42 @@ if TYPE_CHECKING:
 @base_class
 class PythonPyprojectTomlFile(TomlFile):
     def add_dependency(
-            self, package_name: str, version: str, operator: str = "==", optional: bool = False, group: None|str = None
+            self,
+            package_name: str,
+            version: str,
+            operator: str = "==",
+            optional: bool = False,
+            group: None | str = None,
     ) -> bool:
         from packaging.requirements import Requirement
         from packaging.utils import canonicalize_name
         from wexample_filestate_python.helpers.toml import toml_sort_string_array
 
-        # package==1.2.3
         spec = f"{package_name}{operator}{version}"
-        deps = self._get_deps_array(optional=optional, group=group)
         new_req = Requirement(spec)
         new_name = canonicalize_name(new_req.name)
 
-        old_spec = None
-        for dep in deps:
-            if canonicalize_name(Requirement(dep).name) == new_name:
-                old_spec = dep
-                break
+        deps = self._get_deps_array(optional=optional, group=group)
 
-        self.remove_dependency_by_name(new_name, optional=optional, group=group)
+        # Look for existing dependency
+        old_spec = next(
+            (d for d in deps if canonicalize_name(Requirement(d).name) == new_name),
+            None
+        )
 
+        # Remove old dep if exists
+        if old_spec:
+            deps.remove(old_spec)
+
+        # Add new version
         deps.append(spec)
+
+        # Sort array
         toml_sort_string_array(deps)
 
+        # Save file
         self.write_parsed()
+
         return old_spec != spec
 
     def dumps(self, content: TOMLDocument | dict | None = None) -> str:
@@ -333,7 +345,7 @@ class PythonPyprojectTomlFile(TomlFile):
             if name in keep_packages:
                 return False
             return name in RUNTIME_DEPENDENCY_REMOVE_NAMES or (
-                name == "typing-extensions"
+                    name == "typing-extensions"
             )
 
         filtered = [it for it in deps_arr if not _should_remove(it)]
