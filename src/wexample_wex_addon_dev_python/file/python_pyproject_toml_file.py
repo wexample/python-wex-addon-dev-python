@@ -86,18 +86,6 @@ class PythonPyprojectTomlFile(TomlFile):
 
         return map
 
-    def list_dependencies_names(
-        self,
-        optional: bool = False,
-        group: str = "dev",
-    ) -> list[str]:
-        return list(
-            self.get_dependencies_versions(
-                optional=optional,
-                group=group,
-            ).keys()
-        )
-
     def optional_group_array(self, group: str):
         """Ensure and return project.optional-dependencies[group] as multi-line array."""
         from wexample_filestate_python.helpers.toml import (
