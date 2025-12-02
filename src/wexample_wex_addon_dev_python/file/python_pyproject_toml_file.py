@@ -14,28 +14,43 @@ if TYPE_CHECKING:
 
 
 @base_class
-class PythonPackageTomlFile(TomlFile):
+class PythonPyprojectTomlFile(TomlFile):
     def add_dependency(
-        self, spec: str, optional: bool = False, group: str = "dev"
+        self,
+        package_name: str,
+        version: str,
+        operator: str = "==",
+        optional: bool = False,
+        group: None | str = None,
     ) -> bool:
         from packaging.requirements import Requirement
         from packaging.utils import canonicalize_name
         from wexample_filestate_python.helpers.toml import toml_sort_string_array
 
-        deps = self._get_deps_array(optional=optional, group=group)
+        spec = f"{package_name}{operator}{version}"
         new_req = Requirement(spec)
         new_name = canonicalize_name(new_req.name)
 
-        old_spec = None
-        for dep in deps:
-            if canonicalize_name(Requirement(dep).name) == new_name:
-                old_spec = dep
-                break
+        deps = self._get_deps_array(optional=optional, group=group)
 
-        self.remove_dependency_by_name(new_name, optional=optional, group=group)
+        # Look for existing dependency
+        old_spec = next(
+            (d for d in deps if canonicalize_name(Requirement(d).name) == new_name),
+            None,
+        )
 
+        # Remove old dep if exists
+        if old_spec:
+            deps.remove(old_spec)
+
+        # Add new version
         deps.append(spec)
+
+        # Sort array
         toml_sort_string_array(deps)
+
+        # Save file
+        self.write_parsed()
 
         return old_spec != spec
 
@@ -70,35 +85,21 @@ class PythonPackageTomlFile(TomlFile):
 
         return self.find_closest(CodeBaseWorkdir)
 
-    def list_dependencies(
+    def get_dependencies_versions(
         self, optional: bool = False, group: str = "dev"
-    ) -> list[str]:
-        deps = self._get_deps_array(optional=optional, group=group)
-        return [str(x) for x in list(deps)]
-
-    def list_dependency_names(
-        self,
-        canonicalize_names: bool = True,
-        optional: bool = False,
-        group: str = "dev",
-    ) -> list[str]:
-        """Return dependency package names derived from list_dependencies().
-
-        If canonicalize_names is True, names are normalized using packaging's
-        canonicalize_name for robust comparisons (dash/underscore, case, etc.).
-        """
+    ) -> dict[str, str]:
         from packaging.requirements import Requirement
         from packaging.utils import canonicalize_name
 
-        names: list[str] = []
-        for spec in self.list_dependencies(optional=optional, group=group):
-            try:
-                name = Requirement(spec).name
-                names.append(canonicalize_name(name) if canonicalize_names else name)
-            except Exception:
-                # Skip unparsable entries when deriving names
-                continue
-        return names
+        deps = self._get_deps_array(optional=optional, group=group)
+
+        map = {}
+        for spec in list(deps):
+            req = Requirement(spec)
+            # name: version
+            map[canonicalize_name(req.name)] = str(req.specifier)
+
+        return map
 
     def optional_group_array(self, group: str):
         """Ensure and return project.optional-dependencies[group] as multi-line array."""
@@ -305,7 +306,6 @@ class PythonPackageTomlFile(TomlFile):
 
         toml_sort_string_array(dev_arr)
 
-    # --- Unified dependency accessors (runtime vs optional) ---
     def _get_deps_array(self, optional: bool = False, group: str = "dev"):
         """Return TOML array for runtime deps or optional group (multiline)."""
         return (

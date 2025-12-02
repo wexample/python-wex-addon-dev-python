@@ -3,7 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from tomlkit import TOMLDocument
 from wexample_app.item.file.iml_file import ImlFile
 from wexample_event.dataclass.event import Event
 from wexample_event.dataclass.listener_record import EventCallback
@@ -16,8 +15,6 @@ from wexample_filestate_python.const.python_file import (
     PYTHON_FILE_EXTENSION,
     PYTHON_FILE_PYTEST_COVERAGE_JSON,
 )
-from wexample_wex_addon_app.helpers.python import python_install_environment
-from wexample_wex_addon_app.item.file.python_app_iml_file import PythonAppImlFile
 from wexample_wex_addon_app.workdir.code_base_workdir import (
     CodeBaseWorkdir,
 )
@@ -27,6 +24,7 @@ from wexample_wex_addon_dev_python.const.python import (
     PYTHON_PYTEST_COV_FORMAT_JSON,
     PYTHON_PYTEST_COV_REPORT_DIR,
 )
+from wexample_wex_addon_dev_python.file.python_app_iml_file import PythonAppImlFile
 
 if TYPE_CHECKING:
     from wexample_config.const.types import DictConfig
@@ -41,23 +39,51 @@ if TYPE_CHECKING:
     )
     from wexample_helpers.const.types import StructuredData
 
-    from wexample_wex_addon_dev_python.file.python_package_toml_file import (
-        PythonPackageTomlFile,
+    from wexample_wex_addon_dev_python.file.python_pyproject_toml_file import (
+        PythonPyprojectTomlFile,
     )
 
 
 class PythonWorkdir(CodeBaseWorkdir):
-    def app_install(self, env: str | None = None, force: bool = False) -> bool:
+    def app_install(self, env: str | None = None, force: bool = False) -> Path:
+        from wexample_wex_addon_app.helpers.python import (
+            python_ensure_pip_or_fail,
+            python_install_environment,
+        )
+
+        # Check if a venv path is somewhere in the config hierarchy.
+        venv_path_config = self.search_app_or_suite_runtime_config("python.venv_path")
+
+        # There is no venv, so create a venv for this project.
+        if venv_path_config.is_none():
+            venv_path = python_install_environment(path=self.get_path())
+        else:
+            venv_path = Path(venv_path_config.get_str())
+
+        self.log(f"Using venv: @path{{{venv_path}}}")
+        python_ensure_pip_or_fail(venv_path)
+
+        self._install_dependencies_in_venv(
+            venv_path=venv_path,
+            env=env,
+            force=force,
+        )
+
         # Use standard PDM install
-        return python_install_environment(path=self.get_path())
+        return venv_path
 
-    def get_dependencies(self) -> list[str]:
-        from packaging.requirements import Requirement
+    def get_app_config_file(self, reload: bool = True) -> PythonPyprojectTomlFile:
+        from wexample_wex_addon_dev_python.file.python_pyproject_toml_file import (
+            PythonPyprojectTomlFile,
+        )
 
-        dependencies = []
-        for dependency in self.get_project_config_file().list_dependency_names():
-            dependencies.append(Requirement(dependency).name)
-        return dependencies
+        config_file = self.find_by_type(PythonPyprojectTomlFile)
+        # Read once to populate content with file source.
+        config_file.read_text(reload=reload)
+        return config_file
+
+    def get_dependencies_versions(self) -> dict[str, str]:
+        return self.get_app_config_file().get_dependencies_versions()
 
     def get_main_code_file_extension(self) -> str:
         return PYTHON_FILE_EXTENSION
@@ -85,23 +111,6 @@ class PythonWorkdir(CodeBaseWorkdir):
         from wexample_helpers.helpers.string import string_to_kebab_case
 
         return string_to_kebab_case(self.get_package_import_name())
-
-    def get_project_config(self, reload: bool = True) -> TOMLDocument:
-        """
-        Fetch the data from the pyproject.toml file.
-        """
-        return self.get_project_config_file(reload=reload).read_parsed()
-
-    def get_project_config_file(self, reload: bool = True) -> PythonPackageTomlFile:
-        from wexample_wex_addon_dev_python.file.python_package_toml_file import (
-            PythonPackageTomlFile,
-        )
-
-        config_file = self.find_by_name("pyproject.toml")
-        assert isinstance(config_file, PythonPackageTomlFile)
-        # Read once to populate content with file source.
-        config_file.read_text(reload=reload)
-        return config_file
 
     def get_python_exec_module_command(self, module_name: str) -> list[str]:
         return [self.get_python_path(), "-m", module_name]
@@ -151,8 +160,8 @@ class PythonWorkdir(CodeBaseWorkdir):
         )
         from wexample_helpers.helpers.array import array_dict_get_by
 
-        from wexample_wex_addon_dev_python.file.python_package_toml_file import (
-            PythonPackageTomlFile,
+        from wexample_wex_addon_dev_python.file.python_pyproject_toml_file import (
+            PythonPyprojectTomlFile,
         )
 
         raw_value = super().prepare_value(raw_value=raw_value)
@@ -166,7 +175,6 @@ class PythonWorkdir(CodeBaseWorkdir):
             [
                 ".pdm-python",
                 ".python-version",
-                ".venv",
                 f"/{PYTHON_FILE_PYTEST_COVERAGE_JSON}",
             ]
         )
@@ -183,34 +191,7 @@ class PythonWorkdir(CodeBaseWorkdir):
                     ],
                 },
                 {
-                    "name": ".venv",
-                    "type": DiskItemType.DIRECTORY,
-                    "should_exist": True,
-                },
-                # Replaced by pdm
-                {
-                    "name": "requirements.in",
-                    "type": DiskItemType.FILE,
-                    "should_exist": False,
-                },
-                {
-                    "name": "requirements.txt",
-                    "type": DiskItemType.FILE,
-                    "should_exist": False,
-                },
-                {
-                    "name": "requirements-dev.in",
-                    "type": DiskItemType.FILE,
-                    "should_exist": False,
-                },
-                {
-                    "name": "requirements-dev.txt",
-                    "type": DiskItemType.FILE,
-                    "should_exist": False,
-                },
-                # Pdm versions
-                {
-                    "class": PythonPackageTomlFile,
+                    "class": PythonPyprojectTomlFile,
                     "name": "pyproject.toml",
                     "type": DiskItemType.FILE,
                     "should_exist": True,
@@ -264,8 +245,8 @@ class PythonWorkdir(CodeBaseWorkdir):
 
     def save_dependency(self, package_name: str, version: str) -> bool:
         """Add or update a dependency with strict version."""
-        config = self.get_project_config_file()
-        updated = config.add_dependency(f"{package_name}=={version}")
+        config = self.get_app_config_file()
+        updated = config.add_dependency(package_name=package_name, version=version)
 
         if updated:
             config.write_parsed()
@@ -274,7 +255,7 @@ class PythonWorkdir(CodeBaseWorkdir):
 
     def save_project_config_file(self, config: StructuredData) -> None:
         """Save the project configuration to pyproject.toml."""
-        config_file = self.get_project_config_file()
+        config_file = self.get_app_config_file()
         config_file.write(config)
 
     def test_get_command(
@@ -327,7 +308,7 @@ class PythonWorkdir(CodeBaseWorkdir):
         from packaging.requirements import Requirement
         from packaging.utils import canonicalize_name
 
-        config_file = self.get_project_config_file()
+        config_file = self.get_app_config_file()
 
         # Canonicalize the keys in dependencies_map for consistent matching
         canonical_map = {
@@ -336,7 +317,7 @@ class PythonWorkdir(CodeBaseWorkdir):
         }
 
         # Get current dependencies
-        current_deps = config_file.list_dependencies()
+        current_deps = config_file.list_dependencies_names()
 
         # Update each dependency if it's in the map
         for dep_spec in current_deps:
@@ -348,7 +329,9 @@ class PythonWorkdir(CodeBaseWorkdir):
                 if canonical_name in canonical_map:
                     new_version = canonical_map[canonical_name]
                     # Use add_dependency which handles removal of old version
-                    config_file.add_dependency(f"{req.name}=={new_version}")
+                    config_file.add_dependency(
+                        package_name=req.name, version=new_version
+                    )
             except Exception:
                 # Skip unparsable dependencies
                 continue
@@ -522,6 +505,19 @@ class PythonWorkdir(CodeBaseWorkdir):
         """Add event listeners"""
         self.operation_add_event_listener(
             operation=FileRenameOperation, suffix="post", callback=self._on_test_event
+        )
+
+    def _install_dependencies_in_venv(
+        self, venv_path: Path, env: str | None = None, force: bool = False
+    ) -> None:
+        from wexample_wex_addon_app.helpers.python import (
+            python_install_dependencies_in_venv,
+        )
+
+        toml_file = self.get_app_config_file()
+        # Get all dependencies from pyproject.toml
+        python_install_dependencies_in_venv(
+            venv_path=venv_path, names=toml_file.list_dependencies_names()
         )
 
     def _on_test_event(self, event: Event) -> None:

@@ -4,7 +4,7 @@ build-backend = "pdm.backend"
 
 [project]
 name = "wexample-wex-addon-dev-python"
-version = "0.0.61"
+version = "0.0.62"
 description = "Python dev addon for wex"
 authors = [{name = "weeger", email = "contact@wexample.com"}]
 requires-python = ">=3.10"
@@ -12,13 +12,12 @@ classifiers = ["Programming Language :: Python :: 3", "License :: OSI Approved :
 dependencies = [
     "attrs>=23.1.0",
     "cattrs>=23.1.0",
-    "jinja2",
     "networkx",
     "pylint",
     "pyright",
-    "wexample-filestate-python==0.0.56",
-    "wexample-wex-addon-app==0.0.53",
-    "wexample-wex-core==6.0.65",
+    "wexample-filestate-python==0.0.57",
+    "wexample-wex-addon-app==0.0.54",
+    "wexample-wex-core==6.0.66",
 ]
 
 [project.readme]
