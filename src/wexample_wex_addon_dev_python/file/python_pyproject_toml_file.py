@@ -8,9 +8,6 @@ from wexample_wex_addon_app.const.path import APP_PATH_README
 
 if TYPE_CHECKING:
     from tomlkit import TOMLDocument
-    from wexample_wex_addon_app.workdir.code_base_workdir import (
-        CodeBaseWorkdir,
-    )
 
 
 @base_class
@@ -62,10 +59,10 @@ class PythonPyprojectTomlFile(TomlFile):
 
         content = content or self.read_parsed()
 
-        package = self.find_package_workdir()
-        import_name = package.get_package_import_name() if package else None
-        project_name = package.get_package_name() if package else None
-        project_version = package.get_project_version() if package else None
+        workdir = self.get_parent_item()
+        import_name = workdir.get_package_import_name()
+        project_name = workdir.get_package_name()
+        project_version = workdir.get_project_version()
 
         self._enforce_build_system(content)
         self._enforce_pdm_build(content, import_name)
@@ -80,13 +77,8 @@ class PythonPyprojectTomlFile(TomlFile):
 
         return result
 
-    def find_package_workdir(self) -> CodeBaseWorkdir | None:
-        from wexample_wex_addon_app.workdir.code_base_workdir import CodeBaseWorkdir
-
-        return self.find_closest(CodeBaseWorkdir)
-
     def get_dependencies_versions(
-        self, optional: bool = False, group: str = "dev"
+            self, optional: bool = False, group: str = "dev"
     ) -> dict[str, str]:
         from packaging.requirements import Requirement
         from packaging.utils import canonicalize_name
@@ -115,7 +107,7 @@ class PythonPyprojectTomlFile(TomlFile):
         return arr
 
     def remove_dependency_by_name(
-        self, package_name: str, optional: bool = False, group: str = "dev"
+            self, package_name: str, optional: bool = False, group: str = "dev"
     ) -> bool:
         """Remove all dependency entries that match the given package name.
 
@@ -184,7 +176,7 @@ class PythonPyprojectTomlFile(TomlFile):
         find_tbl["exclude"] = [f"{import_name}.testing*"]
 
     def _enforce_project_metadata(
-        self, content: dict, project_name: str | None, project_version: str | None
+            self, content: dict, project_name: str | None, project_version: str | None
     ) -> None:
         from wexample_filestate_python.helpers.toml import toml_ensure_table
 
@@ -198,34 +190,32 @@ class PythonPyprojectTomlFile(TomlFile):
             project_tbl["requires-python"] = ">=3.10"
 
         # Add description if available
-        package = self.find_package_workdir()
-        if package:
-            description = package.get_config().search("global.description")
-            if not description.is_none():
-                project_tbl["description"] = description.get_str()
+        workdir = self.get_parent_item()
+        description = workdir.get_config().search("global.description")
+        if not description.is_none():
+            project_tbl["description"] = description.get_str()
 
         # Add authors if available
-        if package:
-            from tomlkit import array, inline_table
+        from tomlkit import array, inline_table
 
-            author_name = package.search_in_package_or_suite_config(
-                "global.authors.name"
-            )
-            author_email = package.search_in_package_or_suite_config(
-                "global.authors.email"
-            )
+        author_name = workdir.search_in_package_or_suite_config(
+            "global.authors.name"
+        )
+        author_email = workdir.search_in_package_or_suite_config(
+            "global.authors.email"
+        )
 
-            if not author_name.is_none() or not author_email.is_none():
-                authors_arr = array()
-                author_tbl = inline_table()
+        if not author_name.is_none() or not author_email.is_none():
+            authors_arr = array()
+            author_tbl = inline_table()
 
-                if not author_name.is_none():
-                    author_tbl["name"] = author_name.get_str()
-                if not author_email.is_none():
-                    author_tbl["email"] = author_email.get_str()
+            if not author_name.is_none():
+                author_tbl["name"] = author_name.get_str()
+            if not author_email.is_none():
+                author_tbl["email"] = author_email.get_str()
 
-                authors_arr.append(author_tbl)
-                project_tbl["authors"] = authors_arr
+            authors_arr.append(author_tbl)
+            project_tbl["authors"] = authors_arr
 
         # Add classifiers (standard Python package metadata)
         project_tbl["classifiers"] = [
@@ -235,21 +225,18 @@ class PythonPyprojectTomlFile(TomlFile):
         ]
 
         # Add README if it exists
-        if package:
-            pass
-
-            readme_file = package.find_by_name(APP_PATH_README)
-            if readme_file:
-                readme_tbl, _ = toml_ensure_table(project_tbl, ["readme"])
-                readme_tbl["file"] = str(APP_PATH_README)
-                readme_tbl["content-type"] = "text/markdown"
+        readme_file = workdir.find_by_name(APP_PATH_README)
+        if readme_file:
+            readme_tbl, _ = toml_ensure_table(project_tbl, ["readme"])
+            readme_tbl["file"] = str(APP_PATH_README)
+            readme_tbl["content-type"] = "text/markdown"
 
         # Add MIT license
         license_tbl, _ = toml_ensure_table(project_tbl, ["license"])
         license_tbl["text"] = "MIT"
 
     def _enforce_pytest_coverage_config(
-        self, content: dict, import_name: str | None
+            self, content: dict, import_name: str | None
     ) -> None:
         """Add pytest and coverage configuration to limit coverage to the package only."""
         if not import_name:
@@ -345,7 +332,7 @@ class PythonPyprojectTomlFile(TomlFile):
             if name in keep_packages:
                 return False
             return name in RUNTIME_DEPENDENCY_REMOVE_NAMES or (
-                name == "typing-extensions"
+                    name == "typing-extensions"
             )
 
         filtered = [it for it in deps_arr if not _should_remove(it)]
