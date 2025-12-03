@@ -243,10 +243,10 @@ class PythonWorkdir(CodeBaseWorkdir):
 
         return raw_value
 
-    def save_dependency(self, package_name: str, version: str) -> bool:
+    def save_dependency(self, package: CodeBaseWorkdir, version: str) -> bool:
         """Add or update a dependency with strict version."""
         config = self.get_app_config_file()
-        updated = config.add_dependency(package_name=package_name, version=version)
+        updated = config.add_dependency(package=package, version=version)
 
         if updated:
             config.write_parsed()

@@ -7,6 +7,7 @@ from wexample_helpers.decorator.base_class import base_class
 from wexample_wex_addon_app.const.path import APP_PATH_README
 
 if TYPE_CHECKING:
+    from wexample_wex_addon_app.workdir.code_base_workdir import CodeBaseWorkdir
     from tomlkit import TOMLDocument
 
 
@@ -14,7 +15,7 @@ if TYPE_CHECKING:
 class PythonPyprojectTomlFile(TomlFile):
     def add_dependency(
         self,
-        package_name: str,
+        package: CodeBaseWorkdir,
         version: str,
         operator: str = "==",
         optional: bool = False,
@@ -24,7 +25,7 @@ class PythonPyprojectTomlFile(TomlFile):
         from packaging.utils import canonicalize_name
         from wexample_filestate_python.helpers.toml import toml_sort_string_array
 
-        spec = f"{package_name}{operator}{version}"
+        spec = f"{package.get_package_dependency_name()}{operator}{version}"
         new_req = Requirement(spec)
         new_name = canonicalize_name(new_req.name)
 
