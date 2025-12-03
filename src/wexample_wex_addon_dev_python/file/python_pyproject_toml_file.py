@@ -78,7 +78,7 @@ class PythonPyprojectTomlFile(TomlFile):
         return result
 
     def get_dependencies_versions(
-            self, optional: bool = False, group: str = "dev"
+        self, optional: bool = False, group: str = "dev"
     ) -> dict[str, str]:
         from packaging.requirements import Requirement
         from packaging.utils import canonicalize_name
@@ -107,7 +107,7 @@ class PythonPyprojectTomlFile(TomlFile):
         return arr
 
     def remove_dependency_by_name(
-            self, package_name: str, optional: bool = False, group: str = "dev"
+        self, package_name: str, optional: bool = False, group: str = "dev"
     ) -> bool:
         """Remove all dependency entries that match the given package name.
 
@@ -176,7 +176,7 @@ class PythonPyprojectTomlFile(TomlFile):
         find_tbl["exclude"] = [f"{import_name}.testing*"]
 
     def _enforce_project_metadata(
-            self, content: dict, project_name: str | None, project_version: str | None
+        self, content: dict, project_name: str | None, project_version: str | None
     ) -> None:
         from wexample_filestate_python.helpers.toml import toml_ensure_table
 
@@ -198,12 +198,8 @@ class PythonPyprojectTomlFile(TomlFile):
         # Add authors if available
         from tomlkit import array, inline_table
 
-        author_name = workdir.search_in_package_or_suite_config(
-            "global.authors.name"
-        )
-        author_email = workdir.search_in_package_or_suite_config(
-            "global.authors.email"
-        )
+        author_name = workdir.search_in_package_or_suite_config("global.authors.name")
+        author_email = workdir.search_in_package_or_suite_config("global.authors.email")
 
         if not author_name.is_none() or not author_email.is_none():
             authors_arr = array()
@@ -236,7 +232,7 @@ class PythonPyprojectTomlFile(TomlFile):
         license_tbl["text"] = "MIT"
 
     def _enforce_pytest_coverage_config(
-            self, content: dict, import_name: str | None
+        self, content: dict, import_name: str | None
     ) -> None:
         """Add pytest and coverage configuration to limit coverage to the package only."""
         if not import_name:
@@ -332,7 +328,7 @@ class PythonPyprojectTomlFile(TomlFile):
             if name in keep_packages:
                 return False
             return name in RUNTIME_DEPENDENCY_REMOVE_NAMES or (
-                    name == "typing-extensions"
+                name == "typing-extensions"
             )
 
         filtered = [it for it in deps_arr if not _should_remove(it)]
