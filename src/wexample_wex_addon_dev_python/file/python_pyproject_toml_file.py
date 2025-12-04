@@ -7,31 +7,28 @@ from wexample_helpers.decorator.base_class import base_class
 from wexample_wex_addon_app.const.path import APP_PATH_README
 
 if TYPE_CHECKING:
+    from packaging.requirements import Requirement
     from wexample_wex_addon_app.workdir.code_base_workdir import CodeBaseWorkdir
     from tomlkit import TOMLDocument
 
 
 @base_class
 class PythonPyprojectTomlFile(TomlFile):
-    def add_dependency(
-        self,
-        package: CodeBaseWorkdir,
-        version: str,
-        operator: str = "==",
-        optional: bool = False,
-        group: None | str = None,
+    def add_dependency_from_spec(
+            self,
+            spec: Requirement,
+            optional: bool = False,
+            group: None | str = None,
     ) -> bool:
         from packaging.requirements import Requirement
         from packaging.utils import canonicalize_name
         from wexample_filestate_python.helpers.toml import toml_sort_string_array
 
-        spec = f"{package.get_package_dependency_name()}{operator}{version}"
-        new_req = Requirement(spec)
-        new_name = canonicalize_name(new_req.name)
+        new_name = canonicalize_name(spec.name)
 
         deps = self._get_deps_array(optional=optional, group=group)
 
-        # Look for existing dependency
+        # Look for existing dependency (string-based)
         old_spec = next(
             (d for d in deps if canonicalize_name(Requirement(d).name) == new_name),
             None,
@@ -41,8 +38,11 @@ class PythonPyprojectTomlFile(TomlFile):
         if old_spec:
             deps.remove(old_spec)
 
+        # Convert Requirement → string
+        new_spec_str = str(spec)
+
         # Add new version
-        deps.append(spec)
+        deps.append(new_spec_str)
 
         # Sort array
         toml_sort_string_array(deps)
@@ -50,7 +50,39 @@ class PythonPyprojectTomlFile(TomlFile):
         # Save file
         self.write_parsed()
 
-        return old_spec != spec
+        return old_spec != new_spec_str
+
+    def add_dependency_from_string(
+            self,
+            package_name: str,
+            version: str,
+            operator: str = "==",
+            optional: bool = False,
+            group: None | str = None,
+    ) -> bool:
+        from packaging.requirements import Requirement
+        return self.add_dependency_from_spec(
+            spec=Requirement(f"{package_name}{operator}{version}"),
+            optional=optional,
+            group=group,
+        )
+
+    def add_dependency(
+            self,
+            package: CodeBaseWorkdir,
+            version: str,
+            operator: str = "==",
+            optional: bool = False,
+            group: None | str = None,
+    ) -> bool:
+        package_name = package.get_package_dependency_name()
+        return self.add_dependency_from_string(
+            package_name=package_name,
+            version=version,
+            operator=operator,
+            optional=optional,
+            group=group,
+        )
 
     def dumps(self, content: TOMLDocument | dict | None = None) -> str:
         """Serialize a TOMLDocument (preferred) or a plain dict to TOML.
@@ -79,7 +111,7 @@ class PythonPyprojectTomlFile(TomlFile):
         return result
 
     def get_dependencies_versions(
-        self, optional: bool = False, group: str = "dev"
+            self, optional: bool = False, group: str = "dev"
     ) -> dict[str, str]:
         from packaging.requirements import Requirement
         from packaging.utils import canonicalize_name
@@ -108,7 +140,7 @@ class PythonPyprojectTomlFile(TomlFile):
         return arr
 
     def remove_dependency_by_name(
-        self, package_name: str, optional: bool = False, group: str = "dev"
+            self, package_name: str, optional: bool = False, group: str = "dev"
     ) -> bool:
         """Remove all dependency entries that match the given package name.
 
@@ -177,7 +209,7 @@ class PythonPyprojectTomlFile(TomlFile):
         find_tbl["exclude"] = [f"{import_name}.testing*"]
 
     def _enforce_project_metadata(
-        self, content: dict, project_name: str | None, project_version: str | None
+            self, content: dict, project_name: str | None, project_version: str | None
     ) -> None:
         from wexample_filestate_python.helpers.toml import toml_ensure_table
 
@@ -233,7 +265,7 @@ class PythonPyprojectTomlFile(TomlFile):
         license_tbl["text"] = "MIT"
 
     def _enforce_pytest_coverage_config(
-        self, content: dict, import_name: str | None
+            self, content: dict, import_name: str | None
     ) -> None:
         """Add pytest and coverage configuration to limit coverage to the package only."""
         if not import_name:
@@ -329,7 +361,7 @@ class PythonPyprojectTomlFile(TomlFile):
             if name in keep_packages:
                 return False
             return name in RUNTIME_DEPENDENCY_REMOVE_NAMES or (
-                name == "typing-extensions"
+                    name == "typing-extensions"
             )
 
         filtered = [it for it in deps_arr if not _should_remove(it)]

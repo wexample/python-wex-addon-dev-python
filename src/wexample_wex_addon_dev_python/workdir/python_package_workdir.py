@@ -164,7 +164,7 @@ class PythonPackageWorkdir(PythonWorkdir):
                     pkg = suite_workdir.get_package(dep_name)
                     if pkg:
                         # Get dependencies of this suite package and recurse
-                        pkg_dependencies = pkg.list_dependencies_names()
+                        pkg_dependencies = pkg.get_dependencies_versions().keys()
                         collect_recursive(pkg_dependencies)
 
         # Start with direct dependencies from pyproject.toml
@@ -210,7 +210,7 @@ class PythonPackageWorkdir(PythonWorkdir):
             # Package is part of a suite that may have a venv configured.
             if suite_workdir:
                 # Get all dependencies from pyproject.toml
-                pyproject_toml_dependencies = toml_file.list_dependencies_names()
+                pyproject_toml_dependencies = toml_file.get_dependencies_versions().keys()
 
                 # Get all packages from the suite ordered by dependencies (leaf -> trunk)
                 suite_packages = suite_workdir.get_ordered_packages()

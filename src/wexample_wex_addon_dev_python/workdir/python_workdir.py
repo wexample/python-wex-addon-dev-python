@@ -316,25 +316,18 @@ class PythonWorkdir(CodeBaseWorkdir):
             for name, version in dependencies_map.items()
         }
 
-        # Get current dependencies
-        current_deps = config_file.list_dependencies_names()
+        current_deps = config_file.get_dependencies_versions()
 
         # Update each dependency if it's in the map
-        for dep_spec in current_deps:
-            try:
-                req = Requirement(dep_spec)
-                canonical_name = canonicalize_name(req.name)
+        for dep_name, dep_version in current_deps.items():
+            canonical_name = canonicalize_name(dep_name)
 
-                # If this dependency is in our update map, update it
-                if canonical_name in canonical_map:
-                    new_version = canonical_map[canonical_name]
-                    # Use add_dependency which handles removal of old version
-                    config_file.add_dependency(
-                        package_name=req.name, version=new_version
-                    )
-            except Exception:
-                # Skip unparsable dependencies
-                continue
+            if canonical_name in canonical_map:
+                new_version = canonical_map[canonical_name]
+                config_file.add_dependency_from_string(
+                    package_name=dep_name,
+                    version=new_version
+                )
 
         # Save the updated config
         config_file.write_parsed()
@@ -517,7 +510,7 @@ class PythonWorkdir(CodeBaseWorkdir):
         toml_file = self.get_app_config_file()
         # Get all dependencies from pyproject.toml
         python_install_dependencies_in_venv(
-            venv_path=venv_path, names=toml_file.list_dependencies_names()
+            venv_path=venv_path, names=toml_file.get_dependencies_versions().keys()
         )
 
     def _on_test_event(self, event: Event) -> None:
