@@ -5,15 +5,15 @@ from typing import TYPE_CHECKING
 from wexample_filestate.item.file.toml_file import TomlFile
 from wexample_helpers.decorator.base_class import base_class
 from wexample_wex_addon_app.const.path import APP_PATH_README
+from wexample_wex_addon_app.item.file.mixin.app_dependencies_config_file_mixin import AppDependenciesConfigFileMixin
 
 if TYPE_CHECKING:
     from packaging.requirements import Requirement
-    from wexample_wex_addon_app.workdir.code_base_workdir import CodeBaseWorkdir
     from tomlkit import TOMLDocument
 
 
 @base_class
-class PythonPyprojectTomlFile(TomlFile):
+class PythonPyprojectTomlFile(AppDependenciesConfigFileMixin, TomlFile):
     def add_dependency_from_spec(
             self,
             spec: Requirement,
@@ -63,23 +63,6 @@ class PythonPyprojectTomlFile(TomlFile):
         from packaging.requirements import Requirement
         return self.add_dependency_from_spec(
             spec=Requirement(f"{package_name}{operator}{version}"),
-            optional=optional,
-            group=group,
-        )
-
-    def add_dependency(
-            self,
-            package: CodeBaseWorkdir,
-            version: str,
-            operator: str = "==",
-            optional: bool = False,
-            group: None | str = None,
-    ) -> bool:
-        package_name = package.get_package_dependency_name()
-        return self.add_dependency_from_string(
-            package_name=package_name,
-            version=version,
-            operator=operator,
             optional=optional,
             group=group,
         )

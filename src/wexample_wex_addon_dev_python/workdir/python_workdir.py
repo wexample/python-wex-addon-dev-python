@@ -298,40 +298,6 @@ class PythonWorkdir(CodeBaseWorkdir):
             if report_path.exists():
                 self.info(f"Report: @path{{{report_path}}}")
 
-    def update_dependencies(self, dependencies_map: dict[str, str]) -> None:
-        """Update dependencies versions based on the provided map.
-
-        Args:
-            dependencies_map: Dictionary mapping package names to their new versions.
-                             Example: {"wexample-helpers": "0.2.3", "attrs": "23.1.0"}
-        """
-        from packaging.requirements import Requirement
-        from packaging.utils import canonicalize_name
-
-        config_file = self.get_app_config_file()
-
-        # Canonicalize the keys in dependencies_map for consistent matching
-        canonical_map = {
-            canonicalize_name(name): version
-            for name, version in dependencies_map.items()
-        }
-
-        current_deps = config_file.get_dependencies_versions()
-
-        # Update each dependency if it's in the map
-        for dep_name, dep_version in current_deps.items():
-            canonical_name = canonicalize_name(dep_name)
-
-            if canonical_name in canonical_map:
-                new_version = canonical_map[canonical_name]
-                config_file.add_dependency_from_string(
-                    package_name=dep_name,
-                    version=new_version
-                )
-
-        # Save the updated config
-        config_file.write_parsed()
-
     def _create_init_children_factory(self) -> ChildrenFileFactoryOption:
         from wexample_filestate.const.disk import DiskItemType
         from wexample_filestate.const.globals import NAME_PATTERN_NO_LEADING_DOT
