@@ -290,24 +290,50 @@ class PythonPackageWorkdir(PythonWorkdir):
         from wexample_filestate_python.common.pipy_gateway import PipyGateway
         from wexample_helpers.helpers.shell import shell_run
 
-        client = PipyGateway(parent_io_handler=self)
+        # Retrieve custom repository configuration
+        repository_url = self.search_app_or_suite_runtime_config(
+            "pdm.repository.url", default=None
+        ).get_str_or_none()
+        
+        repository_token = self.search_app_or_suite_runtime_config(
+            "pdm.repository.token", default=None
+        ).get_str_or_none()
+        
+        repository_username = self.search_app_or_suite_runtime_config(
+            "pdm.repository.username", default="__token__"
+        ).get_str_or_none()
 
         package_name = self.get_package_name()
         version = self.get_project_version()
-        if client.package_release_exists(package_name=package_name, version=version):
-            self.warning(
-                f'Trying to publish an existing release for package "{package_name}" version {version}'
-            )
+
+        # Only check if package exists on PyPI if no custom repository is configured
+        if not repository_url:
+            client = PipyGateway(parent_io_handler=self)
+            if client.package_release_exists(package_name=package_name, version=version):
+                self.warning(
+                    f'Trying to publish an existing release for package "{package_name}" version {version}'
+                )
+                if not force:
+                    return
+
+        # Build the publish command
+        publish_cmd = ["pdm", "publish"]
+        
+        # Add custom repository URL if provided
+        if repository_url:
+            publish_cmd += ["--repository", repository_url]
+            self.subtitle(f"Publishing to custom repository: {repository_url}")
         else:
-            # Map token to PyPI's token-based authentication if provided
-            username = "__token__"
-            password = self.get_env_parameter_or_suite_fallback("PIPY_TOKEN")
+            self.subtitle("Publishing to PyPI")
 
-            # Build the publish command, adding credentials only when given
-            publish_cmd = ["pdm", "publish"]
-            if username is not None:
-                publish_cmd += ["--username", username]
-            if password is not None:
-                publish_cmd += ["--password", password]
+        # Add credentials
+        # Priority: custom token > env variable fallback
+        username = repository_username or "__token__"
+        password = repository_token or self.get_env_parameter_or_suite_fallback("PIPY_TOKEN")
 
-            shell_run(publish_cmd, inherit_stdio=True, cwd=self.get_path())
+        if username:
+            publish_cmd += ["--username", username]
+        if password:
+            publish_cmd += ["--password", password]
+
+        shell_run(publish_cmd, inherit_stdio=True, cwd=self.get_path())
