@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from wexample_wex_core.const.globals import COMMAND_TYPE_ADDON
 from wexample_wex_core.decorator.command import command
 from wexample_wex_core.decorator.middleware import middleware
 from wexample_wex_core.decorator.option import option
@@ -26,7 +27,7 @@ if TYPE_CHECKING:
 @middleware(
     name="each_python_file", should_exist=True, expand_glob=True, recursive=True
 )
-@command()
+@command(type=COMMAND_TYPE_ADDON)
 def python__code__format(
     kernel: Kernel,
     file: str,

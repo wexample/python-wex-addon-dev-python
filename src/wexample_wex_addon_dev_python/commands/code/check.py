@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from wexample_wex_core.const.globals import COMMAND_TYPE_ADDON
 from wexample_wex_core.const.middleware import (
     MIDDLEWARE_OPTION_VALUE_ALLWAYS,
     MIDDLEWARE_OPTION_VALUE_OPTIONAL,
@@ -32,8 +33,9 @@ if TYPE_CHECKING:
     show_progress=MIDDLEWARE_OPTION_VALUE_ALLWAYS,
 )
 @command(
+    type=COMMAND_TYPE_ADDON,
     description="Check python code on every file: "
-    "bash cli/wex python::code/check --file ../../pip/wex-core/wexample_wex_core/ -sof"
+    "python::code/check --file ../../pip/wex-core/wexample_wex_core/ -sof",
 )
 def python__code__check(
     context: ExecutionContext,
