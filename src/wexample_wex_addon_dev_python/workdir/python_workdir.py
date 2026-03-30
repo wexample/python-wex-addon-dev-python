@@ -243,10 +243,10 @@ class PythonWorkdir(CodeBaseWorkdir):
 
         return raw_value
 
-    def save_dependency(self, package_name: str, version: str) -> bool:
+    def save_dependency(self, package: CodeBaseWorkdir, version: str) -> bool:
         """Add or update a dependency with strict version."""
         config = self.get_app_config_file()
-        updated = config.add_dependency(package_name=package_name, version=version)
+        updated = config.add_dependency(package=package, version=version)
 
         if updated:
             config.write_parsed()
@@ -297,47 +297,6 @@ class PythonWorkdir(CodeBaseWorkdir):
             report_path = self.get_path() / PYTHON_PYTEST_COV_REPORT_DIR / "index.html"
             if report_path.exists():
                 self.info(f"Report: @path{{{report_path}}}")
-
-    def update_dependencies(self, dependencies_map: dict[str, str]) -> None:
-        """Update dependencies versions based on the provided map.
-
-        Args:
-            dependencies_map: Dictionary mapping package names to their new versions.
-                             Example: {"wexample-helpers": "0.2.3", "attrs": "23.1.0"}
-        """
-        from packaging.requirements import Requirement
-        from packaging.utils import canonicalize_name
-
-        config_file = self.get_app_config_file()
-
-        # Canonicalize the keys in dependencies_map for consistent matching
-        canonical_map = {
-            canonicalize_name(name): version
-            for name, version in dependencies_map.items()
-        }
-
-        # Get current dependencies
-        current_deps = config_file.list_dependencies_names()
-
-        # Update each dependency if it's in the map
-        for dep_spec in current_deps:
-            try:
-                req = Requirement(dep_spec)
-                canonical_name = canonicalize_name(req.name)
-
-                # If this dependency is in our update map, update it
-                if canonical_name in canonical_map:
-                    new_version = canonical_map[canonical_name]
-                    # Use add_dependency which handles removal of old version
-                    config_file.add_dependency(
-                        package_name=req.name, version=new_version
-                    )
-            except Exception:
-                # Skip unparsable dependencies
-                continue
-
-        # Save the updated config
-        config_file.write_parsed()
 
     def _create_init_children_factory(self) -> ChildrenFileFactoryOption:
         from wexample_filestate.const.disk import DiskItemType
@@ -517,7 +476,7 @@ class PythonWorkdir(CodeBaseWorkdir):
         toml_file = self.get_app_config_file()
         # Get all dependencies from pyproject.toml
         python_install_dependencies_in_venv(
-            venv_path=venv_path, names=toml_file.list_dependencies_names()
+            venv_path=venv_path, names=toml_file.get_dependencies_versions().keys()
         )
 
     def _on_test_event(self, event: Event) -> None:
