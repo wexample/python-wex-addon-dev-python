@@ -5,7 +5,9 @@ from typing import TYPE_CHECKING
 from wexample_filestate.item.file.toml_file import TomlFile
 from wexample_helpers.decorator.base_class import base_class
 from wexample_wex_addon_app.const.path import APP_PATH_README
-from wexample_wex_addon_app.item.file.mixin.app_dependencies_config_file_mixin import AppDependenciesConfigFileMixin
+from wexample_wex_addon_app.item.file.mixin.app_dependencies_config_file_mixin import (
+    AppDependenciesConfigFileMixin,
+)
 
 if TYPE_CHECKING:
     from packaging.requirements import Requirement
@@ -15,10 +17,10 @@ if TYPE_CHECKING:
 @base_class
 class PythonPyprojectTomlFile(AppDependenciesConfigFileMixin, TomlFile):
     def add_dependency_from_spec(
-            self,
-            spec: Requirement,
-            optional: bool = False,
-            group: None | str = None,
+        self,
+        spec: Requirement,
+        optional: bool = False,
+        group: None | str = None,
     ) -> bool:
         from packaging.requirements import Requirement
         from packaging.utils import canonicalize_name
@@ -53,14 +55,15 @@ class PythonPyprojectTomlFile(AppDependenciesConfigFileMixin, TomlFile):
         return old_spec != new_spec_str
 
     def add_dependency_from_string(
-            self,
-            package_name: str,
-            version: str,
-            operator: str = "==",
-            optional: bool = False,
-            group: None | str = None,
+        self,
+        package_name: str,
+        version: str,
+        operator: str = "==",
+        optional: bool = False,
+        group: None | str = None,
     ) -> bool:
         from packaging.requirements import Requirement
+
         return self.add_dependency_from_spec(
             spec=Requirement(f"{package_name}{operator}{version}"),
             optional=optional,
@@ -94,7 +97,7 @@ class PythonPyprojectTomlFile(AppDependenciesConfigFileMixin, TomlFile):
         return result
 
     def get_dependencies_versions(
-            self, optional: bool = False, group: str = "dev"
+        self, optional: bool = False, group: str = "dev"
     ) -> dict[str, str]:
         from packaging.requirements import Requirement
         from packaging.utils import canonicalize_name
@@ -123,7 +126,7 @@ class PythonPyprojectTomlFile(AppDependenciesConfigFileMixin, TomlFile):
         return arr
 
     def remove_dependency_by_name(
-            self, package_name: str, optional: bool = False, group: str = "dev"
+        self, package_name: str, optional: bool = False, group: str = "dev"
     ) -> bool:
         """Remove all dependency entries that match the given package name.
 
@@ -192,7 +195,7 @@ class PythonPyprojectTomlFile(AppDependenciesConfigFileMixin, TomlFile):
         find_tbl["exclude"] = [f"{import_name}.testing*"]
 
     def _enforce_project_metadata(
-            self, content: dict, project_name: str | None, project_version: str | None
+        self, content: dict, project_name: str | None, project_version: str | None
     ) -> None:
         from wexample_filestate_python.helpers.toml import toml_ensure_table
 
@@ -248,7 +251,7 @@ class PythonPyprojectTomlFile(AppDependenciesConfigFileMixin, TomlFile):
         license_tbl["text"] = "MIT"
 
     def _enforce_pytest_coverage_config(
-            self, content: dict, import_name: str | None
+        self, content: dict, import_name: str | None
     ) -> None:
         """Add pytest and coverage configuration to limit coverage to the package only."""
         if not import_name:
@@ -344,7 +347,7 @@ class PythonPyprojectTomlFile(AppDependenciesConfigFileMixin, TomlFile):
             if name in keep_packages:
                 return False
             return name in RUNTIME_DEPENDENCY_REMOVE_NAMES or (
-                    name == "typing-extensions"
+                name == "typing-extensions"
             )
 
         filtered = [it for it in deps_arr if not _should_remove(it)]

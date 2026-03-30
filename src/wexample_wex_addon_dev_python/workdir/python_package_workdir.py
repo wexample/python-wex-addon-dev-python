@@ -210,7 +210,9 @@ class PythonPackageWorkdir(PythonWorkdir):
             # Package is part of a suite that may have a venv configured.
             if suite_workdir:
                 # Get all dependencies from pyproject.toml
-                pyproject_toml_dependencies = toml_file.get_dependencies_versions().keys()
+                pyproject_toml_dependencies = (
+                    toml_file.get_dependencies_versions().keys()
+                )
 
                 # Get all packages from the suite ordered by dependencies (leaf -> trunk)
                 suite_packages = suite_workdir.get_ordered_packages()
@@ -309,7 +311,9 @@ class PythonPackageWorkdir(PythonWorkdir):
         # Only check if package exists on PyPI if no custom repository is configured
         if not repository_url:
             client = PipyGateway(parent_io_handler=self)
-            if client.package_release_exists(package_name=package_name, version=version):
+            if client.package_release_exists(
+                package_name=package_name, version=version
+            ):
                 self.warning(
                     f'Trying to publish an existing release for package "{package_name}" version {version}'
                 )
@@ -318,7 +322,7 @@ class PythonPackageWorkdir(PythonWorkdir):
 
         # Build the publish command
         publish_cmd = ["pdm", "publish"]
-        
+
         # Add custom repository URL if provided
         if repository_url:
             publish_cmd += ["--repository", repository_url]
@@ -329,7 +333,9 @@ class PythonPackageWorkdir(PythonWorkdir):
         # Add credentials
         # Priority: custom token > env variable fallback
         username = repository_username or "__token__"
-        password = repository_token or self.get_env_parameter_or_suite_fallback("PIPY_TOKEN")
+        password = repository_token or self.get_env_parameter_or_suite_fallback(
+            "PIPY_TOKEN"
+        )
 
         if username:
             publish_cmd += ["--username", username]
