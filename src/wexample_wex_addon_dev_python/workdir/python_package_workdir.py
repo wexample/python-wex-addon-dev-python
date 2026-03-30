@@ -293,15 +293,15 @@ class PythonPackageWorkdir(PythonWorkdir):
         # Retrieve custom repository configuration
         repository_url = self.search_app_or_suite_runtime_config(
             "pdm.repository.url", default=None
-        ).get_str_or_none()
-        
+        )
+
         repository_token = self.search_app_or_suite_runtime_config(
             "pdm.repository.token", default=None
-        ).get_str_or_none()
-        
+        )
+
         repository_username = self.search_app_or_suite_runtime_config(
             "pdm.repository.username", default="__token__"
-        ).get_str_or_none()
+        )
 
         package_name = self.get_package_name()
         version = self.get_project_version()
