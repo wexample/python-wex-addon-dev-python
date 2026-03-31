@@ -187,7 +187,7 @@ class PythonPackageWorkdir(PythonWorkdir):
 
         return PythonPackageReadmeContentConfigValue(workdir=self)
 
-    def _get_suite_package_workdir_class(self) -> type[FrameworkPackageSuiteWorkdir]:
+    def _get_suite_workdir_class(self) -> type[FrameworkPackageSuiteWorkdir]:
         from wexample_wex_addon_dev_python.workdir.python_packages_suite_workdir import (
             PythonPackagesSuiteWorkdir,
         )
