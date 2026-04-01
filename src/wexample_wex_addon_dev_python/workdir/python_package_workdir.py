@@ -36,13 +36,8 @@ class PythonPackageWorkdir(PythonWorkdir):
         children = raw_value.get("children")
 
         # Add .gitlab-ci.yml for private GitLab registry packages.
-        # should_exist is a callable so it is evaluated after configure() completes
-        # (when base_name and runtime config are fully available).
-        gitlab_ci_content = file_read(
-            module_get_path(wexample_wex_addon_dev_python)
-            / "resources"
-            / "package_publish_gitlab.yml"
-        )
+        # Both callbacks are evaluated after configure() completes, so base_name
+        # and runtime config are fully available at that point.
         children.append(
             {
                 "name": ".gitlab-ci.yml",
@@ -52,7 +47,11 @@ class PythonPackageWorkdir(PythonWorkdir):
                         "pdm.repository.url", default=None
                     ).get_str_or_none()
                 ),
-                "content": gitlab_ci_content,
+                "content": lambda _: file_read(
+                    module_get_path(wexample_wex_addon_dev_python)
+                    / "resources"
+                    / "package_publish_gitlab.yml"
+                ),
             }
         )
 
