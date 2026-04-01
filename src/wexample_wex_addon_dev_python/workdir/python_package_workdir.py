@@ -401,6 +401,9 @@ class PythonPackageWorkdir(PythonWorkdir):
             git_push_tag(tag, cwd=cwd, remote=remote, inherit_stdio=True)
             return
 
+        # TODO: align public PyPI packages with the private registry approach — publish
+        #       via a GitLab CI pipeline triggered by a git tag rather than running
+        #       `pdm publish` locally.
         # PyPI public: publish locally
         client = PipyGateway(parent_io_handler=self)
         if client.package_release_exists(package_name=package_name, version=version):
