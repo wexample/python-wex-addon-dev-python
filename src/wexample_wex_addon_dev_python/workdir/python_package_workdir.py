@@ -27,9 +27,32 @@ class PythonPackageWorkdir(PythonWorkdir):
 
     def prepare_value(self, raw_value: DictConfig | None = None) -> DictConfig:
         from wexample_helpers.helpers.array import array_dict_get_by
+        from wexample_helpers.helpers.file import file_read
+        from wexample_helpers.helpers.module import module_get_path
+
+        import wexample_wex_addon_dev_python
 
         raw_value = super().prepare_value(raw_value=raw_value)
         children = raw_value.get("children")
+
+        # Add .gitlab-ci.yml only for private GitLab registry packages
+        repository_url = self.search_app_or_suite_runtime_config(
+            "pdm.repository.url", default=None
+        ).get_str_or_none()
+
+        if repository_url:
+            children.append(
+                {
+                    "name": ".gitlab-ci.yml",
+                    "type": DiskItemType.FILE,
+                    "should_exist": True,
+                    "content": file_read(
+                        module_get_path(wexample_wex_addon_dev_python)
+                        / "resources"
+                        / "package_publish_gitlab.yml"
+                    ),
+                }
+            )
 
         children.append(
             {
@@ -288,14 +311,103 @@ class PythonPackageWorkdir(PythonWorkdir):
         # Fallback to parent behaviour
         super()._install_dependencies_in_venv(venv_path=venv_path, env=env, force=force)
 
-    def _publish(self, force: bool = False) -> None:
-        from wexample_filestate_python.common.pipy_gateway import PipyGateway
-        from wexample_helpers.helpers.shell import shell_run
+    def _wait_for_registry(self) -> None:
+        import time
+        import urllib.error
+        import urllib.request
 
-        # Retrieve custom repository configuration
         repository_url = self.search_app_or_suite_runtime_config(
             "pdm.repository.url", default=None
         ).get_str_or_none()
+
+        if not repository_url:
+            return  # PyPI public — published locally, no polling needed
+
+        token = self.search_app_or_suite_runtime_config(
+            "pdm.repository.token", default=None
+        ).get_str_or_none()
+
+        username = self.search_app_or_suite_runtime_config(
+            "pdm.repository.username", default="__token__"
+        ).get_str_or_none() or "__token__"
+
+        package = self.get_package_name()
+        version = self.get_project_version()
+
+        base = repository_url.rstrip("/")
+        url = f"{base}/simple/{package}/"
+
+        max_attempts = 40
+        delay = 30.0
+
+        self.log(f"Waiting for {package}=={version} to appear on registry…")
+
+        for attempt in range(1, max_attempts + 1):
+            try:
+                req = urllib.request.Request(url)
+                if token:
+                    import base64
+                    credentials = base64.b64encode(
+                        f"{username}:{token}".encode()
+                    ).decode()
+                    req.add_header("Authorization", f"Basic {credentials}")
+                with urllib.request.urlopen(req, timeout=10) as resp:
+                    if resp.status == 200:
+                        content = resp.read().decode()
+                        if version in content:
+                            self.success(f"{package}=={version} is available.")
+                            return
+            except urllib.error.HTTPError as e:
+                if e.code != 404:
+                    raise
+            except Exception:
+                pass
+
+            self.log(
+                f"Not yet available (attempt {attempt}/{max_attempts}), "
+                f"retrying in {int(delay)}s…"
+            )
+            time.sleep(delay)
+
+        raise RuntimeError(
+            f"Timed out waiting for {package}=={version} on registry after "
+            f"{max_attempts * int(delay) // 60} minutes."
+        )
+
+    def _publish(self, force: bool = False) -> None:
+        from wexample_filestate_python.common.pipy_gateway import PipyGateway
+        from wexample_helpers.helpers.shell import shell_run
+        from wexample_helpers_git.helpers.git import git_push_tag, git_tag_annotated, git_tag_exists
+
+        repository_url = self.search_app_or_suite_runtime_config(
+            "pdm.repository.url", default=None
+        ).get_str_or_none()
+
+        package_name = self.get_package_name()
+        version = self.get_project_version()
+
+        # Private GitLab registry: trigger CI by pushing a git tag
+        if repository_url:
+            remote = self._get_deployment_remote_name()
+            tag = f"v{version}"
+            cwd = self.get_path()
+
+            if git_tag_exists(tag, cwd=cwd, inherit_stdio=False):
+                self.log(f"Tag {tag} already exists, skipping creation.")
+            else:
+                git_tag_annotated(tag, f"Release {tag}", cwd=cwd, inherit_stdio=True)
+
+            git_push_tag(tag, cwd=cwd, remote=remote, inherit_stdio=True)
+            return
+
+        # PyPI public: publish locally
+        client = PipyGateway(parent_io_handler=self)
+        if client.package_release_exists(package_name=package_name, version=version):
+            self.warning(
+                f'Trying to publish an existing release for package "{package_name}" version {version}'
+            )
+            if not force:
+                return
 
         repository_token = self.search_app_or_suite_runtime_config(
             "pdm.repository.token", default=None
@@ -305,33 +417,9 @@ class PythonPackageWorkdir(PythonWorkdir):
             "pdm.repository.username", default="__token__"
         ).get_str_or_none()
 
-        package_name = self.get_package_name()
-        version = self.get_project_version()
-
-        # Only check if package exists on PyPI if no custom repository is configured
-        if not repository_url:
-            client = PipyGateway(parent_io_handler=self)
-            if client.package_release_exists(
-                package_name=package_name, version=version
-            ):
-                self.warning(
-                    f'Trying to publish an existing release for package "{package_name}" version {version}'
-                )
-                if not force:
-                    return
-
-        # Build the publish command
+        self.subtitle("Publishing to PyPI")
         publish_cmd = ["pdm", "publish"]
 
-        # Add custom repository URL if provided
-        if repository_url:
-            publish_cmd += ["--repository", repository_url]
-            self.subtitle(f"Publishing to custom repository: {repository_url}")
-        else:
-            self.subtitle("Publishing to PyPI")
-
-        # Add credentials
-        # Priority: custom token > env variable fallback
         username = repository_username or "__token__"
         password = repository_token or self.get_env_parameter_or_suite_fallback(
             "PIPY_TOKEN"
