@@ -42,8 +42,8 @@ class PythonPackageWorkdir(PythonWorkdir):
             {
                 "name": ".gitlab-ci.yml",
                 "type": DiskItemType.FILE,
-                "should_exist": lambda target: bool(
-                    target.search_app_or_suite_runtime_config(
+                "should_exist": lambda _target, _self=self: bool(
+                    _self.search_app_or_suite_runtime_config(
                         "pdm.repository.url", default=None
                     ).get_str_or_none()
                 ),
