@@ -25,6 +25,46 @@ if TYPE_CHECKING:
 class PythonPackageWorkdir(PythonWorkdir):
     _project_info_cache = None
 
+    def classify_version_bump(self) -> str:
+        from wexample_helpers.const.types import (
+            UPGRADE_TYPE_INTERMEDIATE,
+            UPGRADE_TYPE_MAJOR,
+            UPGRADE_TYPE_MINOR,
+        )
+        from wexample_helpers_git.helpers.git import git_has_changes_since_tag
+
+        last_tag = self.get_last_publication_tag()
+        if last_tag is None:
+            return UPGRADE_TYPE_MAJOR
+
+        if not git_has_changes_since_tag(last_tag, "src", cwd=self.get_path()):
+            return UPGRADE_TYPE_MINOR
+
+        try:
+            import griffe
+
+            module_name = self.get_package_name().replace("-", "_")
+            repo_path = str(self.get_path())
+
+            previous = griffe.load_git(
+                module_name,
+                ref=last_tag,
+                repo=repo_path,
+                search_paths=["src"],
+            )
+            current = griffe.load(
+                module_name,
+                search_paths=[str(self.get_path() / "src")],
+            )
+
+            if list(griffe.find_breaking_changes(previous, current)):
+                return UPGRADE_TYPE_MAJOR
+
+            return UPGRADE_TYPE_INTERMEDIATE
+
+        except Exception:
+            return UPGRADE_TYPE_MAJOR
+
     def _get_critical_directories(self) -> list[str]:
         return ["src"]
 
