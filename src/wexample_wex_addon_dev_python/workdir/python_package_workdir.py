@@ -25,17 +25,13 @@ if TYPE_CHECKING:
 class PythonPackageWorkdir(PythonWorkdir):
     _project_info_cache = None
 
-    def classify_version_bump(self) -> str:
+    def _classify_version_bump(self, last_tag: str) -> str:
         from wexample_helpers.const.types import (
             UPGRADE_TYPE_INTERMEDIATE,
             UPGRADE_TYPE_MAJOR,
             UPGRADE_TYPE_MINOR,
         )
         from wexample_helpers_git.helpers.git import git_has_changes_since_tag
-
-        last_tag = self.get_last_publication_tag()
-        if last_tag is None:
-            return UPGRADE_TYPE_MAJOR
 
         if not git_has_changes_since_tag(last_tag, "src", cwd=self.get_path()):
             return UPGRADE_TYPE_MINOR
