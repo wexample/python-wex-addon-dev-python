@@ -243,15 +243,13 @@ class PythonWorkdir(CodeBaseWorkdir):
 
         return raw_value
 
-    def save_dependency(self, package: CodeBaseWorkdir, version: str) -> bool:
-        """Add or update a dependency with strict version."""
+    def save_dependency(self, package: CodeBaseWorkdir, version: str, operator: str = "==") -> bool:
         config = self.get_app_config_file()
-        updated = config.add_dependency(package=package, version=version)
-
-        if updated:
-            config.write_parsed()
-
-        return updated
+        return config.add_dependency_from_string(
+            package_name=package.get_package_name(),
+            version=version,
+            operator=operator,
+        )
 
     def save_project_config_file(self, config: StructuredData) -> None:
         """Save the project configuration to pyproject.toml."""
