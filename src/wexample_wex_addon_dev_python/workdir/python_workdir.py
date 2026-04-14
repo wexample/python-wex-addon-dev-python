@@ -18,6 +18,9 @@ from wexample_filestate_python.const.python_file import (
 from wexample_wex_addon_app.workdir.code_base_workdir import (
     CodeBaseWorkdir,
 )
+from wexample_wex_addon_dev_python.workdir.mixin.with_profiling_workdir_mixin import (
+    WithProfilingWorkdirMixin,
+)
 
 from wexample_wex_addon_dev_python.const.python import (
     PYTHON_PYTEST_COV_FORMAT_HTML,
@@ -44,7 +47,7 @@ if TYPE_CHECKING:
     )
 
 
-class PythonWorkdir(CodeBaseWorkdir):
+class PythonWorkdir(WithProfilingWorkdirMixin, CodeBaseWorkdir):
     def app_install(self, env: str | None = None, force: bool = False) -> Path:
         from wexample_wex_addon_app.helpers.python import (
             python_ensure_pip_or_fail,
