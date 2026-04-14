@@ -40,6 +40,9 @@ class WithProfilingWorkdirMixin(WithRunnerWorkdirMixin):
         )
         return runners
 
+    def get_benchmark_dir(self) -> str:
+        return "benchmarks/"
+
     def run_profiling(self) -> dict:
         import json
 
@@ -61,7 +64,7 @@ class WithProfilingWorkdirMixin(WithRunnerWorkdirMixin):
         bench_result = self.runner_exec(
             self._PROFILING_RUNNER_NAME,
             [
-                "python", "-m", "pytest", "tests/",
+                "python", "-m", "pytest", self.get_benchmark_dir(),
                 "--benchmark-only",
                 f"--benchmark-json=/app/{self._BENCH_OUTPUT_FILENAME}",
                 "-q",
