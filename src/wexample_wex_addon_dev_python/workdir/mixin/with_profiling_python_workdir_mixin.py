@@ -2,16 +2,16 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from wexample_wex_addon_app.workdir.mixin.abstract_profiling_workdir_mixin import (
+    AbstractProfilingWorkdirMixin,
+)
 from wexample_wex_addon_app.workdir.mixin.with_runner_workdir_mixin import (
     WithRunnerWorkdirMixin,
 )
 
 
-class WithProfilingWorkdirMixin(WithRunnerWorkdirMixin):
-    """Mixin that adds pytest-benchmark profiling capability to a workdir.
-
-    Only implemented for Python workdirs. Other workdir types will not inherit this mixin,
-    allowing commands to use isinstance(workdir, WithProfilingWorkdirMixin) as a guard.
+class WithProfilingPythonWorkdirMixin(AbstractProfilingWorkdirMixin, WithRunnerWorkdirMixin):
+    """Mixin that adds pytest-benchmark profiling capability to a Python workdir.
 
     Requires the workdir to have benchmark tests written with pytest-benchmark:
         def test_my_function(benchmark):
@@ -39,9 +39,6 @@ class WithProfilingWorkdirMixin(WithRunnerWorkdirMixin):
             ephemeral=False,
         )
         return runners
-
-    def get_benchmark_dir(self) -> str:
-        return "benchmarks/"
 
     def run_profiling(self) -> dict:
         import json
