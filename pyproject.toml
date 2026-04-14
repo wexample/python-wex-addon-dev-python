@@ -17,7 +17,7 @@ dependencies = [
     "pylint",
     "pyright",
     "wexample-filestate-python>=0.1.0",
-    "wexample-wex-addon-app>=1.0.0",
+    "wexample-wex-addon-app>=1.1.0",
 ]
 
 [project.readme]
