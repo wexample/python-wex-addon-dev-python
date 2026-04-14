@@ -243,7 +243,9 @@ class PythonWorkdir(CodeBaseWorkdir):
 
         return raw_value
 
-    def save_dependency(self, package: CodeBaseWorkdir, version: str, operator: str = "==") -> bool:
+    def save_dependency(
+        self, package: CodeBaseWorkdir, version: str, operator: str = "=="
+    ) -> bool:
         config = self.get_app_config_file()
         return config.add_dependency_from_string(
             package_name=package.get_package_name(),

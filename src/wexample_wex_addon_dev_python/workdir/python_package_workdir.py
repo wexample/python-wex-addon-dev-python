@@ -25,45 +25,6 @@ if TYPE_CHECKING:
 class PythonPackageWorkdir(PythonWorkdir):
     _project_info_cache = None
 
-    def _classify_version_bump(self, last_tag: str) -> str:
-        from wexample_helpers.const.types import (
-            UPGRADE_TYPE_INTERMEDIATE,
-            UPGRADE_TYPE_MAJOR,
-            UPGRADE_TYPE_MINOR,
-        )
-        from wexample_helpers_git.helpers.git import git_has_changes_since_tag
-
-        if not git_has_changes_since_tag(last_tag, "src", cwd=self.get_path()):
-            return UPGRADE_TYPE_MINOR
-
-        try:
-            import griffe
-
-            module_name = self.get_package_name().replace("-", "_")
-            repo_path = str(self.get_path())
-
-            previous = griffe.load_git(
-                module_name,
-                ref=last_tag,
-                repo=repo_path,
-                search_paths=["src"],
-            )
-            current = griffe.load(
-                module_name,
-                search_paths=[str(self.get_path() / "src")],
-            )
-
-            if list(griffe.find_breaking_changes(previous, current)):
-                return UPGRADE_TYPE_MAJOR
-
-            return UPGRADE_TYPE_INTERMEDIATE
-
-        except Exception:
-            return UPGRADE_TYPE_MAJOR
-
-    def _get_critical_directories(self) -> list[str]:
-        return ["src"]
-
     def prepare_value(self, raw_value: DictConfig | None = None) -> DictConfig:
         from wexample_helpers.helpers.array import array_dict_get_by
         from wexample_helpers.helpers.file import file_read
@@ -202,6 +163,42 @@ class PythonPackageWorkdir(PythonWorkdir):
 
         return found
 
+    def _classify_version_bump(self, last_tag: str) -> str:
+        from wexample_helpers.const.types import (
+            UPGRADE_TYPE_INTERMEDIATE,
+            UPGRADE_TYPE_MAJOR,
+            UPGRADE_TYPE_MINOR,
+        )
+        from wexample_helpers_git.helpers.git import git_has_changes_since_tag
+
+        if not git_has_changes_since_tag(last_tag, "src", cwd=self.get_path()):
+            return UPGRADE_TYPE_MINOR
+
+        try:
+            import griffe
+
+            module_name = self.get_package_name().replace("-", "_")
+            repo_path = str(self.get_path())
+
+            previous = griffe.load_git(
+                module_name,
+                ref=last_tag,
+                repo=repo_path,
+                search_paths=["src"],
+            )
+            current = griffe.load(
+                module_name,
+                search_paths=[str(self.get_path() / "src")],
+            )
+
+            if list(griffe.find_breaking_changes(previous, current)):
+                return UPGRADE_TYPE_MAJOR
+
+            return UPGRADE_TYPE_INTERMEDIATE
+
+        except Exception:
+            return UPGRADE_TYPE_MAJOR
+
     def _collect_suite_dependencies(
         self,
         direct_dependencies: list[str],
@@ -242,6 +239,9 @@ class PythonPackageWorkdir(PythonWorkdir):
         ]
 
         return suite_deps_ordered
+
+    def _get_critical_directories(self) -> list[str]:
+        return ["src"]
 
     def _get_readme_content(self) -> ReadmeContentConfigValue | None:
         from wexample_wex_addon_dev_python.config_value.python_package_readme_config_value import (
@@ -351,73 +351,14 @@ class PythonPackageWorkdir(PythonWorkdir):
         # Fallback to parent behaviour
         super()._install_dependencies_in_venv(venv_path=venv_path, env=env, force=force)
 
-    def _wait_for_registry(self) -> None:
-        import time
-        import urllib.error
-        import urllib.request
-
-        repository_url = self.search_app_or_suite_runtime_config(
-            "pdm.repository.url", default=None
-        ).get_str_or_none()
-
-        if not repository_url:
-            return  # PyPI public — published locally, no polling needed
-
-        token = self.search_app_or_suite_runtime_config(
-            "pdm.repository.token", default=None
-        ).get_str_or_none()
-
-        username = self.search_app_or_suite_runtime_config(
-            "pdm.repository.username", default="__token__"
-        ).get_str_or_none() or "__token__"
-
-        package = self.get_package_name()
-        version = self.get_project_version()
-
-        base = repository_url.rstrip("/")
-        url = f"{base}/simple/{package}/"
-
-        max_attempts = 40
-        delay = 30.0
-
-        self.log(f"Waiting for {package}=={version} to appear on registry…")
-
-        for attempt in range(1, max_attempts + 1):
-            try:
-                req = urllib.request.Request(url)
-                if token:
-                    import base64
-                    credentials = base64.b64encode(
-                        f"{username}:{token}".encode()
-                    ).decode()
-                    req.add_header("Authorization", f"Basic {credentials}")
-                with urllib.request.urlopen(req, timeout=10) as resp:
-                    if resp.status == 200:
-                        content = resp.read().decode()
-                        if version in content:
-                            self.success(f"{package}=={version} is available.")
-                            return
-            except urllib.error.HTTPError as e:
-                if e.code != 404:
-                    raise
-            except Exception:
-                pass
-
-            self.log(
-                f"Not yet available (attempt {attempt}/{max_attempts}), "
-                f"retrying in {int(delay)}s…"
-            )
-            time.sleep(delay)
-
-        raise RuntimeError(
-            f"Timed out waiting for {package}=={version} on registry after "
-            f"{max_attempts * int(delay) // 60} minutes."
-        )
-
     def _publish(self, force: bool = False) -> None:
         from wexample_filestate_python.common.pipy_gateway import PipyGateway
         from wexample_helpers.helpers.shell import shell_run
-        from wexample_helpers_git.helpers.git import git_push_tag, git_tag_annotated, git_tag_exists
+        from wexample_helpers_git.helpers.git import (
+            git_push_tag,
+            git_tag_annotated,
+            git_tag_exists,
+        )
 
         repository_url = self.search_app_or_suite_runtime_config(
             "pdm.repository.url", default=None
@@ -474,3 +415,70 @@ class PythonPackageWorkdir(PythonWorkdir):
             publish_cmd += ["--password", password]
 
         shell_run(publish_cmd, inherit_stdio=True, cwd=self.get_path())
+
+    def _wait_for_registry(self) -> None:
+        import time
+        import urllib.error
+        import urllib.request
+
+        repository_url = self.search_app_or_suite_runtime_config(
+            "pdm.repository.url", default=None
+        ).get_str_or_none()
+
+        if not repository_url:
+            return  # PyPI public — published locally, no polling needed
+
+        token = self.search_app_or_suite_runtime_config(
+            "pdm.repository.token", default=None
+        ).get_str_or_none()
+
+        username = (
+            self.search_app_or_suite_runtime_config(
+                "pdm.repository.username", default="__token__"
+            ).get_str_or_none()
+            or "__token__"
+        )
+
+        package = self.get_package_name()
+        version = self.get_project_version()
+
+        base = repository_url.rstrip("/")
+        url = f"{base}/simple/{package}/"
+
+        max_attempts = 40
+        delay = 30.0
+
+        self.log(f"Waiting for {package}=={version} to appear on registry…")
+
+        for attempt in range(1, max_attempts + 1):
+            try:
+                req = urllib.request.Request(url)
+                if token:
+                    import base64
+
+                    credentials = base64.b64encode(
+                        f"{username}:{token}".encode()
+                    ).decode()
+                    req.add_header("Authorization", f"Basic {credentials}")
+                with urllib.request.urlopen(req, timeout=10) as resp:
+                    if resp.status == 200:
+                        content = resp.read().decode()
+                        if version in content:
+                            self.success(f"{package}=={version} is available.")
+                            return
+            except urllib.error.HTTPError as e:
+                if e.code != 404:
+                    raise
+            except Exception:
+                pass
+
+            self.log(
+                f"Not yet available (attempt {attempt}/{max_attempts}), "
+                f"retrying in {int(delay)}s…"
+            )
+            time.sleep(delay)
+
+        raise RuntimeError(
+            f"Timed out waiting for {package}=={version} on registry after "
+            f"{max_attempts * int(delay) // 60} minutes."
+        )
