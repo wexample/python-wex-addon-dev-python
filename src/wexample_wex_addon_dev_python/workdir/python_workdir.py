@@ -25,6 +25,9 @@ from wexample_wex_addon_dev_python.const.python import (
     PYTHON_PYTEST_COV_REPORT_DIR,
 )
 from wexample_wex_addon_dev_python.file.python_app_iml_file import PythonAppImlFile
+from wexample_wex_addon_dev_python.workdir.mixin.with_profiling_python_workdir_mixin import (
+    WithProfilingPythonWorkdirMixin,
+)
 
 if TYPE_CHECKING:
     from wexample_config.const.types import DictConfig
@@ -44,7 +47,7 @@ if TYPE_CHECKING:
     )
 
 
-class PythonWorkdir(CodeBaseWorkdir):
+class PythonWorkdir(WithProfilingPythonWorkdirMixin, CodeBaseWorkdir):
     def app_install(self, env: str | None = None, force: bool = False) -> Path:
         from wexample_wex_addon_app.helpers.python import (
             python_ensure_pip_or_fail,
