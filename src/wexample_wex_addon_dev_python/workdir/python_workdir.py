@@ -18,9 +18,6 @@ from wexample_filestate_python.const.python_file import (
 from wexample_wex_addon_app.workdir.code_base_workdir import (
     CodeBaseWorkdir,
 )
-from wexample_wex_addon_dev_python.workdir.mixin.with_profiling_python_workdir_mixin import (
-    WithProfilingPythonWorkdirMixin,
-)
 
 from wexample_wex_addon_dev_python.const.python import (
     PYTHON_PYTEST_COV_FORMAT_HTML,
@@ -28,6 +25,9 @@ from wexample_wex_addon_dev_python.const.python import (
     PYTHON_PYTEST_COV_REPORT_DIR,
 )
 from wexample_wex_addon_dev_python.file.python_app_iml_file import PythonAppImlFile
+from wexample_wex_addon_dev_python.workdir.mixin.with_profiling_python_workdir_mixin import (
+    WithProfilingPythonWorkdirMixin,
+)
 
 if TYPE_CHECKING:
     from wexample_config.const.types import DictConfig

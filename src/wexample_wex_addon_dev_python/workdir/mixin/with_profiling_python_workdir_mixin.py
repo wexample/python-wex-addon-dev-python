@@ -25,10 +25,12 @@ class WithProfilingPythonWorkdirMixin(AbstractProfilingWorkdirMixin):
         bench_output_path = self.get_path() / self._BENCH_OUTPUT_FILENAME
         python = self._get_profiling_python()
 
-
         bench_result = subprocess.run(
             [
-                str(python), "-m", "pytest", self.get_benchmark_dir(),
+                str(python),
+                "-m",
+                "pytest",
+                self.get_benchmark_dir(),
                 "--benchmark-only",
                 f"--benchmark-json={bench_output_path}",
                 "-q",
@@ -63,7 +65,7 @@ class WithProfilingPythonWorkdirMixin(AbstractProfilingWorkdirMixin):
 
         return self._parse_profiling_output(raw)
 
-    def _get_profiling_python(self):
+    def _get_profiling_python(self) -> Path:
         import sys
         from pathlib import Path
 
@@ -73,14 +75,16 @@ class WithProfilingPythonWorkdirMixin(AbstractProfilingWorkdirMixin):
         entries = []
         for bench in raw.get("benchmarks", []):
             stats = bench.get("stats", {})
-            entries.append({
-                "name": bench.get("name"),
-                "min_ms": round(stats.get("min", 0) * 1000, 3),
-                "mean_ms": round(stats.get("mean", 0) * 1000, 3),
-                "median_ms": round(stats.get("median", 0) * 1000, 3),
-                "max_ms": round(stats.get("max", 0) * 1000, 3),
-                "rounds": stats.get("rounds", 0),
-            })
+            entries.append(
+                {
+                    "name": bench.get("name"),
+                    "min_ms": round(stats.get("min", 0) * 1000, 3),
+                    "mean_ms": round(stats.get("mean", 0) * 1000, 3),
+                    "median_ms": round(stats.get("median", 0) * 1000, 3),
+                    "max_ms": round(stats.get("max", 0) * 1000, 3),
+                    "rounds": stats.get("rounds", 0),
+                }
+            )
 
         return {
             "language": "python",
