@@ -1,79 +1,47 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 from wexample_wex_addon_app.workdir.mixin.abstract_profiling_workdir_mixin import (
     AbstractProfilingWorkdirMixin,
 )
-from wexample_wex_addon_app.workdir.mixin.with_runner_workdir_mixin import (
-    WithRunnerWorkdirMixin,
-)
 
 
-class WithProfilingPythonWorkdirMixin(AbstractProfilingWorkdirMixin, WithRunnerWorkdirMixin):
+class WithProfilingPythonWorkdirMixin(AbstractProfilingWorkdirMixin):
     """Mixin that adds pytest-benchmark profiling capability to a Python workdir.
+
+    Runs benchmarks in the workdir's local venv so that local (unpublished)
+    dependencies are available — no Docker required.
 
     Requires the workdir to have benchmark tests written with pytest-benchmark:
         def test_my_function(benchmark):
             benchmark(my_function, ...)
     """
 
-    _PROFILING_RUNNER_NAME = "python-profiling"
     _BENCH_OUTPUT_FILENAME = ".wex_bench.json"
-
-    def get_runners(self) -> dict:
-        from wexample_runner.runner_config import RunnerConfig
-
-        dockerfile = (
-            Path(__file__).parent.parent.parent
-            / "resources"
-            / "docker"
-            / "Dockerfile.python-profiling"
-        )
-
-        runners = super().get_runners()
-        runners[self._PROFILING_RUNNER_NAME] = RunnerConfig(
-            dockerfile=str(dockerfile),
-            mount_path=str(self.get_path()),
-            container_workdir="/app",
-            ephemeral=False,
-        )
-        return runners
 
     def run_profiling(self) -> dict:
         import json
+        import subprocess
 
         bench_output_path = self.get_path() / self._BENCH_OUTPUT_FILENAME
+        python = self._get_profiling_python()
 
-        # HOME=/tmp ensures pip and other tools can write in a container
-        # running as an arbitrary host UID (no home dir defined inside the image).
-        _env = {"HOME": "/tmp", "PIP_NO_CACHE_DIR": "1"}
 
-        # Install project on first use (cached via sentinel file in container)
-        install_result = self.runner_exec(
-            self._PROFILING_RUNNER_NAME,
-            ["sh", "-c", "test -f /tmp/wex_installed || (pip install -e /app -q && touch /tmp/wex_installed)"],
-            env=_env,
-        )
-        if install_result.exit_code != 0:
-            return {"error": f"Project install failed:\n{install_result.stderr}"}
-
-        bench_result = self.runner_exec(
-            self._PROFILING_RUNNER_NAME,
+        bench_result = subprocess.run(
             [
-                "python", "-m", "pytest", self.get_benchmark_dir(),
+                str(python), "-m", "pytest", self.get_benchmark_dir(),
                 "--benchmark-only",
-                f"--benchmark-json=/app/{self._BENCH_OUTPUT_FILENAME}",
+                f"--benchmark-json={bench_output_path}",
                 "-q",
             ],
-            env=_env,
+            capture_output=True,
+            text=True,
+            cwd=str(self.get_path()),
         )
 
         if not bench_output_path.exists():
             return {
                 "error": (
-                    "No benchmark output produced. "
-                    "Make sure tests/ contains benchmark tests using pytest-benchmark.\n"
+                    "No benchmark output produced.\n"
                     f"pytest stdout:\n{bench_result.stdout}\n"
                     f"pytest stderr:\n{bench_result.stderr}"
                 )
@@ -82,12 +50,24 @@ class WithProfilingPythonWorkdirMixin(AbstractProfilingWorkdirMixin, WithRunnerW
         try:
             content = bench_output_path.read_text().strip()
             if not content:
-                return {"error": "No benchmark tests found. Add tests using pytest-benchmark:\n  def test_my_function(benchmark):\n      benchmark(my_function, ...)"}
+                return {
+                    "error": (
+                        "No benchmark tests found. Add tests using pytest-benchmark:\n"
+                        "  def test_my_function(benchmark):\n"
+                        "      benchmark(my_function, ...)"
+                    )
+                }
             raw = json.loads(content)
         finally:
             bench_output_path.unlink(missing_ok=True)
 
         return self._parse_profiling_output(raw)
+
+    def _get_profiling_python(self):
+        import sys
+        from pathlib import Path
+
+        return Path(sys.executable)
 
     def _parse_profiling_output(self, raw: dict) -> dict:
         entries = []
