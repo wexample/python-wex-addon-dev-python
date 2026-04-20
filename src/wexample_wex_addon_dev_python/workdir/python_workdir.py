@@ -320,7 +320,7 @@ class PythonWorkdir(WithProfilingPythonWorkdirMixin, CodeBaseWorkdir):
                 "--output-file",
                 str(requirements_path),
                 "--python-version",
-                "3.12",
+                "3.11",
             ],
             capture_output=True,
             text=True,
