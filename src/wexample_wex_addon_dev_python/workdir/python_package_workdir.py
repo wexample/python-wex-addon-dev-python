@@ -25,6 +25,40 @@ if TYPE_CHECKING:
 class PythonPackageWorkdir(PythonWorkdir):
     _project_info_cache = None
 
+    def check_publish_prerequisites(self) -> None:
+        import os
+        import shutil
+
+        super().check_publish_prerequisites()
+        if shutil.which("pdm"):
+            return
+
+        self.warning("'pdm' not found in PATH — required to publish Python packages.")
+        suggestion = (
+            "/home/weeger/.local/bin"
+            if os.path.isfile("/home/weeger/.local/bin/pdm")
+            else None
+        )
+        response = self.io.input(
+            question="Enter the directory containing pdm (will be prepended to PATH):",
+            default_value=suggestion,
+        ).get_value()
+
+        if not response:
+            raise RuntimeError(
+                "'pdm' not configured. Install it with: pipx install pdm"
+            )
+
+        os.environ["PATH"] = response + ":" + os.environ.get("PATH", "")
+        self._persist_env_value("PATH", os.environ["PATH"])
+        self.info(f"Added {response!r} to PATH — saved to .wex/local/env.yml")
+
+        if not shutil.which("pdm"):
+            raise RuntimeError(
+                f"'pdm' still not found after adding {response!r} to PATH. "
+                "Check that pdm is installed in that directory."
+            )
+
     def prepare_value(self, raw_value: DictConfig | None = None) -> DictConfig:
         from wexample_helpers.helpers.array import array_dict_get_by
         from wexample_helpers.helpers.file import file_read
