@@ -301,6 +301,33 @@ class PythonWorkdir(WithProfilingPythonWorkdirMixin, CodeBaseWorkdir):
             if report_path.exists():
                 self.info(f"Report: @path{{{report_path}}}")
 
+    def update_dependencies(self, dependencies_map: dict[str, str]) -> None:
+        import subprocess
+
+        super().update_dependencies(dependencies_map)
+
+        requirements_path = self.get_path() / "requirements.txt"
+        if not requirements_path.exists():
+            return
+
+        pyproject_path = self.get_path() / "pyproject.toml"
+        result = subprocess.run(
+            [
+                "uv",
+                "pip",
+                "compile",
+                str(pyproject_path),
+                "--output-file",
+                str(requirements_path),
+                "--python-version",
+                "3.12",
+            ],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            self.log(f"Warning: uv pip compile failed: {result.stderr}")
+
     def _create_init_children_factory(self) -> ChildrenFileFactoryOption:
         from wexample_filestate.const.disk import DiskItemType
         from wexample_filestate.const.globals import NAME_PATTERN_NO_LEADING_DOT
