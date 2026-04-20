@@ -1,3 +1,7 @@
+docker:
+  db: {}
+domains: []
 global:
   name: wex_addon_dev_python
-  version: 0.2.0
+  type: app
+  version: 7.0.0
