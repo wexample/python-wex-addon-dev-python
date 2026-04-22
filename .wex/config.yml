@@ -4,4 +4,4 @@ domains: []
 global:
   name: wex_addon_dev_python
   type: app
-  version: 7.2.0
+  version: 7.2.1
