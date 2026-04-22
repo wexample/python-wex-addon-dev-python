@@ -1,6 +1,6 @@
 # wex_addon_dev_python
 
-Version: 7.2.0
+Version: 7.2.1
 
 Python dev addon for wex
 
@@ -87,7 +87,7 @@ Visit the [Wexample Suite documentation](https://docs.wexample.com) for the comp
 - pylint: 
 - pyright: 
 - wexample-filestate-python: >=6.4.0
-- wexample-wex-addon-app: >=9.3.0
+- wexample-wex-addon-app: >=9.4.0
 
 ## Versioning & Compatibility Policy
 
