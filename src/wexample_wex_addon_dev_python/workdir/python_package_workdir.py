@@ -104,6 +104,15 @@ class PythonPackageWorkdir(PythonWorkdir):
             },
         )
 
+        children.append(
+            {
+                "name": ".pdm-build",
+                "type": DiskItemType.DIRECTORY,
+                "should_exist": True,
+                "mode": {"permissions": "755"},
+            },
+        )
+
         # Retrieve the '.gitignore' configuration or create it if it doesn't exist
         config_gitignore = array_dict_get_by("name", ".gitignore", children)
         if config_gitignore is not None:
@@ -118,6 +127,7 @@ class PythonPackageWorkdir(PythonWorkdir):
                     "/build/",
                     "/dist/",
                     "/pip-wheel-metadata/",
+                    "/.pdm-build/",
                 ],
                 "Virtual environments": [
                     ".env",
