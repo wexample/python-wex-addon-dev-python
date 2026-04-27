@@ -30,6 +30,17 @@ class PythonPackageWorkdir(PythonWorkdir):
         import shutil
 
         super().check_publish_prerequisites()
+
+        pdm_build_dir = self.get_path() / ".pdm-build"
+        if pdm_build_dir.exists():
+            try:
+                shutil.rmtree(pdm_build_dir)
+            except PermissionError:
+                raise RuntimeError(
+                    f"Cannot remove '{pdm_build_dir}' (permission denied — likely created by root). "
+                    f"Run: sudo rm -rf '{pdm_build_dir}'"
+                )
+
         if shutil.which("pdm"):
             return
 
@@ -109,7 +120,7 @@ class PythonPackageWorkdir(PythonWorkdir):
                 "name": ".pdm-build",
                 "type": DiskItemType.DIRECTORY,
                 "should_exist": True,
-                "mode": {"permissions": "755"},
+                "mode": {"permissions": "755", "owner": "~"},
             },
         )
 
