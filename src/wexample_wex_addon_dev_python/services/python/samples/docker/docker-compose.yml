@@ -1,0 +1,5 @@
+services:
+  python:
+    extends:
+      file: ${SERVICE_PYTHON_COMPOSE}
+      service: python
