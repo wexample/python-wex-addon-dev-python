@@ -1,0 +1,42 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from wexample_wex_core.const.globals import COMMAND_TYPE_SERVICE
+from wexample_wex_core.decorator.command import command
+
+if TYPE_CHECKING:
+    from wexample_wex_addon_app.service.app_service import AppService
+    from wexample_wex_core.context.execution_context import ExecutionContext
+
+
+@command(
+    type=COMMAND_TYPE_SERVICE,
+    description="Register docker image build config for the python service",
+)
+def python__service__install(
+    context: ExecutionContext,
+    service: AppService,
+) -> None:
+    project_name = service.app_workdir.get_project_name()
+
+    config_file = service.app_workdir.get_config_file()
+    config = config_file.read_config()
+
+    if config.search("docker.images").is_none():
+        config.set_by_path(
+            "docker.images",
+            {
+                "base": {
+                    "dockerfile": ".wex/docker/images/Dockerfile.base",
+                    "tag": f"{project_name}:local",
+                },
+                "develop": {
+                    "dockerfile": ".wex/docker/images/Dockerfile.develop",
+                    "tag": f"{project_name}-dev:local",
+                    "depends_on": "base",
+                },
+            },
+        )
+        config_file.write_config(config)
+        context.io.log(f"Registered docker images for '{project_name}'")
