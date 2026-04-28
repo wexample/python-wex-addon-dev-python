@@ -7,7 +7,7 @@ services:
       dockerfile: ${APP_SETUP_PATH}docker/images/Dockerfile.develop
       args:
         BASE_IMAGE: ${APP_NAME}:local
-    command: [ "/opt/app/.wex/docker/entrypoint.sh" ]
+    command: [ "bash", "/opt/app/.wex/docker/entrypoint.sh" ]
     volumes:
       - ${APP_PATH}:/opt/app/
     expose:

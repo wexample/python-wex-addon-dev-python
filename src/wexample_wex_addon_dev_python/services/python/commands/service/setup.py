@@ -45,11 +45,13 @@ def python__service__setup(
         build = builds[build_name]
         dockerfile = str(app_path / build["dockerfile"])
         tag = build["tag"]
+        cmd = ["docker", "build", "-f", dockerfile, "-t", tag]
+        if "depends_on" in build:
+            parent_tag = builds[build["depends_on"]]["tag"]
+            cmd += ["--build-arg", f"BASE_IMAGE={parent_tag}"]
+        cmd.append(str(app_path))
         context.io.log(f"Building image '{build_name}' → {tag}")
-        subprocess.run(
-            ["docker", "build", "-f", dockerfile, "-t", tag, str(app_path)],
-            check=True,
-        )
+        subprocess.run(cmd, check=True)
 
     file_mkdir_as_real_user(lock_dir)
     lock_file.write_text("done\n")
