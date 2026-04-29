@@ -1,0 +1,8 @@
+name: python
+tags:
+  - python
+  - dev
+docker:
+  compose: docker/docker-compose.yml
+config:
+  proxy: true

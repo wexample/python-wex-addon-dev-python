@@ -1,0 +1,17 @@
+services:
+  python:
+    container_name: ${APP_PROJECT_NAME}_python
+    image: ${APP_NAME}-dev:local
+    build:
+      context: ${APP_PATH}
+      dockerfile: ${APP_SETUP_PATH}docker/images/Dockerfile.develop
+      args:
+        BASE_IMAGE: ${APP_NAME}:local
+    command: [ "bash", "/opt/app/.wex/docker/entrypoint.sh" ]
+    volumes:
+      - ${APP_PATH}:/opt/app/
+    expose:
+      - "8000"
+    extends:
+      file: ${SERVICE_DEFAULT_COMPOSE}
+      service: default

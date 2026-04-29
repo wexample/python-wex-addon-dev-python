@@ -1,0 +1,16 @@
+FROM python:3.12-bookworm
+
+WORKDIR /opt/app/
+
+RUN useradd --uid 1000 owner --create-home \
+  && adduser owner sudo \
+  && mkdir -p /etc/sudoers.d \
+  && echo "owner ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/owner
+
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+
+COPY . /opt/app/
+
+RUN pip install --no-cache-dir .
+
+CMD ["bash"]

@@ -1,0 +1,7 @@
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE:-app:local}
+
+RUN pip install --no-cache-dir watchdog>=3.0.0
+
+# Reinstall in editable mode so volume-mounted source is always live
+RUN pip install -e /opt/app/
