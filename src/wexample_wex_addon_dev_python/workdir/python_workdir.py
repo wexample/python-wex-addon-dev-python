@@ -321,7 +321,7 @@ class PythonWorkdir(WithProfilingPythonWorkdirMixin, CodeBaseWorkdir):
                 str(requirements_path),
                 "--python-version",
                 "3.11",
-                "--refresh",
+                "--no-cache",
             ],
             capture_output=True,
             text=True,
