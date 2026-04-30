@@ -326,7 +326,9 @@ class PythonWorkdir(WithProfilingPythonWorkdirMixin, CodeBaseWorkdir):
             text=True,
         )
         if result.returncode != 0:
-            self.log(f"Warning: uv pip compile failed: {result.stderr}")
+            raise RuntimeError(
+                f"uv pip compile failed for {self.get_path()}:\n{result.stderr}"
+            )
 
     def _create_init_children_factory(self) -> ChildrenFileFactoryOption:
         from wexample_filestate.const.disk import DiskItemType
