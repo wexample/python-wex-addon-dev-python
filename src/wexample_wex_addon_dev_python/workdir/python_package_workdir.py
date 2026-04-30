@@ -481,7 +481,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         ).get_str_or_none()
 
         if not repository_url:
-            return  # PyPI public — published locally, no polling needed
+            repository_url = "https://pypi.org"
 
         token = self.search_app_or_suite_runtime_config(
             "pdm.repository.token", default=None
