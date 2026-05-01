@@ -406,6 +406,12 @@ class PythonPackageWorkdir(PythonWorkdir):
         # Fallback to parent behaviour
         super()._install_dependencies_in_venv(venv_path=venv_path, env=env, force=force)
 
+    def _post_publish(self) -> None:
+        from wexample_helpers_git.const.common import GIT_BRANCH_MAIN
+
+        self.merge_to_main()
+        self.push_to_deployment_remote(branch_name=GIT_BRANCH_MAIN)
+
     def _publish(self, force: bool = False) -> None:
         from wexample_filestate_python.common.pipy_gateway import PipyGateway
         from wexample_helpers.helpers.shell import shell_run
