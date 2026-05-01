@@ -27,6 +27,7 @@ class PythonPackageWorkdir(PythonWorkdir):
 
     def check_publish_prerequisites(self) -> None:
         import os
+        import pathlib
         import shutil
 
         super().check_publish_prerequisites()
@@ -41,15 +42,21 @@ class PythonPackageWorkdir(PythonWorkdir):
                     f"Run: sudo rm -rf '{pdm_build_dir}'"
                 )
 
+        # Restore previously saved pdm directory into the current PATH
+        saved_pdm_dir = self.get_env_parameter("PDM_BIN_DIR")
+        if saved_pdm_dir:
+            current = os.environ.get("PATH", "")
+            if saved_pdm_dir not in current:
+                os.environ["PATH"] = f"{saved_pdm_dir}:{current}"
+
         if shutil.which("pdm"):
             return
 
         self.warning("'pdm' not found in PATH — required to publish Python packages.")
-        suggestion = (
-            "/home/weeger/.local/bin"
-            if os.path.isfile("/home/weeger/.local/bin/pdm")
-            else None
-        )
+
+        local_bin = pathlib.Path.home() / ".local" / "bin"
+        suggestion = str(local_bin) if (local_bin / "pdm").is_file() else None
+
         response = self.io.input(
             question="Enter the directory containing pdm (will be prepended to PATH):",
             default_value=suggestion,
@@ -60,8 +67,8 @@ class PythonPackageWorkdir(PythonWorkdir):
                 "'pdm' not configured. Install it with: pipx install pdm"
             )
 
-        os.environ["PATH"] = response + ":" + os.environ.get("PATH", "")
-        self._persist_env_value("PATH", os.environ["PATH"])
+        os.environ["PATH"] = f"{response}:{os.environ.get('PATH', '')}"
+        self._persist_env_value("PDM_BIN_DIR", response)
         self.info(f"Added {response!r} to PATH — saved to .wex/local/env.yml")
 
         if not shutil.which("pdm"):
