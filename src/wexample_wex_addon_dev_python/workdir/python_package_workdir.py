@@ -27,6 +27,7 @@ class PythonPackageWorkdir(PythonWorkdir):
 
     def check_publish_prerequisites(self) -> None:
         import os
+        import pathlib
         import shutil
 
         super().check_publish_prerequisites()
@@ -41,15 +42,22 @@ class PythonPackageWorkdir(PythonWorkdir):
                     f"Run: sudo rm -rf '{pdm_build_dir}'"
                 )
 
+        # os.environ.get() intentional: PDM_BIN_DIR may not be in every workdir's
+        # .wex/local/env.yml — get_env_parameter() raises KeyNotFoundError if absent.
+        saved_pdm_dir = os.environ.get("PDM_BIN_DIR")
+        if saved_pdm_dir:
+            current = os.environ.get("PATH", "")
+            if saved_pdm_dir not in current:
+                os.environ["PATH"] = f"{saved_pdm_dir}:{current}"
+
         if shutil.which("pdm"):
             return
 
         self.warning("'pdm' not found in PATH — required to publish Python packages.")
-        suggestion = (
-            "/home/weeger/.local/bin"
-            if os.path.isfile("/home/weeger/.local/bin/pdm")
-            else None
-        )
+
+        local_bin = pathlib.Path.home() / ".local" / "bin"
+        suggestion = str(local_bin) if (local_bin / "pdm").is_file() else None
+
         response = self.io.input(
             question="Enter the directory containing pdm (will be prepended to PATH):",
             default_value=suggestion,
@@ -60,8 +68,8 @@ class PythonPackageWorkdir(PythonWorkdir):
                 "'pdm' not configured. Install it with: pipx install pdm"
             )
 
-        os.environ["PATH"] = response + ":" + os.environ.get("PATH", "")
-        self._persist_env_value("PATH", os.environ["PATH"])
+        os.environ["PATH"] = f"{response}:{os.environ.get('PATH', '')}"
+        self._persist_env_value("PDM_BIN_DIR", response)
         self.info(f"Added {response!r} to PATH — saved to .wex/local/env.yml")
 
         if not shutil.which("pdm"):
@@ -405,6 +413,12 @@ class PythonPackageWorkdir(PythonWorkdir):
 
         # Fallback to parent behaviour
         super()._install_dependencies_in_venv(venv_path=venv_path, env=env, force=force)
+
+    def _post_publish(self) -> None:
+        from wexample_helpers_git.const.common import GIT_BRANCH_MAIN
+
+        self.merge_to_main()
+        self.push_to_deployment_remote(branch_name=GIT_BRANCH_MAIN)
 
     def _publish(self, force: bool = False) -> None:
         from wexample_filestate_python.common.pipy_gateway import PipyGateway
