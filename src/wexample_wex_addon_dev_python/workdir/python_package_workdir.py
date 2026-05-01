@@ -42,8 +42,9 @@ class PythonPackageWorkdir(PythonWorkdir):
                     f"Run: sudo rm -rf '{pdm_build_dir}'"
                 )
 
-        # Restore previously saved pdm directory into the current PATH
-        saved_pdm_dir = self.get_env_parameter("PDM_BIN_DIR")
+        # os.environ.get() intentional: PDM_BIN_DIR may not be in every workdir's
+        # .wex/local/env.yml — get_env_parameter() raises KeyNotFoundError if absent.
+        saved_pdm_dir = os.environ.get("PDM_BIN_DIR")
         if saved_pdm_dir:
             current = os.environ.get("PATH", "")
             if saved_pdm_dir not in current:
