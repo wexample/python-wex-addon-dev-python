@@ -23,16 +23,18 @@ def python__service__install(
     config_file = service.app_workdir.get_config_file()
     config = config_file.read_config()
 
+    from wexample_app.const.globals import WORKDIR_SETUP_DIR
+
     if config.search("docker.images").is_none():
         config.set_by_path(
             "docker.images",
             {
                 "base": {
-                    "dockerfile": ".wex/docker/images/Dockerfile.base",
+                    "dockerfile": str(WORKDIR_SETUP_DIR / "docker" / "images" / "Dockerfile.base"),
                     "tag": f"{project_name}:local",
                 },
                 "develop": {
-                    "dockerfile": ".wex/docker/images/Dockerfile.develop",
+                    "dockerfile": str(WORKDIR_SETUP_DIR / "docker" / "images" / "Dockerfile.develop"),
                     "tag": f"{project_name}-dev:local",
                     "depends_on": "base",
                 },

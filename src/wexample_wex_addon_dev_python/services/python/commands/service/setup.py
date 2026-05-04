@@ -26,8 +26,10 @@ def python__service__setup(
         resolve_build_order,
     )
 
+    from wexample_app.const.globals import WORKDIR_SETUP_DIR, WORKDIR_LOCAL_DIR_NAME
+
     app_path = service.app_workdir.get_path()
-    lock_dir = app_path / ".wex" / "local" / "setup"
+    lock_dir = app_path / WORKDIR_SETUP_DIR / WORKDIR_LOCAL_DIR_NAME / "setup"
     lock_file = lock_dir / "python.done"
 
     if lock_file.exists():
