@@ -30,11 +30,15 @@ def python__service__install(
             "docker.images",
             {
                 "base": {
-                    "dockerfile": str(WORKDIR_SETUP_DIR / "docker" / "images" / "Dockerfile.base"),
+                    "dockerfile": str(
+                        WORKDIR_SETUP_DIR / "docker" / "images" / "Dockerfile.base"
+                    ),
                     "tag": f"{project_name}:local",
                 },
                 "develop": {
-                    "dockerfile": str(WORKDIR_SETUP_DIR / "docker" / "images" / "Dockerfile.develop"),
+                    "dockerfile": str(
+                        WORKDIR_SETUP_DIR / "docker" / "images" / "Dockerfile.develop"
+                    ),
                     "tag": f"{project_name}-dev:local",
                     "depends_on": "base",
                 },

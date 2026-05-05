@@ -20,13 +20,12 @@ def python__service__setup(
 ) -> None:
     import subprocess
 
+    from wexample_app.const.globals import WORKDIR_LOCAL_DIR_NAME, WORKDIR_SETUP_DIR
     from wexample_helpers.helpers.file import file_mkdir_as_real_user
     from wexample_wex_addon_app.helpers.image_builds import (
         load_builds,
         resolve_build_order,
     )
-
-    from wexample_app.const.globals import WORKDIR_SETUP_DIR, WORKDIR_LOCAL_DIR_NAME
 
     app_path = service.app_workdir.get_path()
     lock_dir = app_path / WORKDIR_SETUP_DIR / WORKDIR_LOCAL_DIR_NAME / "setup"
