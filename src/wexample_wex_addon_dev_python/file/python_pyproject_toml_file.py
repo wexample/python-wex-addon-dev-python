@@ -81,7 +81,7 @@ class PythonPyprojectTomlFile(AppDependenciesConfigFileMixin, TomlFile):
         workdir = self.get_parent_item()
         import_name = workdir.get_package_import_name()
         project_name = workdir.get_package_name()
-        project_version = workdir.get_project_version()
+        project_version = workdir.get_setup_version()
 
         self._enforce_build_system(content)
         self._enforce_pdm_build(content, import_name)
