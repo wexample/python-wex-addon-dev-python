@@ -45,7 +45,7 @@ if __name__ == "__main__":
 
 
 class AppService(BaseAppService):
-    def get_workdir_contribution(self) -> dict:
+    def get_workdir_contribution(self, workdir) -> dict:
         from wexample_filestate.const.disk import DiskItemType
 
         return {
