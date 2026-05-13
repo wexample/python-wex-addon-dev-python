@@ -26,8 +26,6 @@ class PythonPackageWorkdir(PythonWorkdir):
     _project_info_cache = None
 
     def check_publish_prerequisites(self) -> None:
-        import os
-        import pathlib
         import shutil
 
         super().check_publish_prerequisites()
@@ -42,40 +40,10 @@ class PythonPackageWorkdir(PythonWorkdir):
                     f"Run: sudo rm -rf '{pdm_build_dir}'"
                 )
 
-        # os.environ.get() intentional: PDM_BIN_DIR may not be in every workdir's
-        # .wex/local/env.yml — get_env_parameter() raises KeyNotFoundError if absent.
-        saved_pdm_dir = os.environ.get("PDM_BIN_DIR")
-        if saved_pdm_dir:
-            current = os.environ.get("PATH", "")
-            if saved_pdm_dir not in current:
-                os.environ["PATH"] = f"{saved_pdm_dir}:{current}"
-
-        if shutil.which("pdm"):
-            return
-
-        self.warning("'pdm' not found in PATH — required to publish Python packages.")
-
-        local_bin = pathlib.Path.home() / ".local" / "bin"
-        suggestion = str(local_bin) if (local_bin / "pdm").is_file() else None
-
-        response = self.io.input(
-            question="Enter the directory containing pdm (will be prepended to PATH):",
-            default_value=suggestion,
-        ).get_value()
-
-        if not response:
-            raise RuntimeError(
-                "'pdm' not configured. Install it with: pipx install pdm"
-            )
-
-        os.environ["PATH"] = f"{response}:{os.environ.get('PATH', '')}"
-        self._persist_env_value("PDM_BIN_DIR", response)
-        self.info(f"Added {response!r} to PATH — saved to .wex/local/env.yml")
-
         if not shutil.which("pdm"):
             raise RuntimeError(
-                f"'pdm' still not found after adding {response!r} to PATH. "
-                "Check that pdm is installed in that directory."
+                "'pdm' not found in PATH.\n"
+                "Install: pipx install pdm — then run: wex core::env/configure"
             )
 
     def prepare_value(self, raw_value: DictConfig | None = None) -> DictConfig:
