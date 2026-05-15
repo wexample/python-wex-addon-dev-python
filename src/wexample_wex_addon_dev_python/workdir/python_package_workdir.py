@@ -402,7 +402,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         ).get_str_or_none()
 
         package_name = self.get_package_name()
-        version = self.get_project_version()
+        version = self.get_setup_version()
 
         # Private GitLab registry: trigger CI by pushing a git tag
         if repository_url:
@@ -477,7 +477,7 @@ class PythonPackageWorkdir(PythonWorkdir):
         )
 
         package = self.get_package_name()
-        version = self.get_project_version()
+        version = self.get_setup_version()
 
         base = repository_url.rstrip("/")
         url = f"{base}/simple/{package}/"
