@@ -304,6 +304,10 @@ class PythonWorkdir(WithProfilingPythonWorkdirMixin, CodeBaseWorkdir):
     def update_dependencies(self, dependencies_map: dict[str, str]) -> None:
         import subprocess
 
+        from wexample_helpers.helpers.retryable_callback_manager import (
+            RetryableCallbackManager,
+        )
+
         super().update_dependencies(dependencies_map)
 
         requirements_path = self.get_path() / "requirements.txt"
@@ -311,25 +315,44 @@ class PythonWorkdir(WithProfilingPythonWorkdirMixin, CodeBaseWorkdir):
             return
 
         pyproject_path = self.get_path() / "pyproject.toml"
-        result = subprocess.run(
-            [
-                "uv",
-                "pip",
-                "compile",
-                str(pyproject_path),
-                "--output-file",
-                str(requirements_path),
-                "--python-version",
-                "3.11",
-                "--no-cache",
-            ],
-            capture_output=True,
-            text=True,
-        )
-        if result.returncode != 0:
-            raise RuntimeError(
-                f"uv pip compile failed for {self.get_path()}:\n{result.stderr}"
+
+        def _run_uv_compile() -> None:
+            result = subprocess.run(
+                [
+                    "uv",
+                    "pip",
+                    "compile",
+                    str(pyproject_path),
+                    "--output-file",
+                    str(requirements_path),
+                    "--python-version",
+                    "3.11",
+                    "--no-cache",
+                ],
+                capture_output=True,
+                text=True,
             )
+            if result.returncode != 0:
+                raise RuntimeError(
+                    f"uv pip compile failed for {self.get_path()}:\n{result.stderr}"
+                )
+
+        # Right after a publish, PyPI's index can still serve a stale view of the
+        # registry, making uv conclude that the freshly-published version is
+        # "unsatisfiable". Retry a few times with backoff to absorb this race.
+        # Real dependency conflicts will still fail after retries.
+        RetryableCallbackManager(
+            callback=_run_uv_compile,
+            max_attempts=4,
+            backoff_base_seconds=4,
+            should_retry_callback=lambda exc, msg, attempt, max_a: (
+                "No solution found" in msg or "unsatisfiable" in msg
+            ),
+            on_retry_callback=lambda attempt, max_a, delay, exc, msg: self.log(
+                f"uv pip compile reports unsatisfiable on attempt {attempt}/{max_a} "
+                f"(likely PyPI index propagation); retrying in {delay}s…"
+            ),
+        ).run()
 
     def _create_init_children_factory(self) -> ChildrenFileFactoryOption:
         from wexample_filestate.const.disk import DiskItemType
