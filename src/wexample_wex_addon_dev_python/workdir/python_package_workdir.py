@@ -454,21 +454,23 @@ class PythonPackageWorkdir(PythonWorkdir):
         shell_run(publish_cmd, inherit_stdio=True, cwd=self.get_path())
 
     def _wait_for_registry(self) -> None:
-        import time
+        import base64
         import urllib.error
         import urllib.request
+
+        from wexample_helpers.helpers.polling_callback_manager import (
+            PollingCallbackManager,
+        )
 
         repository_url = self.search_app_or_suite_runtime_config(
             "pdm.repository.url", default=None
         ).get_str_or_none()
-
         if not repository_url:
             repository_url = "https://pypi.org"
 
         token = self.search_app_or_suite_runtime_config(
             "pdm.repository.token", default=None
         ).get_str_or_none()
-
         username = (
             self.search_app_or_suite_runtime_config(
                 "pdm.repository.username", default="__token__"
@@ -478,44 +480,45 @@ class PythonPackageWorkdir(PythonWorkdir):
 
         package = self.get_package_name()
         version = self.get_setup_version()
+        url = f"{repository_url.rstrip('/')}/simple/{package}/"
 
-        base = repository_url.rstrip("/")
-        url = f"{base}/simple/{package}/"
-
-        max_attempts = 40
-        delay = 30.0
-
-        self.log(f"Waiting for {package}=={version} to appear on registry…")
-
-        for attempt in range(1, max_attempts + 1):
+        def check_available() -> bool | None:
             try:
                 req = urllib.request.Request(url)
                 if token:
-                    import base64
-
                     credentials = base64.b64encode(
                         f"{username}:{token}".encode()
                     ).decode()
                     req.add_header("Authorization", f"Basic {credentials}")
                 with urllib.request.urlopen(req, timeout=10) as resp:
-                    if resp.status == 200:
-                        content = resp.read().decode()
-                        if version in content:
-                            self.success(f"{package}=={version} is available.")
-                            return
+                    if resp.status == 200 and version in resp.read().decode():
+                        return True
             except urllib.error.HTTPError as e:
                 if e.code != 404:
                     raise
             except Exception:
                 pass
+            return None
 
+        max_attempts = 40
+        delay_seconds = 30
+
+        self.log(f"Waiting for {package}=={version} to appear on registry…")
+
+        def on_retry(attempt, max_a, delay, _exc, _msg) -> None:
             self.log(
-                f"Not yet available (attempt {attempt}/{max_attempts}), "
-                f"retrying in {int(delay)}s…"
+                f"Not yet available (attempt {attempt}/{max_a}), retrying in {delay}s…"
             )
-            time.sleep(delay)
 
-        raise RuntimeError(
-            f"Timed out waiting for {package}=={version} on registry after "
-            f"{max_attempts * int(delay) // 60} minutes."
-        )
+        PollingCallbackManager(
+            callback=check_available,
+            max_attempts=max_attempts,
+            delay_seconds_callback=lambda _attempt: delay_seconds,
+            on_retry_callback=on_retry,
+            timeout_message=(
+                f"Timed out waiting for {package}=={version} on registry after "
+                f"{max_attempts * delay_seconds // 60} minutes."
+            ),
+        ).run()
+
+        self.success(f"{package}=={version} is available.")
