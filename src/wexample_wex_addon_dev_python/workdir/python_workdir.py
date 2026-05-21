@@ -328,6 +328,12 @@ class PythonWorkdir(WithProfilingPythonWorkdirMixin, CodeBaseWorkdir):
                     "--python-version",
                     "3.11",
                     "--no-cache",
+                    # Force re-resolution from scratch so transitive deps pick
+                    # up patches published since the last compile. Without
+                    # this, uv preserves existing pins in requirements.txt as
+                    # long as they satisfy constraints — causing stale
+                    # transitives even after their direct dependents bumped.
+                    "--upgrade",
                 ],
                 capture_output=True,
                 text=True,
