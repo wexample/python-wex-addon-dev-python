@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from wexample_wex_core.context.execution_context import ExecutionContext
+    from wexample_cli.context.execution_context import ExecutionContext
 
 
 def _code_check_pylint(context: ExecutionContext, file_path: str) -> bool:
