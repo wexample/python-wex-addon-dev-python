@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from wexample_wex_core.const.globals import COMMAND_TYPE_ADDON
 from wexample_cli.const.middleware import (
     MIDDLEWARE_OPTION_VALUE_ALLWAYS,
     MIDDLEWARE_OPTION_VALUE_OPTIONAL,
@@ -11,6 +10,7 @@ from wexample_cli.decorator.command import command
 from wexample_cli.decorator.middleware import middleware
 from wexample_cli.decorator.option import option
 from wexample_cli.decorator.option_stop_on_failure import option_stop_on_failure
+from wexample_wex_core.const.globals import COMMAND_TYPE_ADDON
 
 if TYPE_CHECKING:
     from wexample_cli.context.execution_context import ExecutionContext
