@@ -68,7 +68,7 @@ class PythonPackageWorkdir(PythonWorkdir):
                         "pdm.repository.url", default=None
                     ).get_str_or_none()
                 ),
-                "content": lambda _: file_read(
+                "default_content": lambda _: file_read(
                     module_get_path(wexample_wex_addon_dev_python)
                     / "resources"
                     / "package_publish_gitlab.yml"
