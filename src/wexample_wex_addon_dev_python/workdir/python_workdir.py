@@ -15,6 +15,7 @@ from wexample_filestate_python.const.python_file import (
     PYTHON_FILE_EXTENSION,
     PYTHON_FILE_PYTEST_COVERAGE_JSON,
 )
+from wexample_helpers.decorator.base_class import base_class
 from wexample_wex_addon_ai.workdir.mixin.with_ai_workdir_mixin import (
     WithAiWorkdirMixin,
 )
@@ -50,6 +51,7 @@ if TYPE_CHECKING:
     )
 
 
+@base_class
 class PythonWorkdir(WithAiWorkdirMixin, WithProfilingPythonWorkdirMixin, CodeBaseWorkdir):
     def app_install(self, env: str | None = None, force: bool = False) -> Path:
         from wexample_wex_addon_app.helpers.python import (

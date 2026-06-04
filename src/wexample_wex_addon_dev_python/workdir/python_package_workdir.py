@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from wexample_filestate.const.disk import DiskItemType
+from wexample_helpers.decorator.base_class import base_class
 from wexample_wex_addon_app.helpers.python import (
     python_install_dependency_in_venv,
     python_is_package_installed_editable_in_venv,
@@ -22,6 +23,7 @@ if TYPE_CHECKING:
     )
 
 
+@base_class
 class PythonPackageWorkdir(PythonWorkdir):
     _project_info_cache = None
 
