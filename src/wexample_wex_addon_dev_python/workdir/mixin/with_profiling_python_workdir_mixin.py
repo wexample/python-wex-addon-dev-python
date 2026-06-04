@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+from wexample_helpers.decorator.base_class import base_class
 from wexample_wex_addon_app.workdir.mixin.abstract_profiling_workdir_mixin import (
     AbstractProfilingWorkdirMixin,
 )
 
 
+@base_class
 class WithProfilingPythonWorkdirMixin(AbstractProfilingWorkdirMixin):
     """Mixin that adds pytest-benchmark profiling capability to a Python workdir.
 
