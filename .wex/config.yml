@@ -4,7 +4,7 @@ domains: []
 global:
   name: wex_addon_dev_python
   type: app
-  version: 8.8.1
+  version: 8.8.2
 wex:
   migration: 1
   version: 6.0.112
