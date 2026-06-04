@@ -456,20 +456,20 @@ class PythonPackageWorkdir(PythonWorkdir):
         shell_run(publish_cmd, inherit_stdio=True, cwd=self.get_path())
 
     def _wait_for_registry(self) -> None:
-        import base64
-        import urllib.error
-        import urllib.request
-
         from wexample_helpers.helpers.polling_callback_manager import (
             PollingCallbackManager,
         )
 
-        repository_url = self.search_app_or_suite_runtime_config(
-            "pdm.repository.url", default=None
-        ).get_str_or_none()
-        if not repository_url:
-            repository_url = "https://pypi.org"
+        from wexample_wex_addon_dev_python.common.pypi_registry_gateway import (
+            PypiRegistryGateway,
+        )
 
+        repository_url = (
+            self.search_app_or_suite_runtime_config(
+                "pdm.repository.url", default=None
+            ).get_str_or_none()
+            or "https://pypi.org"
+        )
         token = self.search_app_or_suite_runtime_config(
             "pdm.repository.token", default=None
         ).get_str_or_none()
@@ -482,25 +482,14 @@ class PythonPackageWorkdir(PythonWorkdir):
 
         package = self.get_package_name()
         version = self.get_setup_version()
-        url = f"{repository_url.rstrip('/')}/simple/{package}/"
 
-        def check_available() -> bool | None:
-            try:
-                req = urllib.request.Request(url)
-                if token:
-                    credentials = base64.b64encode(
-                        f"{username}:{token}".encode()
-                    ).decode()
-                    req.add_header("Authorization", f"Basic {credentials}")
-                with urllib.request.urlopen(req, timeout=10) as resp:
-                    if resp.status == 200 and version in resp.read().decode():
-                        return True
-            except urllib.error.HTTPError as e:
-                if e.code != 404:
-                    raise
-            except Exception:
-                pass
-            return None
+        gateway = PypiRegistryGateway(
+            base_url=repository_url,
+            username=username,
+            token=token,
+            io=self.io,
+            timeout=10,
+        )
 
         max_attempts = 40
         delay_seconds = 30
@@ -513,7 +502,7 @@ class PythonPackageWorkdir(PythonWorkdir):
             )
 
         PollingCallbackManager(
-            callback=check_available,
+            callback=lambda: True if gateway.has_version(package, version) else None,
             max_attempts=max_attempts,
             delay_seconds_callback=lambda _attempt: delay_seconds,
             on_retry_callback=on_retry,
