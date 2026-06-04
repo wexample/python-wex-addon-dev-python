@@ -15,6 +15,9 @@ from wexample_filestate_python.const.python_file import (
     PYTHON_FILE_EXTENSION,
     PYTHON_FILE_PYTEST_COVERAGE_JSON,
 )
+from wexample_wex_addon_ai.workdir.mixin.with_ai_workdir_mixin import (
+    WithAiWorkdirMixin,
+)
 from wexample_wex_addon_app.workdir.code_base_workdir import (
     CodeBaseWorkdir,
 )
@@ -47,7 +50,7 @@ if TYPE_CHECKING:
     )
 
 
-class PythonWorkdir(WithProfilingPythonWorkdirMixin, CodeBaseWorkdir):
+class PythonWorkdir(WithAiWorkdirMixin, WithProfilingPythonWorkdirMixin, CodeBaseWorkdir):
     def app_install(self, env: str | None = None, force: bool = False) -> Path:
         from wexample_wex_addon_app.helpers.python import (
             python_ensure_pip_or_fail,
@@ -168,6 +171,8 @@ class PythonWorkdir(WithProfilingPythonWorkdirMixin, CodeBaseWorkdir):
         )
 
         raw_value = super().prepare_value(raw_value=raw_value)
+
+        self.append_agents(config=raw_value)
 
         children = raw_value["children"]
 
