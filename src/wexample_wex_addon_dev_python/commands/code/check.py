@@ -10,6 +10,8 @@ from wexample_cli.decorator.command import command
 from wexample_cli.decorator.middleware import middleware
 from wexample_cli.decorator.option import option
 from wexample_cli.decorator.option_stop_on_failure import option_stop_on_failure
+from wexample_cli.const.tags import AudienceTag, EffectTag, ScopeTag
+from wexample_wex_addon_dev_python.const.tags import DomainTag
 from wexample_wex_core.const.globals import COMMAND_TYPE_ADDON
 
 if TYPE_CHECKING:
@@ -36,6 +38,14 @@ if TYPE_CHECKING:
     type=COMMAND_TYPE_ADDON,
     description="Check python code on every file: "
     "python::code/check --file ../../pip/wex-core/wexample_wex_core/ -sof",
+    tags=[
+        DomainTag.LANGUAGE_PYTHON,
+        DomainTag.LINT,
+        EffectTag.READ_ONLY,
+        AudienceTag.AGENT_SAFE,
+        ScopeTag.LOCAL,
+        ScopeTag.PACKAGE,
+    ],
 )
 def python__code__check(
     context: ExecutionContext,

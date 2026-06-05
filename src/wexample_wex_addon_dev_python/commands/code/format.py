@@ -5,6 +5,8 @@ from typing import TYPE_CHECKING
 from wexample_cli.decorator.command import command
 from wexample_cli.decorator.middleware import middleware
 from wexample_cli.decorator.option import option
+from wexample_cli.const.tags import AudienceTag, EffectTag, ScopeTag
+from wexample_wex_addon_dev_python.const.tags import DomainTag
 from wexample_wex_core.const.globals import COMMAND_TYPE_ADDON
 
 if TYPE_CHECKING:
@@ -27,7 +29,16 @@ if TYPE_CHECKING:
 @middleware(
     name="each_python_file", should_exist=True, expand_glob=True, recursive=True
 )
-@command(type=COMMAND_TYPE_ADDON)
+@command(type=COMMAND_TYPE_ADDON,
+    tags=[
+        DomainTag.FORMAT,
+        DomainTag.LANGUAGE_PYTHON,
+        EffectTag.WRITE,
+        AudienceTag.AGENT_SAFE,
+        ScopeTag.LOCAL,
+        ScopeTag.PACKAGE,
+    ],
+)
 def python__code__format(
     kernel: Kernel,
     file: str,
