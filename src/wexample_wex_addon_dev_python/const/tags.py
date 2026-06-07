@@ -1,4 +1,5 @@
 """Domain tags exposed by this addon — one entry per `domain:*` value its commands use."""
+
 from __future__ import annotations
 
 
@@ -9,4 +10,3 @@ class DomainTag:
     LANGUAGE_PYTHON = "domain:language-python"
     LINT = "domain:lint"
     SERVICE = "domain:service"
-    — = "domain:—"

@@ -1,6 +1,6 @@
 # wex_addon_dev_python
 
-Version: 8.8.2
+Version: 8.9.0
 
 Python dev addon for wex
 
@@ -86,8 +86,10 @@ Visit the [Wexample Suite documentation](https://docs.wexample.com) for the comp
 - networkx: 
 - pylint: 
 - pyright: 
+- wexample-api: >=6.2.0
 - wexample-filestate-python: >=6.8.0
-- wexample-wex-addon-app: >=22.0.0
+- wexample-wex-addon-ai: >=8.0.0
+- wexample-wex-addon-app: >=23.0.0
 
 ## Versioning & Compatibility Policy
 

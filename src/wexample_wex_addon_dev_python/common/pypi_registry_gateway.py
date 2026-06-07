@@ -15,13 +15,13 @@ class PypiRegistryGateway(AbstractGateway):
     (use `__token__` as username for token-based auth).
     """
 
-    username: str | None = public_field(
-        default=None,
-        description="Username for Basic auth. Use '__token__' for token-based auth.",
-    )
     token: str | None = public_field(
         default=None,
         description="API token paired with `username` for Basic auth.",
+    )
+    username: str | None = public_field(
+        default=None,
+        description="Username for Basic auth. Use '__token__' for token-based auth.",
     )
 
     def __attrs_post_init__(self) -> None:

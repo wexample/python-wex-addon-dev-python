@@ -52,7 +52,9 @@ if TYPE_CHECKING:
 
 
 @base_class
-class PythonWorkdir(WithAiWorkdirMixin, WithProfilingPythonWorkdirMixin, CodeBaseWorkdir):
+class PythonWorkdir(
+    WithAiWorkdirMixin, WithProfilingPythonWorkdirMixin, CodeBaseWorkdir
+):
     def app_install(self, env: str | None = None, force: bool = False) -> Path:
         from wexample_wex_addon_app.helpers.python import (
             python_ensure_pip_or_fail,
