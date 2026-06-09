@@ -1,5 +1,6 @@
 services:
   python:
+    restart: unless-stopped
     container_name: ${APP_PROJECT_NAME}_python
     image: ${APP_NAME}-dev:local
     build:

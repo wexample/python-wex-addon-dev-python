@@ -1,5 +1,6 @@
 services:
   python:
+    restart: unless-stopped
     extends:
       file: ${SERVICE_PYTHON_COMPOSE}
       service: python
