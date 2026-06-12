@@ -283,7 +283,8 @@ class PythonWorkdir(
 
         return cmd
 
-    def test_run(self, format: str = PYTHON_PYTEST_COV_FORMAT_JSON) -> None:
+    def test_run(self, format: str | None = None) -> None:
+        format = format or PYTHON_PYTEST_COV_FORMAT_JSON
         self.shell_run_for_app(cmd=self.test_get_command(format=format))
 
         json_file = JsonFile.create_from_path(
