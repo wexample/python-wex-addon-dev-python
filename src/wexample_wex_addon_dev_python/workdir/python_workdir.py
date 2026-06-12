@@ -156,21 +156,6 @@ class PythonWorkdir(
             return self.get_path() / ".venv"
         return Path(venv_path_config.get_str())
 
-    def has_coverage_changes_since_last_report(self) -> bool:
-        """Return True if coverage has changed since last saved report."""
-        last_report = (
-            self.app_workdir.get_config()
-            .search("test.coverage.last_report")
-            .get_dict_or_default()
-        )
-
-        if not last_report:
-            return True
-
-        current_coverage = self._run_coverage()
-
-        return current_coverage != last_report.get("percent")
-
     def has_tests(self) -> bool:
         # The tests/ directory itself is filestate-managed scaffolding and
         # exists for every Python package; only actual test files count.
@@ -328,10 +313,11 @@ class PythonWorkdir(
 
         from wexample_helpers_git.helpers.git import git_get_current_commit_hash
 
-        config_file = self.get_config_file()
-        config = config_file.read_config()
-        config.set_by_path(
-            "test.coverage.last_report",
+        # Derived state, not configuration: lives in .wex/local/ (untracked)
+        # so test runs never dirty the repository.
+        self.set_local_data_value(
+            "test",
+            "coverage_last_report",
             {
                 "commit_hash": git_get_current_commit_hash(cwd=self.get_path()),
                 "covered": totals.get("covered_lines", 0),
@@ -341,7 +327,6 @@ class PythonWorkdir(
                 "total": totals.get("num_statements", 0),
             },
         )
-        config_file.write_config()
 
         if format == PYTHON_PYTEST_COV_FORMAT_HTML:
             report_path = self.get_path() / PYTHON_PYTEST_COV_REPORT_DIR / "index.html"
