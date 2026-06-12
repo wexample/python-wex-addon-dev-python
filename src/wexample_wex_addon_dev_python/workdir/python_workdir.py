@@ -123,7 +123,7 @@ class PythonWorkdir(
         return string_to_kebab_case(self.get_package_import_name())
 
     def get_python_exec_module_command(self, module_name: str) -> list[str]:
-        return [self.get_python_path(), "-m", module_name]
+        return [str(self.get_python_path()), "-m", module_name]
 
     def get_python_path(self) -> Path:
         return self.get_venv_bin_path() / "python"
@@ -132,7 +132,13 @@ class PythonWorkdir(
         return self.get_venv_path() / "bin"
 
     def get_venv_path(self) -> Path:
-        return self.get_path() / ".venv"
+        # The suite/app config may point every package to a single shared
+        # venv (python.venv_path); the local .venv is only the standalone
+        # fallback.
+        venv_path_config = self.search_app_or_suite_runtime_config("python.venv_path")
+        if venv_path_config.is_none():
+            return self.get_path() / ".venv"
+        return Path(venv_path_config.get_str())
 
     def has_coverage_changes_since_last_report(self) -> bool:
         """Return True if coverage has changed since last saved report."""
@@ -274,12 +280,16 @@ class PythonWorkdir(
         self, format: str = PYTHON_PYTEST_COV_FORMAT_JSON
     ) -> list[str]:
         cmd = self.get_python_exec_module_command("pytest")
+        # The json report is always produced: it feeds test.coverage.last_report.
+        # The requested format is added as an extra view when it differs.
         cmd.extend(
             [
                 "--cov",
-                f"--cov-report={format}",
+                f"--cov-report={PYTHON_PYTEST_COV_FORMAT_JSON}",
             ]
         )
+        if format != PYTHON_PYTEST_COV_FORMAT_JSON:
+            cmd.append(f"--cov-report={format}")
 
         return cmd
 
@@ -542,13 +552,17 @@ class PythonWorkdir(
         self, venv_path: Path, env: str | None = None, force: bool = False
     ) -> None:
         from wexample_wex_addon_app.helpers.python import (
-            python_install_dependencies_in_venv,
+            python_install_dependency_in_venv,
         )
 
-        toml_file = self.get_app_config_file()
-        # Get all dependencies from pyproject.toml
-        python_install_dependencies_in_venv(
-            venv_path=venv_path, names=toml_file.get_dependencies_versions().keys()
+        # Installing the package itself (editable, with dev extras) pulls
+        # runtime and test dependencies while honoring the version
+        # constraints of pyproject.toml — pytest must be present for the
+        # publication test phase.
+        python_install_dependency_in_venv(
+            venv_path=venv_path,
+            name=f"{self.get_path()}[dev]",
+            editable=True,
         )
 
     def _on_test_event(self, event: Event) -> None:
