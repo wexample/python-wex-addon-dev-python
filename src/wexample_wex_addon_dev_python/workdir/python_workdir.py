@@ -82,6 +82,22 @@ class PythonWorkdir(
         # Use standard PDM install
         return venv_path
 
+    def count_tests(self) -> int:
+        import re
+
+        tests_path = self.get_path() / "tests"
+        if not tests_path.is_dir():
+            return 0
+
+        count = 0
+        for file in tests_path.rglob("test_*.py"):
+            count += len(
+                re.findall(
+                    r"^\s*(?:async )?def test_", file.read_text(), flags=re.MULTILINE
+                )
+            )
+        return count
+
     def get_app_config_file(self, reload: bool = True) -> PythonPyprojectTomlFile:
         from wexample_wex_addon_dev_python.file.python_pyproject_toml_file import (
             PythonPyprojectTomlFile,
@@ -310,11 +326,14 @@ class PythonWorkdir(
         )
         totals = json_file.read_config().search("totals", default={}).get_dict()
 
+        from wexample_helpers_git.helpers.git import git_get_current_commit_hash
+
         config_file = self.get_config_file()
         config = config_file.read_config()
         config.set_by_path(
             "test.coverage.last_report",
             {
+                "commit_hash": git_get_current_commit_hash(cwd=self.get_path()),
                 "covered": totals.get("covered_lines", 0),
                 "excluded": totals.get("excluded_lines", 0),
                 "missing": totals.get("missing_lines", 0),
