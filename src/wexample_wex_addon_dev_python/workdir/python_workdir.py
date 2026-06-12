@@ -306,9 +306,18 @@ class PythonWorkdir(
         format = format or PYTHON_PYTEST_COV_FORMAT_JSON
         self.shell_run_for_app(cmd=self.test_get_command(format=format))
 
-        json_file = JsonFile.create_from_path(
-            path=self.get_path() / PYTHON_FILE_PYTEST_COVERAGE_JSON
-        )
+        # pytest-cov writes no report at all when nothing was measured
+        # (e.g. tests that never import the covered module) — a legitimate
+        # outcome it signals with a warning, not a failure.
+        json_path = self.get_path() / PYTHON_FILE_PYTEST_COVERAGE_JSON
+        if not json_path.exists():
+            self.warning(
+                "Tests passed but coverage collected no data "
+                "(covered module never imported); no report stored."
+            )
+            return
+
+        json_file = JsonFile.create_from_path(path=json_path)
         totals = json_file.read_config().search("totals", default={}).get_dict()
 
         from wexample_helpers_git.helpers.git import git_get_current_commit_hash

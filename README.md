@@ -1,6 +1,6 @@
 # wex_addon_dev_python
 
-Version: 10.0.0
+Version: 10.1.0
 
 Python dev addon for wex
 
