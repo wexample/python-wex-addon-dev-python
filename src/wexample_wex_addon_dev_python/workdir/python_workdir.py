@@ -155,6 +155,14 @@ class PythonWorkdir(
 
         return current_coverage != last_report.get("percent")
 
+    def has_tests(self) -> bool:
+        # The tests/ directory itself is filestate-managed scaffolding and
+        # exists for every Python package; only actual test files count.
+        tests_path = self.get_path() / "tests"
+        if not tests_path.is_dir():
+            return False
+        return any(tests_path.rglob("test_*.py"))
+
     def operation_add_event_listener(
         self,
         operation: AbstractOperation | type[AbstractOperation],
